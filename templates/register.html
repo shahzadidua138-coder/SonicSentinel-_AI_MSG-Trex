@@ -113,6 +113,7 @@
                                     <option value="Security Operator" {% if role == 'Security Operator' %}selected{% endif %}>Security Operator</option>
                                     <option value="Audio Reviewer" {% if role == 'Audio Reviewer' %}selected{% endif %}>Audio Reviewer</option>
                                     <option value="Maintenance Operator" {% if role == 'Maintenance Operator' %}selected{% endif %}>Maintenance Operator</option>
+                                    <option value="Normal user" {% if role == 'Normal user' %}selected{% endif %}>Normal user</option>
                                     <option value="Administrator" {% if role == 'Administrator' %}selected{% endif %}>Administrator</option>
                                 </select>
                             </div>
@@ -190,7 +191,7 @@
                 const h = canvas.height;
                 ctx.clearRect(0, 0, w, h);
 
-                ctx.strokeStyle = 'rgba(214, 168, 79, 0.04)';
+                ctx.strokeStyle = 'rgba(20, 184, 166, 0.08)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 for (let x = 0; x < w; x += 30) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
@@ -199,7 +200,7 @@
 
                 for (let layer = 0; layer < 2; layer++) {
                     ctx.beginPath();
-                    ctx.strokeStyle = (layer === 0) ? 'rgba(214, 168, 79, 0.8)' : 'rgba(232, 199, 122, 0.35)';
+                    ctx.strokeStyle = (layer === 0) ? 'rgba(45, 212, 191, 0.9)' : 'rgba(94, 234, 212, 0.5)';
                     ctx.lineWidth = (layer === 0) ? 2 : 1;
 
                     for (let x = 0; x < w; x++) {

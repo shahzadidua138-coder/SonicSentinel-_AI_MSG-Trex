@@ -30,6 +30,26 @@ def login_required(f):
     return decorated_function
 
 
+def roles_required(*allowed_roles):
+    """Decorator to enforce Role-Based Access Control (RBAC) per SRS Section 1.6 (ii)"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_id' not in session:
+                flash("Authentication required to access this module.", "warning")
+                return redirect(url_for('login', next=request.url))
+            
+            user_role = session.get('role', 'Normal user')
+            # Normalize casing for check
+            matched = any(user_role.lower() == r.lower() for r in allowed_roles) or 'admin' in user_role.lower()
+            if not matched:
+                flash(f"Access Restricted: Your assigned role '{user_role}' is not authorized to access this section.", "error")
+                return redirect(url_for('dashboard'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
 @app.context_processor
 def inject_user_and_context():
     """Inject current user information and metadata into all templates"""
@@ -135,6 +155,39 @@ def register():
     return render_template('register.html')
 
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        identifier = request.form.get('identifier', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if not identifier or not new_password or not confirm_password:
+            flash("All fields are required to reset credentials.", "error")
+            return render_template('forgot_password.html', identifier=identifier)
+
+        if len(new_password) < 6:
+            flash("New password must be at least 6 characters in length.", "error")
+            return render_template('forgot_password.html', identifier=identifier)
+
+        if new_password != confirm_password:
+            flash("Passwords do not match. Please verify and try again.", "error")
+            return render_template('forgot_password.html', identifier=identifier)
+
+        success, message = database.reset_user_password(identifier, new_password)
+        if not success:
+            flash(message, "error")
+            return render_template('forgot_password.html', identifier=identifier)
+
+        flash(message, "success")
+        return redirect(url_for('login'))
+
+    return render_template('forgot_password.html')
+
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -178,6 +231,7 @@ def alerts():
 
 @app.route('/manual-review')
 @login_required
+@roles_required('Administrator', 'Audio reviewer', 'Security operator')
 def manual_review():
     return render_template('manual_review.html', active_page='manual_review')
 
@@ -202,6 +256,7 @@ def reports():
 
 @app.route('/settings')
 @login_required
+@roles_required('Administrator')
 def settings():
     return render_template('settings.html', active_page='settings')
 

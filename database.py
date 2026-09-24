@@ -72,7 +72,27 @@ def init_db():
                 'Audio Reviewer',
                 'Acoustic Forensics Lab',
                 'Lab Station #02',
-                'dark'
+                'light'
+            ),
+            (
+                'maintenance',
+                'maintenance@sonicsentinel.ai',
+                generate_password_hash('Maint@123'),
+                'Eng. Marcus Vance',
+                'Maintenance operator',
+                'Facility Engineering Dept',
+                'HVAC Diagnostic Dock',
+                'light'
+            ),
+            (
+                'user',
+                'user@sonicsentinel.ai',
+                generate_password_hash('User@123'),
+                'Claire Thompson',
+                'Normal user',
+                'General Security Division',
+                'Observation Post #03',
+                'light'
             )
         ]
 
@@ -158,3 +178,18 @@ def update_user_profile(user_id, full_name, station, theme_preference):
     conn.commit()
     conn.close()
     return True
+
+
+def reset_user_password(identifier, new_password):
+    """Securely updates password for a verified user by email or username"""
+    user = get_user_by_email_or_username(identifier)
+    if not user:
+        return False, "No account associated with this username or email was found."
+    
+    new_hash = generate_password_hash(new_password)
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (new_hash, user['id']))
+    conn.commit()
+    conn.close()
+    return True, "Your password has been successfully reset. You may now log in."
+
