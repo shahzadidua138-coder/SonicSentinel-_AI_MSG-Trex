@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Operator - SonicSentinel AI Acoustic Intelligence</title>
+    
+    <!-- Google Fonts Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Auth Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-split-body">
+    <div class="auth-split-container">
+        
+        <!-- Left Side: Cinematic Acoustic Intelligence Visual Panel -->
+        <div class="auth-left-visual">
+            <div class="brand-header">
+                <div class="brand-logo-mark">
+                    <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="brand-title-group">
+                    <span class="brand-main-title">SonicSentinel AI</span>
+                    <span class="brand-subtitle-tag">AcousticX Intelligence v1.0</span>
+                </div>
+            </div>
+
+            <div class="auth-hero-center">
+                <div class="security-badge">
+                    <i class="fas fa-user-plus"></i> Operator Onboarding Portal
+                </div>
+                
+                <h1 class="auth-hero-heading">
+                    Join the Next Generation of <span>Acoustic Security Operations</span>
+                </h1>
+                
+                <p class="auth-hero-desc">
+                    Provision verified credentials to interface with real-time multi-sensor arrays, trigger emergency response protocols, and verify dual-model acoustic classifications.
+                </p>
+
+                <!-- Subtle Animated Waveform Preview -->
+                <div class="auth-waveform-card">
+                    <div class="waveform-card-header">
+                        <span class="waveform-indicator">
+                            <span class="pulse-gold-dot"></span>
+                            STATION CREDENTIAL PROVISIONING
+                        </span>
+                        <span style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">AES-256 HASHED</span>
+                    </div>
+                    <canvas id="register-wave-canvas" class="auth-wave-canvas" width="480" height="70"></canvas>
+                </div>
+            </div>
+
+            <div class="auth-left-footer">
+                <div class="footer-pill">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Role-Based Access Control</span>
+                </div>
+                <div class="footer-pill">
+                    <i class="fas fa-database"></i>
+                    <span>SQLite Persistent Vault</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Clean Luxury Register Form Panel -->
+        <div class="auth-right-panel">
+            <div class="auth-form-card" style="max-width: 460px;">
+                <h2 class="auth-form-title">Operator Onboarding</h2>
+                <p class="auth-form-subtitle">Register verified access credentials for the monitoring console.</p>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="auth-flash-alert {{ category }}">
+                                <i class="fas fa-exclamation-circle" style="margin-top: 2px;"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('register') }}" method="POST">
+                    <div class="input-field-group">
+                        <label class="input-label" for="full_name">Full Name</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user input-leading-icon"></i>
+                            <input type="text" id="full_name" name="full_name" class="auth-text-input" placeholder="e.g. Officer Marcus Brody" value="{{ full_name or '' }}" required autofocus>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="input-field-group">
+                            <label class="input-label" for="username">Username</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-at input-leading-icon"></i>
+                                <input type="text" id="username" name="username" class="auth-text-input" placeholder="e.g. mbrody" value="{{ username or '' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="input-field-group">
+                            <label class="input-label" for="role">Assigned Role</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-id-badge input-leading-icon"></i>
+                                <select id="role" name="role" class="auth-text-input" style="padding-right: 12px; cursor: pointer;">
+                                    <option value="Security Operator" {% if role == 'Security Operator' %}selected{% endif %}>Security Operator</option>
+                                    <option value="Audio Reviewer" {% if role == 'Audio Reviewer' %}selected{% endif %}>Audio Reviewer</option>
+                                    <option value="Maintenance Operator" {% if role == 'Maintenance Operator' %}selected{% endif %}>Maintenance Operator</option>
+                                    <option value="Administrator" {% if role == 'Administrator' %}selected{% endif %}>Administrator</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-field-group">
+                        <label class="input-label" for="email">Work Email</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope input-leading-icon"></i>
+                            <input type="email" id="email" name="email" class="auth-text-input" placeholder="marcus.brody@sonicsentinel.ai" value="{{ email or '' }}" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="input-field-group">
+                            <label class="input-label" for="password">Password</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock input-leading-icon"></i>
+                                <input type="password" id="password" name="password" class="auth-text-input" placeholder="Min 6 chars" required>
+                                <button type="button" class="password-eye-btn" onclick="togglePasswordVisibility('password', this)" title="Show/Hide Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-field-group">
+                            <label class="input-label" for="confirm_password">Confirm</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-shield-alt input-leading-icon"></i>
+                                <input type="password" id="confirm_password" name="confirm_password" class="auth-text-input" placeholder="Repeat" required>
+                                <button type="button" class="password-eye-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Show/Hide Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-gold-submit" style="margin-top: 6px;">
+                        <i class="fas fa-user-check"></i>
+                        <span>Register Operator Account</span>
+                    </button>
+                </form>
+
+                <div class="auth-switch-prompt">
+                    Already an authorized operator? <a href="{{ url_for('login') }}" class="gold-link">Sign in to console</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Interactive Scripts for Inside Password Eye & Subtle Wave Animation -->
+    <script>
+        function togglePasswordVisibility(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('register-wave-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let offset = 0;
+
+            function animateHeroWave() {
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                ctx.strokeStyle = 'rgba(214, 168, 79, 0.04)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 30) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+                for (let y = 0; y < h; y += 15) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+                ctx.stroke();
+
+                for (let layer = 0; layer < 2; layer++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = (layer === 0) ? 'rgba(214, 168, 79, 0.8)' : 'rgba(232, 199, 122, 0.35)';
+                    ctx.lineWidth = (layer === 0) ? 2 : 1;
+
+                    for (let x = 0; x < w; x++) {
+                        const freq1 = 0.025;
+                        const freq2 = 0.055;
+                        const y = (h / 2) +
+                            Math.sin(x * freq1 + offset + layer) * 14 * Math.sin(x * 0.01) +
+                            Math.sin(x * freq2 - offset * 0.8) * 8;
+
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+
+                offset += 0.04;
+                requestAnimationFrame(animateHeroWave);
+            }
+            animateHeroWave();
+        });
+    </script>
+</body>
+</html>
