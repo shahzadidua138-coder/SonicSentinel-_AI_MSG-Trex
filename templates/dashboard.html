@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Operations Overview{% endblock %}
+
+{% block content %}
+<!-- Welcome & Live Hero Banner -->
+<div class="card-panel" style="background: linear-gradient(135deg, rgba(214, 168, 79, 0.09), rgba(21, 21, 25, 0.95)); border: 1px solid var(--gold-border); margin-bottom: 24px; padding: 28px 32px;">
+    <div class="grid-2" style="align-items: center;">
+        <div>
+            <div class="badge badge-gold" style="margin-bottom: 12px;">
+                <i class="fas fa-shield-alt"></i> AcousticX Enterprise Grid • Active Terminal
+            </div>
+            <h1 style="font-size: 24px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
+                Welcome, {{ current_user['full_name'] if current_user else 'Operator' }}
+            </h1>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
+                SonicSentinel AI is continuously monitoring 12 distributed microphone sensors. Dual-model inference (Python CNN & Google Teachable Machine) is fully operational with &lt; 3.0s sliding windows.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('live_monitoring') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-satellite-dish"></i> Open Live Stream
+                </a>
+                <a href="{{ url_for('audio_upload') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-upload"></i> Upload & Validate Audio
+                </a>
+                <a href="{{ url_for('alerts') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-bell"></i> View Hazard Queue (3)
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="canvas-panel" style="height: 130px; border-color: var(--gold-border);">
+                <canvas id="dash-hero-wave" width="540" height="130"></canvas>
+                <div class="canvas-tag">LIVE ACOUSTIC RESIDUALS</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Detection Statistics Row -->
+<div class="metrics-row">
+    <div class="metric-box">
+        <span class="metric-box-title">Total Ingested Events</span>
+        <span class="metric-box-value font-mono" style="color: var(--gold-light);">24,890</span>
+        <span class="metric-box-sub">Across 12 Facility Nodes</span>
+    </div>
+    <div class="metric-box" style="border-left: 3px solid var(--sev-critical);">
+        <span class="metric-box-title">Active Critical Hazards</span>
+        <span class="metric-box-value font-mono" style="color: #F87171;">3 Active</span>
+        <span class="metric-box-sub" style="color: #F87171;">Gunshot, Scream, Help</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Average Confidence</span>
+        <span class="metric-box-value font-mono" style="color: var(--gold-light);">89.7%</span>
+        <span class="metric-box-sub" style="color: #10B981;">Target &ge; 85% Met</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Model Disagreement Rate</span>
+        <span class="metric-box-value font-mono">6.8%</span>
+        <span class="metric-box-sub">Python vs GTM Divergence</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Poor Quality Signals</span>
+        <span class="metric-box-value font-mono">2.1%</span>
+        <span class="metric-box-sub">Clipped / Low SNR Flags</span>
+    </div>
+</div>
+
+<!-- 10 Mandatory Sound Categories Grid (SRS Compliant) -->
+<div class="card-panel">
+    <div class="card-panel-header">
+        <span class="panel-heading"><i class="fas fa-layer-group"></i> 10 Mandatory Sound Categories & Acoustic Profiles</span>
+        <span class="badge badge-gold">Interactive Synthesizer</span>
+    </div>
+    <div class="grid-4" id="cat-dashboard-grid">
+        <!-- Populated via JS -->
+    </div>
+</div>
+
+<!-- Recent Events & Quick Scenario Actions Grid -->
+<div class="grid-7-3">
+    <!-- Recent Events Table -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-list-ul"></i> Recent Ingested Events & Consensus</span>
+            <a href="{{ url_for('event_history') }}" style="font-size: 11px;">View All Registry &rarr;</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Audio ID</th>
+                        <th>Event Category</th>
+                        <th>Confidence (Py / GTM)</th>
+                        <th>Consistency</th>
+                        <th>Severity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dashboard-recent-events">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Scenario Presets -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-vial"></i> Quick Test Scenarios</span>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">
+            Execute simulated acoustic events with realistic procedural synthesis.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-secondary" style="justify-content: flex-start; text-align: left; padding: 10px;" onclick="runScenario('gunshot', 'Gunshot Blast', 'Critical')">
+                <i class="fas fa-crosshairs" style="color: #EF4444; width: 18px;"></i>
+                <div>
+                    <div style="font-weight: 600;">Gunshot Blast</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">96.4% Py • Critical Hazard Protocol</div>
+                </div>
+            </button>
+
+            <button class="btn btn-secondary" style="justify-content: flex-start; text-align: left; padding: 10px;" onclick="runScenario('glass', 'Window Shatter', 'High')">
+                <i class="fas fa-shield-virus" style="color: #EA580C; width: 18px;"></i>
+                <div>
+                    <div style="font-weight: 600;">Window Glass Shatter</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">94.0% Py • High Perimeter Breach</div>
+                </div>
+            </button>
+
+            <button class="btn btn-secondary" style="justify-content: flex-start; text-align: left; padding: 10px;" onclick="runScenario('help', 'Call for Help', 'Critical')">
+                <i class="fas fa-hands-helping" style="color: #D97706; width: 18px;"></i>
+                <div>
+                    <div style="font-weight: 600;">Voice: 'Somebody help!'</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">88.5% Py • Intercom Dispatch</div>
+                </div>
+            </button>
+
+            <button class="btn btn-secondary" style="justify-content: flex-start; text-align: left; padding: 10px;" onclick="runScenario('machinery', 'Turbine Bearing Grind', 'High')">
+                <i class="fas fa-cogs" style="color: #F59E0B; width: 18px;"></i>
+                <div>
+                    <div style="font-weight: 600;">Turbine Bearing Fault</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">95.8% Py • Maintenance Alert</div>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Render 10 mandatory categories with gold theme
+    const catGrid = document.getElementById('cat-dashboard-grid');
+    if (catGrid && SONIC_DATA) {
+        catGrid.innerHTML = SONIC_DATA.categories.map(c => `
+            <div class="card-panel" style="margin-bottom: 0; padding: 14px; background: var(--bg-subtle); border-top: 2px solid var(--gold-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 10px; font-weight: 700; color: var(--gold-light);" class="font-mono">#${c.id}</span>
+                    <span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span>
+                </div>
+                <div style="font-weight: 700; font-size: 12px; margin-bottom: 4px; color: var(--cream-text);">
+                    <i class="${c.icon}" style="margin-right: 6px; color: var(--gold-primary);"></i> ${c.name}
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
+                    ${c.desc}
+                </div>
+                <button class="btn btn-secondary btn-sm" style="width: 100%; font-size: 10px;" onclick="testSound('${c.name}')">
+                    <i class="fas fa-volume-up"></i> Synthesize Audio
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Render recent events
+    const recentTable = document.getElementById('dashboard-recent-events');
+    if (recentTable && SONIC_DATA) {
+        recentTable.innerHTML = SONIC_DATA.events.slice(0, 5).map(e => `
+            <tr>
+                <td class="font-mono" style="color: var(--gold-light); font-weight: 600;">${e.audioId}</td>
+                <td>
+                    <div style="font-weight: 600; color: var(--cream-text);">${e.pythonClass}</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">${e.timestamp}</div>
+                </td>
+                <td class="font-mono">
+                    <span style="color: var(--gold-light);">${e.pythonConf}%</span> / <span style="color: var(--text-muted);">${e.gtmConf}%</span>
+                </td>
+                <td><span class="badge badge-success">${e.consistency}</span></td>
+                <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
+                <td>
+                    <a href="{{ url_for('audio_analysis') }}" class="btn btn-secondary btn-sm">
+                        Inspect
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Ambient hero canvas wave animation
+    const heroCanvas = document.getElementById('dash-hero-wave');
+    if (heroCanvas) {
+        const ctx = heroCanvas.getContext('2d');
+        let offset = 0;
+        function drawHero() {
+            const w = heroCanvas.width; const h = heroCanvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(214, 168, 79, 0.05)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 30) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+            for (let y = 0; y < h; y += 15) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+            ctx.stroke();
+
+            // Gold wave
+            ctx.strokeStyle = '#D6A84F';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < w; x++) {
+                const y = h/2 + Math.sin(x * 0.03 + offset) * 20 * Math.sin(x * 0.01) + Math.cos(x * 0.06 - offset*0.5) * 8;
+                if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            offset += 0.05;
+            requestAnimationFrame(drawHero);
+        }
+        drawHero();
+    }
+});
+
+function testSound(catName) {
+    const map = {
+        "Gunshot": "gunshot", "Glass Breaking": "glass", "Alarm or Siren": "siren",
+        "Machinery Fault": "machinery", "Panic Scream": "scream", "Person Asking for Help": "help",
+        "Vehicle Horn": "siren", "Animal Sound": "scream", "Aggression or Violent Conflict": "scream", "Background Noise": "background"
+    };
+    const synthType = map[catName] || "background";
+    showToast(`Synthesizing acoustic sample: ${catName}`, 'info');
+    sonicAudio.playSynth(synthType, 2.5);
+}
+
+function runScenario(type, name, sev) {
+    showToast(`Triggering scenario: ${name} (${sev})`, sev.toLowerCase());
+    sonicAudio.playSynth(type, 3.0);
+}
+</script>
+{% endblock %}
