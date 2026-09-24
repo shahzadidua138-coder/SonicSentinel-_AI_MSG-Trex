@@ -224,17 +224,17 @@ class SonicAudioEngine {
         if (onStatus) onStatus("Available");
     }
 
-    drawWaveform(canvas, color = "#D6A84F") {
+    drawWaveform(canvas, color = "#2DD4BF") {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
 
-        ctx.fillStyle = "#09090C";
+        ctx.fillStyle = "#042422";
         ctx.fillRect(0, 0, w, h);
 
         if (!this.analyser) {
-            ctx.strokeStyle = "rgba(214, 168, 79, 0.2)";
+            ctx.strokeStyle = "rgba(45, 212, 191, 0.25)";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(0, h / 2);
@@ -246,7 +246,7 @@ class SonicAudioEngine {
         this.analyser.getByteTimeDomainData(this.timeArray);
 
         // Subtle engineering grid lines
-        ctx.strokeStyle = "rgba(214, 168, 79, 0.04)";
+        ctx.strokeStyle = "rgba(45, 212, 191, 0.08)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         for (let x = 0; x < w; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
@@ -255,6 +255,8 @@ class SonicAudioEngine {
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = color;
+        ctx.shadowColor = "rgba(45, 212, 191, 0.6)";
+        ctx.shadowBlur = 6;
         ctx.beginPath();
         const slice = w * 1.0 / this.bufferLength;
         let x = 0;
@@ -267,6 +269,7 @@ class SonicAudioEngine {
         }
         ctx.lineTo(w, h / 2);
         ctx.stroke();
+        ctx.shadowBlur = 0; // reset shadow
     }
 
     drawSpectrogram(canvas) {
@@ -275,7 +278,7 @@ class SonicAudioEngine {
         const w = canvas.width;
         const h = canvas.height;
 
-        ctx.fillStyle = "#09090C";
+        ctx.fillStyle = "#042422";
         ctx.fillRect(0, 0, w, h);
 
         if (!this.analyser) return;
@@ -288,10 +291,10 @@ class SonicAudioEngine {
             const barH = (this.freqArray[i] / 255) * h;
             const intensity = this.freqArray[i] / 255;
             
-            // Warm Amber/Gold/Bronze heatmap gradient
-            const r = Math.min(255, Math.floor(intensity * 255));
-            const g = Math.min(255, Math.floor(intensity * 185));
-            const b = Math.min(255, Math.floor((1 - intensity) * 80 + 30));
+            // High-tech Teal to Mint/Cyan spectrogram heatmap
+            const r = Math.min(255, Math.floor(intensity * 45));
+            const g = Math.min(255, Math.floor(120 + intensity * 135));
+            const b = Math.min(255, Math.floor(140 + intensity * 115));
 
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
             ctx.fillRect(x, h - barH, barW, barH);
