@@ -17,9 +17,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
 <body class="auth-split-body">
-    <div class="auth-split-container">
+    <!-- Master Floating Curved Frame -->
+    <div class="auth-app-frame">
         
-        <!-- Left Side: Cinematic Luminous Acoustic Security Visual Panel -->
+        <!-- Left Side: Deep Emerald Visual with Topographic Mesh & Crystal Waveform -->
         <div class="auth-left-visual">
             <div class="brand-header">
                 <div class="brand-logo-mark">
@@ -44,7 +45,7 @@
                     Provision verified credentials to interface with real-time multi-sensor arrays, trigger emergency response protocols, and verify dual-model acoustic classifications.
                 </p>
 
-                <!-- Luminous Waveform Card with Sound Wave GIF -->
+                <!-- Crystal Faceted Geometric Waveform Capsule -->
                 <div class="auth-waveform-card">
                     <div class="waveform-card-header">
                         <span class="waveform-indicator">
@@ -53,25 +54,25 @@
                         </span>
                         <span style="font-size: 11px; color: rgba(255, 255, 255, 0.55); font-family: 'JetBrains Mono', monospace;">AES-256 HASHED</span>
                     </div>
-                    <div class="auth-wave-gif-wrap">
-                        <img src="{{ url_for('static', filename='images/sound-wave-waves.gif') }}" alt="Acoustic Sound Waves">
+                    <div class="crystal-wave-canvas-wrap">
+                        <canvas id="crystal-wave-canvas" width="460" height="82"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="auth-left-footer">
                 <div class="footer-pill">
-                    <i class="fas fa-dot-circle"></i>
+                    <i class="fas fa-dot-circle" style="color: #2DD4BF;"></i>
                     <span>Role-Based Access Control</span>
                 </div>
                 <div class="footer-pill">
-                    <i class="fas fa-database"></i>
+                    <i class="fas fa-database" style="color: #2DD4BF;"></i>
                     <span>SQLite Persistent Vault</span>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side: Clean Floating Neumorphic White Card -->
+        <!-- Right Side: Floating Neumorphic White Card -->
         <div class="auth-right-panel">
             <div class="auth-form-card">
                 <div class="auth-form-header">
@@ -97,7 +98,7 @@
                         <label class="input-label" for="full_name">Full Name</label>
                         <div class="input-with-icon">
                             <i class="fas fa-user input-leading-icon"></i>
-                            <input type="text" id="full_name" name="full_name" class="auth-text-input" placeholder="e.g. Officer Marcus Brody" value="{{ full_name or '' }}" required autofocus>
+                            <input type="text" id="full_name" name="full_name" class="auth-text-input" placeholder="e.g. Officer Marcus Brody" value="{{ full_name or '' }}" required>
                         </div>
                     </div>
 
@@ -160,7 +161,7 @@
                         </div>
                     </div>
 
-                    <!-- Submit Button with Glowing Cyan/Teal Gradient -->
+                    <!-- Submit Button -->
                     <button type="submit" class="btn-teal-submit">
                         <i class="fas fa-user-plus"></i>
                         <span>Register Operator Account</span>
@@ -175,7 +176,7 @@
 
     </div>
 
-    <!-- Interactive Scripts -->
+    <!-- Interactive Scripts: Eye Toggle & 3D Crystal Organic Soundwave Renderer -->
     <script>
         function togglePasswordVisibility(fieldId, btn) {
             const input = document.getElementById(fieldId);
@@ -188,6 +189,103 @@
                 icon.className = 'fas fa-eye';
             }
         }
+
+        // Exact Match 3D Crystal Faceted Organic Green Sound Wave Renderer
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('crystal-wave-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let t = 0;
+
+            // Crystal polygonal vertices for wireframe cage
+            const vertices = [
+                {x: 10, y: 40}, {x: 45, y: 15}, {x: 110, y: 10}, {x: 190, y: 14}, 
+                {x: 270, y: 10}, {x: 350, y: 12}, {x: 415, y: 18}, {x: 450, y: 40},
+                {x: 420, y: 68}, {x: 360, y: 72}, {x: 280, y: 74}, {x: 190, y: 70},
+                {x: 110, y: 72}, {x: 45, y: 66}
+            ];
+
+            function animateCrystal() {
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. Draw outer 3D faceted crystal wireframe
+                ctx.strokeStyle = 'rgba(45, 212, 191, 0.22)';
+                ctx.lineWidth = 0.9;
+                ctx.beginPath();
+                ctx.moveTo(vertices[0].x, vertices[0].y);
+                for (let i = 1; i < vertices.length; i++) {
+                    ctx.lineTo(vertices[i].x, vertices[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Facet diagonal cross lines
+                ctx.beginPath();
+                for (let i = 0; i < vertices.length / 2; i++) {
+                    const opposite = vertices.length - 1 - i;
+                    ctx.moveTo(vertices[i].x, vertices[i].y);
+                    ctx.lineTo(vertices[opposite].x, vertices[opposite].y);
+                }
+                ctx.strokeStyle = 'rgba(45, 212, 191, 0.12)';
+                ctx.stroke();
+
+                // Glowing vertex dots
+                for (let i = 0; i < vertices.length; i += 2) {
+                    ctx.fillStyle = 'rgba(94, 234, 212, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(vertices[i].x, vertices[i].y, 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 2. Draw Multi-Layer Organic Emerald/Mint Green Acoustic Sound Wave Ribbon
+                const layers = [
+                    { alpha: 0.35, amp: 22, freq: 0.022, speed: 0.04, color: '#10B981', fill: 'rgba(16, 185, 129, 0.15)' },
+                    { alpha: 0.55, amp: 26, freq: 0.025, speed: 0.035, color: '#14B8A6', fill: 'rgba(20, 184, 166, 0.22)' },
+                    { alpha: 0.95, amp: 28, freq: 0.028, speed: 0.045, color: '#34D399', fill: 'rgba(52, 211, 153, 0.28)' }
+                ];
+
+                layers.forEach((layer, idx) => {
+                    ctx.beginPath();
+                    const startY = h / 2;
+                    ctx.moveTo(15, startY);
+
+                    // Multiple resonant sinusoidal harmonics producing exact 3 organic peaks
+                    for (let x = 15; x <= w - 15; x += 2) {
+                        const env = Math.sin((x / w) * Math.PI); // tapering envelope at boundaries
+                        const y = (h / 2) + 
+                            Math.sin(x * layer.freq + t * layer.speed + idx) * layer.amp * env +
+                            Math.sin(x * 0.05 - t * 0.03) * 6 * env;
+                        ctx.lineTo(x, y);
+                    }
+
+                    // Stroke with glowing green
+                    ctx.strokeStyle = layer.color;
+                    ctx.lineWidth = idx === 2 ? 2.2 : 1.4;
+                    ctx.shadowColor = 'rgba(52, 211, 153, 0.6)';
+                    ctx.shadowBlur = idx === 2 ? 8 : 0;
+                    ctx.stroke();
+
+                    // Translucent bottom gradient fill for ribbon volume
+                    if (idx === 2) {
+                        ctx.lineTo(w - 15, h - 8);
+                        ctx.lineTo(15, h - 8);
+                        ctx.closePath();
+                        const grad = ctx.createLinearGradient(0, h / 2 - 20, 0, h);
+                        grad.addColorStop(0, 'rgba(45, 212, 191, 0.25)');
+                        grad.addColorStop(1, 'rgba(3, 27, 24, 0.0)');
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
+                    ctx.shadowBlur = 0;
+                });
+
+                t += 1;
+                requestAnimationFrame(animateCrystal);
+            }
+            animateCrystal();
+        });
     </script>
 </body>
 </html>

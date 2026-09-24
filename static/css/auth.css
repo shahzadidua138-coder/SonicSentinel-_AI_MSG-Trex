@@ -1,33 +1,34 @@
 /* ==========================================================================
    SonicSentinel AI - Commercial Security Operations Design System
-   Exact Reference Design: Deep Emerald/Teal Canvas & Floating Neumorphic White Card
-   Luminous Mesh Accents, Subtle Inset Shadows & Glowing Cyan-Teal Gradient Actions
+   Exact Reference Design: Floating Curved Frame with Deep Emerald Acoustic Mesh
+   and Floating Neumorphic White Card with Luminous Cyan Accents
    ========================================================================== */
 
 :root {
-    /* Left Dark Emerald/Teal Palette */
-    --auth-dark-bg: #031815;
-    --auth-dark-gradient: linear-gradient(145deg, #021412 0%, #04201C 45%, #062B26 100%);
+    /* Page & Frame Backgrounds */
+    --auth-outer-bg: #EDF2F7;
+    --auth-left-bg: #031C19;
+    --auth-right-bg: #F1F5F9;
+    --auth-card-bg: #FFFFFF;
+
+    /* Left Panel Accents */
     --teal-neon: #2DD4BF;
     --teal-bright: #14B8A6;
     --teal-primary: #0D9488;
-    --teal-deep: #0F766E;
-    --teal-pill-bg: rgba(13, 92, 88, 0.35);
-    --teal-pill-border: rgba(45, 212, 191, 0.3);
+    --teal-pill-bg: rgba(13, 92, 88, 0.4);
+    --teal-pill-border: rgba(45, 212, 191, 0.35);
 
-    /* Right Neumorphic White Canvas Palette */
-    --auth-canvas-bg: #EDF2F7;
-    --auth-card-bg: #FFFFFF;
-    --auth-input-bg: #F1F4F9;
-    --auth-input-border: #E2E8F0;
-    --auth-input-focus: #0D9488;
-    --auth-input-focus-glow: rgba(13, 148, 136, 0.18);
-    
-    --text-heading: #111827;
-    --text-body: #4B5563;
-    --text-muted: #6B7280;
-    --text-light-muted: #9CA3AF;
-    
+    /* Form Card Colors */
+    --text-heading: #0F172A;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --text-light-muted: #94A3B8;
+
+    --input-bg: #F1F5F9;
+    --input-border: #E2E8F0;
+    --input-focus: #0D9488;
+    --input-focus-glow: rgba(13, 148, 136, 0.16);
+
     --err-red: #DC2626;
     --err-bg: rgba(220, 38, 38, 0.08);
     --succ-green: #0D9488;
@@ -41,94 +42,79 @@
 }
 
 body.auth-split-body {
-    background-color: var(--auth-canvas-bg);
-    color: var(--text-body);
+    background-color: var(--auth-outer-bg);
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px 24px;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Split-Screen Container - Seamless Edge-to-Edge Experience */
-.auth-split-container {
+/* Master Floating Curved Frame (Exact Match to Reference Window) */
+.auth-app-frame {
+    width: 100%;
+    max-width: 1240px;
+    min-height: 640px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.03);
     display: flex;
-    width: 100vw;
-    min-height: 100vh;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    animation: frameAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Left Hero Brand Panel - Deep Luminous Dark Emerald/Teal */
+@keyframes frameAppear {
+    from { opacity: 0; transform: scale(0.99); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   Left Panel: Deep Emerald / Dark Teal with Topographic Acoustic Mesh
+   ========================================================================== */
 .auth-left-visual {
     flex: 1.15;
-    background: radial-gradient(circle at 75% 20%, rgba(20, 184, 166, 0.18) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(13, 92, 88, 0.22) 0%, transparent 55%),
-                var(--auth-dark-gradient);
-    border-right: 1px solid rgba(45, 212, 191, 0.15);
+    background-color: var(--auth-left-bg);
+    background-image: 
+        radial-gradient(circle at 85% 20%, rgba(20, 184, 166, 0.16) 0%, transparent 60%),
+        radial-gradient(circle at 15% 85%, rgba(13, 148, 136, 0.12) 0%, transparent 55%),
+        url('/static/images/acoustic-mesh.svg');
+    background-position: top right, bottom left, top right;
+    background-repeat: no-repeat;
+    background-size: cover, cover, 75%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 56px 64px;
+    padding: 44px 52px;
     position: relative;
-    overflow: hidden;
     color: #FFFFFF;
-}
-
-/* Luminous acoustic sound mesh overlay */
-.auth-left-visual::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(rgba(45, 212, 191, 0.1) 1px, transparent 1px);
-    background-size: 28px 28px;
-    opacity: 0.45;
-    pointer-events: none;
-}
-
-.auth-left-visual::after {
-    content: '';
-    position: absolute;
-    top: -30%;
-    right: -20%;
-    width: 550px;
-    height: 550px;
-    background: radial-gradient(circle, rgba(45, 212, 191, 0.12) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%);
-    pointer-events: none;
-    border-radius: 50%;
-    filter: blur(40px);
+    border-right: 1px solid rgba(45, 212, 191, 0.12);
 }
 
 /* Brand Header */
 .brand-header {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     z-index: 2;
 }
 
 .brand-logo-mark {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #062F2A, #021815);
-    border: 1.8px solid var(--teal-neon);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #052924, #021714);
+    border: 1.6px solid var(--teal-neon);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--teal-neon);
-    font-size: 22px;
-    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4), inset 0 0 10px rgba(45, 212, 191, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.brand-logo-mark:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 26px rgba(45, 212, 191, 0.55);
+    font-size: 20px;
+    box-shadow: 0 0 18px rgba(45, 212, 191, 0.38), inset 0 0 8px rgba(45, 212, 191, 0.2);
 }
 
 .brand-title-group {
@@ -137,57 +123,57 @@ body.auth-split-body {
 }
 
 .brand-main-title {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: #FFFFFF;
 }
 
 .brand-subtitle-tag {
-    font-size: 10.5px;
+    font-size: 10px;
     color: var(--teal-neon);
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Hero Center Content */
 .auth-hero-center {
     z-index: 2;
-    margin: 40px 0;
-    max-width: 520px;
+    margin: 28px 0;
+    max-width: 490px;
 }
 
 /* Small Pill Badge */
-.security-badge, .auth-pill-badge {
+.auth-pill-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 16px;
+    padding: 5px 14px;
     border-radius: 30px;
     background: var(--teal-pill-bg);
     border: 1px solid var(--teal-pill-border);
     color: var(--teal-neon);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-bottom: 22px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 18px;
+    backdrop-filter: blur(8px);
 }
 
-.security-badge i, .auth-pill-badge i {
-    font-size: 12px;
+.auth-pill-badge i {
+    font-size: 11px;
 }
 
-/* Heading with Vibrant Cyan Gradient */
+/* Heading with Luminous Gradient */
 .auth-hero-heading {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 800;
     line-height: 1.25;
     color: #FFFFFF;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     letter-spacing: -0.02em;
 }
 
@@ -200,43 +186,45 @@ body.auth-split-body {
 }
 
 .auth-hero-desc {
-    font-size: 13.5px;
-    color: rgba(255, 255, 255, 0.76);
-    line-height: 1.65;
-    margin-bottom: 28px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.74);
+    line-height: 1.6;
+    margin-bottom: 24px;
 }
 
-/* Translucent Glass Waveform Card */
+/* Crystal Geometric Faceted Waveform Capsule (Reference Match) */
 .auth-waveform-card {
-    background: rgba(3, 27, 24, 0.72);
+    background: rgba(3, 27, 24, 0.75);
     backdrop-filter: blur(12px);
-    border: 1.5px solid rgba(45, 212, 191, 0.28);
+    border: 1.4px solid rgba(45, 212, 191, 0.28);
     border-radius: 18px;
-    padding: 16px 20px;
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    padding: 14px 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
 }
 
 .waveform-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .waveform-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     color: var(--teal-neon);
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
 }
 
-.pulse-teal-dot, .pulse-gold-dot {
-    width: 8px;
-    height: 8px;
+.pulse-teal-dot {
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--teal-neon);
     box-shadow: 0 0 10px var(--teal-neon);
@@ -245,28 +233,24 @@ body.auth-split-body {
 
 @keyframes tealPulse {
     0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7); }
-    70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(45, 212, 191, 0); }
+    70% { transform: scale(1.15); box-shadow: 0 0 0 7px rgba(45, 212, 191, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
 }
 
-.auth-wave-gif-wrap {
+.crystal-wave-canvas-wrap {
     width: 100%;
-    height: 80px;
-    border-radius: 10px;
+    height: 82px;
+    border-radius: 12px;
+    position: relative;
     overflow: hidden;
-    background: #021815;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(45, 212, 191, 0.25);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    background: #021714;
+    border: 1px solid rgba(45, 212, 191, 0.22);
 }
 
-.auth-wave-gif-wrap img {
+.crystal-wave-canvas-wrap canvas {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    filter: brightness(1.08) contrast(1.18);
+    display: block;
 }
 
 /* Footer Telemetry Badges */
@@ -281,62 +265,55 @@ body.auth-split-body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 15px;
+    padding: 6px 14px;
     background: rgba(3, 27, 24, 0.65);
     border: 1px solid rgba(45, 212, 191, 0.22);
     border-radius: 10px;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
 }
 
 .footer-pill i {
     color: var(--teal-neon);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 /* ==========================================================================
-   Right Panel: Floating Neumorphic White Card on Light Gray/Ice Canvas
+   Right Panel: Soft Ice-Gray Background with Floating White Card
    ========================================================================== */
-
 .auth-right-panel {
     flex: 1;
-    background: var(--auth-canvas-bg);
+    background: var(--auth-right-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 32px 36px;
     position: relative;
 }
 
 /* Floating Clean White Card */
 .auth-form-card {
     width: 100%;
-    max-width: 480px;
+    max-width: 470px;
     background: var(--auth-card-bg);
-    border-radius: 24px;
-    padding: 42px 44px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes cardAppear {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    border-radius: 22px;
+    padding: 34px 38px;
+    box-shadow: 0 16px 45px rgba(15, 23, 42, 0.06), 0 3px 10px rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .auth-form-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .auth-form-title {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--text-heading);
     letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .auth-form-subtitle {
@@ -347,10 +324,10 @@ body.auth-split-body {
 
 /* Flash Messages */
 .auth-flash-alert {
-    padding: 11px 15px;
+    padding: 10px 14px;
     border-radius: 10px;
     font-size: 12px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -366,17 +343,17 @@ body.auth-split-body {
     color: var(--teal-primary);
 }
 
-/* Neumorphic / Soft Sunken Input Fields */
+/* Form Layout & Neumorphic Soft Sunken Inputs */
 .input-field-group {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .input-label {
     display: block;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-heading);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     letter-spacing: -0.01em;
 }
 
@@ -388,9 +365,9 @@ body.auth-split-body {
 
 .input-leading-icon {
     position: absolute;
-    left: 14px;
+    left: 13px;
     color: var(--text-light-muted);
-    font-size: 14px;
+    font-size: 13px;
     pointer-events: none;
     transition: color 0.2s ease;
 }
@@ -399,26 +376,26 @@ body.auth-split-body {
     color: var(--teal-primary);
 }
 
-/* Neumorphic Input Style from Reference Image */
+/* Soft Sunken Input (Exact Match: No Harsh Border, Soft Gray Inset) */
 .auth-text-input {
     width: 100%;
-    height: 48px;
-    background: var(--auth-input-bg);
-    border: 1.5px solid var(--auth-input-border);
-    border-radius: 12px;
-    padding: 0 42px 0 40px;
-    font-size: 13.5px;
-    color: var(--text-heading);
+    height: 45px;
+    background: var(--input-bg);
+    border: 1.2px solid var(--input-border);
+    border-radius: 11px;
+    padding: 0 38px 0 38px;
+    font-size: 13px;
+    color: var(--text-body);
     font-family: inherit;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.035);
+    box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.035);
     transition: all 0.2s ease;
 }
 
 .auth-text-input:focus {
     outline: none;
     background: #FFFFFF;
-    border-color: var(--auth-input-focus);
-    box-shadow: 0 0 0 3.5px var(--auth-input-focus-glow);
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px var(--input-focus-glow);
 }
 
 .auth-text-input::placeholder {
@@ -429,32 +406,32 @@ body.auth-split-body {
 select.auth-text-input {
     appearance: none;
     cursor: pointer;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 15px;
+    background-position: right 13px center;
+    background-size: 14px;
 }
 
-/* Inside Password Toggle Eye Button with Mint Accent */
+/* Circular Mint Pill Eye Toggle Button */
 .password-eye-btn {
     position: absolute;
     right: 10px;
-    background: rgba(13, 148, 136, 0.08);
-    border: 1px solid rgba(13, 148, 136, 0.2);
-    color: var(--teal-primary);
+    background: #D1FAE5;
+    border: none;
+    color: #0D9488;
     cursor: pointer;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     transition: all 0.2s ease;
 }
 
 .password-eye-btn:hover {
-    background: var(--teal-primary);
+    background: #0D9488;
     color: #FFFFFF;
     transform: scale(1.08);
 }
@@ -464,64 +441,64 @@ select.auth-text-input {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 18px 0 22px;
-    font-size: 12.5px;
+    margin: 14px 0 18px;
+    font-size: 12px;
 }
 
 .custom-checkbox-wrap {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     cursor: pointer;
     color: var(--text-body);
 }
 
 .custom-checkbox-wrap input[type="checkbox"] {
     accent-color: var(--teal-primary);
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     cursor: pointer;
 }
 
-.teal-link, .gold-link {
+.teal-link {
     color: var(--teal-primary);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s ease;
 }
 
-.teal-link:hover, .gold-link:hover {
-    color: var(--teal-deep);
+.teal-link:hover {
+    color: #0F766E;
     text-decoration: underline;
 }
 
-/* Vibrant Glowing Cyan-Teal Action Button (Exact Reference Match) */
-.btn-teal-submit, .btn-gold-submit {
+/* Luminous Cyan-Teal Action Button (Exact Reference Match) */
+.btn-teal-submit {
     width: 100%;
-    height: 50px;
+    height: 48px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #0D9488 0%, #14B8A6 60%, #06B6D4 100%);
+    background: linear-gradient(90deg, #0D9488 0%, #14B8A6 50%, #2DD4BF 100%);
     color: #FFFFFF;
-    font-size: 14.5px;
+    font-size: 14px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.45);
+    box-shadow: 0 10px 26px rgba(20, 184, 166, 0.45);
     transition: all 0.25s ease;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
-.btn-teal-submit:hover, .btn-gold-submit:hover {
-    background: linear-gradient(135deg, #0F766E 0%, #0D9488 60%, #0891B2 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(20, 184, 166, 0.6);
+.btn-teal-submit:hover {
+    background: linear-gradient(90deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 14px 30px rgba(20, 184, 166, 0.55);
 }
 
-.btn-teal-submit:active, .btn-gold-submit:active {
+.btn-teal-submit:active {
     transform: translateY(0);
     box-shadow: 0 4px 14px rgba(20, 184, 166, 0.35);
 }
@@ -531,11 +508,11 @@ select.auth-text-input {
     background: #F0FDF9;
     border: 1px solid rgba(20, 184, 166, 0.25);
     border-radius: 10px;
-    padding: 12px 14px;
-    margin-top: 20px;
-    font-size: 11.5px;
-    line-height: 1.6;
-    color: var(--teal-deep);
+    padding: 10px 13px;
+    margin-top: 16px;
+    font-size: 11px;
+    line-height: 1.55;
+    color: #0F766E;
 }
 
 .credentials-hint-card strong {
@@ -545,28 +522,30 @@ select.auth-text-input {
 
 .auth-switch-prompt {
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
-    margin-top: 22px;
+    margin-top: 18px;
 }
 
-/* Two Column Layout Helper for Username / Role & Password / Confirm */
+/* 2-Column Row */
 .grid-inputs-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-/* Responsive Breakpoints */
+/* Responsive */
 @media (max-width: 1024px) {
+    .auth-app-frame {
+        flex-direction: column;
+    }
     .auth-left-visual {
         display: none;
     }
     .auth-right-panel {
-        flex: 1;
         padding: 24px 16px;
     }
     .auth-form-card {
-        padding: 32px 24px;
+        padding: 28px 22px;
     }
 }
