@@ -30,9 +30,9 @@
         </div>
 
         <div>
-            <div class="canvas-panel" style="height: 130px; border-color: var(--gold-border);">
-                <canvas id="dash-hero-wave" width="540" height="130"></canvas>
-                <div class="canvas-tag">LIVE ACOUSTIC RESIDUALS</div>
+            <div class="canvas-panel" style="height: 130px; border-color: rgba(45, 212, 191, 0.35); background: #042422; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(4, 36, 34, 0.25);">
+                <img src="{{ url_for('static', filename='images/sound-wave-waves.gif') }}" alt="Live Acoustic Waves" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(1.08) contrast(1.15);">
+                <div class="canvas-tag" style="background: rgba(4, 36, 34, 0.9); border: 1px solid rgba(45, 212, 191, 0.35); color: #2DD4BF;">LIVE ACOUSTIC RESIDUALS</div>
             </div>
         </div>
     </div>
@@ -197,38 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             </tr>
         `).join('');
-    }
-
-    // Ambient hero canvas wave animation
-    const heroCanvas = document.getElementById('dash-hero-wave');
-    if (heroCanvas) {
-        const ctx = heroCanvas.getContext('2d');
-        let offset = 0;
-        function drawHero() {
-            const w = heroCanvas.width; const h = heroCanvas.height;
-            ctx.clearRect(0, 0, w, h);
-
-            // Subtle grid
-            ctx.strokeStyle = 'rgba(214, 168, 79, 0.05)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for (let x = 0; x < w; x += 30) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-            for (let y = 0; y < h; y += 15) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-            ctx.stroke();
-
-            // Gold wave
-            ctx.strokeStyle = '#D6A84F';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            for (let x = 0; x < w; x++) {
-                const y = h/2 + Math.sin(x * 0.03 + offset) * 20 * Math.sin(x * 0.01) + Math.cos(x * 0.06 - offset*0.5) * 8;
-                if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-            offset += 0.05;
-            requestAnimationFrame(drawHero);
-        }
-        drawHero();
     }
 });
 

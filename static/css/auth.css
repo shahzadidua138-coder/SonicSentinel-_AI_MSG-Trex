@@ -1,41 +1,37 @@
 /* ==========================================================================
    SonicSentinel AI - Commercial Security Operations Design System
-   Theme: Luxury Dark Teal Green (#062F2C, #0D5C56) & Crisp White (#FFFFFF)
-   Interactive Split-Screen Auth Engine with Micro-Animations & Glow Effects
+   Exact Reference Design: Deep Emerald/Teal Canvas & Floating Neumorphic White Card
+   Luminous Mesh Accents, Subtle Inset Shadows & Glowing Cyan-Teal Gradient Actions
    ========================================================================== */
 
 :root {
-    /* Dark Teal Green Palette */
-    --teal-deep: #042422;
-    --teal-dark: #062F2C;
-    --teal-mid: #0D5C56;
-    --teal-primary: #0F766E;
-    --teal-hover: #115E59;
-    --teal-accent: #0D9488;
+    /* Left Dark Emerald/Teal Palette */
+    --auth-dark-bg: #031815;
+    --auth-dark-gradient: linear-gradient(145deg, #021412 0%, #04201C 45%, #062B26 100%);
+    --teal-neon: #2DD4BF;
     --teal-bright: #14B8A6;
-    --teal-mint: #2DD4BF;
-    --teal-subtle: rgba(13, 92, 88, 0.08);
-    --teal-border: rgba(13, 92, 88, 0.22);
-    --teal-glow: rgba(20, 184, 166, 0.35);
+    --teal-primary: #0D9488;
+    --teal-deep: #0F766E;
+    --teal-pill-bg: rgba(13, 92, 88, 0.35);
+    --teal-pill-border: rgba(45, 212, 191, 0.3);
 
-    /* Crisp White & Light Canvas */
-    --auth-bg-base: #F0FDF9;
-    --auth-bg-panel: #FFFFFF;
-    --auth-bg-card: #FFFFFF;
-    --auth-bg-input: #F8FCFB;
+    /* Right Neumorphic White Canvas Palette */
+    --auth-canvas-bg: #EDF2F7;
+    --auth-card-bg: #FFFFFF;
+    --auth-input-bg: #F1F4F9;
+    --auth-input-border: #E2E8F0;
+    --auth-input-focus: #0D9488;
+    --auth-input-focus-glow: rgba(13, 148, 136, 0.18);
     
-    --text-primary: #062E2B;
-    --text-secondary: #2C5753;
-    --text-muted: #5B827E;
-    --text-dim: #8BA8A5;
+    --text-heading: #111827;
+    --text-body: #4B5563;
+    --text-muted: #6B7280;
+    --text-light-muted: #9CA3AF;
     
-    --border-light: rgba(13, 92, 88, 0.14);
-    --border-subtle: rgba(13, 92, 88, 0.08);
-
     --err-red: #DC2626;
-    --err-bg: rgba(220, 38, 38, 0.1);
+    --err-bg: rgba(220, 38, 38, 0.08);
     --succ-green: #0D9488;
-    --succ-bg: rgba(13, 148, 136, 0.1);
+    --succ-bg: rgba(13, 148, 136, 0.08);
 }
 
 * {
@@ -45,35 +41,31 @@
 }
 
 body.auth-split-body {
-    background-color: var(--auth-bg-base);
-    color: var(--text-primary);
+    background-color: var(--auth-canvas-bg);
+    color: var(--text-body);
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     display: flex;
+    align-items: center;
+    justify-content: center;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Split-Screen Container with Entrance Animation */
+/* Split-Screen Container - Seamless Edge-to-Edge Experience */
 .auth-split-container {
     display: flex;
-    width: 100%;
+    width: 100vw;
     min-height: 100vh;
-    animation: fadeInContainer 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fadeInContainer {
-    from { opacity: 0; transform: scale(0.995); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Left Hero Brand Panel - Luxurious Dark Teal */
+/* Left Hero Brand Panel - Deep Luminous Dark Emerald/Teal */
 .auth-left-visual {
     flex: 1.15;
-    background: radial-gradient(circle at 25% 25%, rgba(20, 184, 166, 0.16) 0%, transparent 60%),
-                radial-gradient(circle at 85% 85%, rgba(13, 92, 88, 0.25) 0%, transparent 55%),
-                linear-gradient(145deg, #042422 0%, #062F2C 50%, #083835 100%);
-    border-right: 1px solid rgba(20, 184, 166, 0.18);
+    background: radial-gradient(circle at 75% 20%, rgba(20, 184, 166, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(13, 92, 88, 0.22) 0%, transparent 55%),
+                var(--auth-dark-gradient);
+    border-right: 1px solid rgba(45, 212, 191, 0.15);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -83,7 +75,8 @@ body.auth-split-body {
     color: #FFFFFF;
 }
 
-.auth-left-visual::after {
+/* Luminous acoustic sound mesh overlay */
+.auth-left-visual::before {
     content: '';
     position: absolute;
     top: 0;
@@ -91,43 +84,51 @@ body.auth-split-body {
     right: 0;
     bottom: 0;
     background-image: 
-        linear-gradient(rgba(20, 184, 166, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
+        radial-gradient(rgba(45, 212, 191, 0.1) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
     pointer-events: none;
 }
 
+.auth-left-visual::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 550px;
+    height: 550px;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.12) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(40px);
+}
+
+/* Brand Header */
 .brand-header {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     z-index: 2;
-    animation: slideDown 0.6s ease-out;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
 }
 
 .brand-logo-mark {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0D5C56, #042422);
-    border: 1px solid rgba(45, 212, 191, 0.35);
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #062F2A, #021815);
+    border: 1.8px solid var(--teal-neon);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--teal-mint);
+    color: var(--teal-neon);
     font-size: 22px;
-    box-shadow: 0 4px 20px rgba(4, 36, 34, 0.6), 0 0 15px rgba(20, 184, 166, 0.25);
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4), inset 0 0 10px rgba(45, 212, 191, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .brand-logo-mark:hover {
-    transform: rotate(5deg) scale(1.05);
-    box-shadow: 0 6px 24px rgba(20, 184, 166, 0.4);
+    transform: scale(1.05);
+    box-shadow: 0 0 26px rgba(45, 212, 191, 0.55);
 }
 
 .brand-title-group {
@@ -140,15 +141,15 @@ body.auth-split-body {
     font-weight: 800;
     letter-spacing: -0.02em;
     color: #FFFFFF;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .brand-subtitle-tag {
-    font-size: 11px;
-    color: var(--teal-mint);
+    font-size: 10.5px;
+    color: var(--teal-neon);
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    font-weight: 600;
 }
 
 /* Hero Center Content */
@@ -156,33 +157,33 @@ body.auth-split-body {
     z-index: 2;
     margin: 40px 0;
     max-width: 520px;
-    animation: fadeInUp 0.7s ease-out;
 }
 
-@keyframes fadeInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.security-badge {
+/* Small Pill Badge */
+.security-badge, .auth-pill-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(20, 184, 166, 0.12);
-    border: 1px solid rgba(45, 212, 191, 0.3);
-    color: var(--teal-mint);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    padding: 6px 16px;
+    border-radius: 30px;
+    background: var(--teal-pill-bg);
+    border: 1px solid var(--teal-pill-border);
+    color: var(--teal-neon);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     margin-bottom: 22px;
-    box-shadow: 0 2px 10px rgba(4, 36, 34, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+.security-badge i, .auth-pill-badge i {
+    font-size: 12px;
+}
+
+/* Heading with Vibrant Cyan Gradient */
 .auth-hero-heading {
-    font-size: 34px;
+    font-size: 36px;
     font-weight: 800;
     line-height: 1.25;
     color: #FFFFFF;
@@ -191,41 +192,35 @@ body.auth-split-body {
 }
 
 .auth-hero-heading span {
-    color: var(--teal-mint);
     display: block;
-    background: linear-gradient(135deg, #2DD4BF, #5EEAD4);
+    color: var(--teal-neon);
+    background: linear-gradient(135deg, #2DD4BF 0%, #34D399 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .auth-hero-desc {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.78);
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.76);
     line-height: 1.65;
-    margin-bottom: 30px;
+    margin-bottom: 28px;
 }
 
-/* Subtle Animated Waveform Card */
+/* Translucent Glass Waveform Card */
 .auth-waveform-card {
-    background: rgba(6, 47, 44, 0.7);
+    background: rgba(3, 27, 24, 0.72);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(45, 212, 191, 0.25);
-    border-radius: 14px;
+    border: 1.5px solid rgba(45, 212, 191, 0.28);
+    border-radius: 18px;
     padding: 16px 20px;
-    box-shadow: 0 8px 32px rgba(4, 36, 34, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.auth-waveform-card:hover {
-    border-color: rgba(45, 212, 191, 0.45);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .waveform-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .waveform-indicator {
@@ -234,17 +229,17 @@ body.auth-split-body {
     gap: 8px;
     font-size: 11px;
     font-weight: 700;
-    color: var(--teal-mint);
+    color: var(--teal-neon);
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
 }
 
 .pulse-teal-dot, .pulse-gold-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--teal-mint);
-    box-shadow: 0 0 10px var(--teal-mint);
+    background: var(--teal-neon);
+    box-shadow: 0 0 10px var(--teal-neon);
     animation: tealPulse 1.8s infinite;
 }
 
@@ -254,11 +249,24 @@ body.auth-split-body {
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
 }
 
-.auth-wave-canvas {
+.auth-wave-gif-wrap {
     width: 100%;
-    height: 70px;
-    display: block;
-    border-radius: 8px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #021815;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(45, 212, 191, 0.25);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.auth-wave-gif-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.08) contrast(1.18);
 }
 
 /* Footer Telemetry Badges */
@@ -273,110 +281,103 @@ body.auth-split-body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 14px;
-    background: rgba(6, 47, 44, 0.6);
-    border: 1px solid rgba(45, 212, 191, 0.2);
-    border-radius: 8px;
+    padding: 7px 15px;
+    background: rgba(3, 27, 24, 0.65);
+    border: 1px solid rgba(45, 212, 191, 0.22);
+    border-radius: 10px;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(8px);
 }
 
 .footer-pill i {
-    color: var(--teal-mint);
+    color: var(--teal-neon);
+    font-size: 12px;
 }
 
-/* Right Form Panel - Crisp Clean White with Luxury Dark Teal Accents */
+/* ==========================================================================
+   Right Panel: Floating Neumorphic White Card on Light Gray/Ice Canvas
+   ========================================================================== */
+
 .auth-right-panel {
     flex: 1;
-    background: #FFFFFF;
+    background: var(--auth-canvas-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 48px;
+    padding: 40px;
     position: relative;
-    box-shadow: -8px 0 32px rgba(6, 47, 44, 0.04);
 }
 
+/* Floating Clean White Card */
 .auth-form-card {
     width: 100%;
-    max-width: 440px;
-    animation: formCardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    max-width: 480px;
+    background: var(--auth-card-bg);
+    border-radius: 24px;
+    padding: 42px 44px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes formCardEntrance {
-    from { opacity: 0; transform: translateX(25px); }
-    to { opacity: 1; transform: translateX(0); }
+@keyframes cardAppear {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .auth-form-header {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
 
 .auth-form-title {
     font-size: 26px;
     font-weight: 800;
-    color: var(--teal-dark);
+    color: var(--text-heading);
     letter-spacing: -0.02em;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .auth-form-subtitle {
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-muted);
     line-height: 1.5;
 }
 
-/* Form Alert Boxes */
+/* Flash Messages */
 .auth-flash-alert {
-    padding: 12px 16px;
+    padding: 11px 15px;
     border-radius: 10px;
     font-size: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
-    line-height: 1.4;
-    animation: shakeAlert 0.4s ease;
 }
-
-@keyframes shakeAlert {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-}
-
 .auth-flash-alert.error {
-    background: rgba(220, 38, 38, 0.08);
+    background: var(--err-bg);
     border: 1px solid rgba(220, 38, 38, 0.25);
     color: var(--err-red);
 }
-
 .auth-flash-alert.success {
-    background: rgba(13, 148, 136, 0.08);
+    background: var(--succ-bg);
     border: 1px solid rgba(13, 148, 136, 0.25);
     color: var(--teal-primary);
 }
 
-.auth-flash-alert.info, .auth-flash-alert.warning {
-    background: rgba(13, 92, 88, 0.08);
-    border: 1px solid rgba(13, 92, 88, 0.25);
-    color: var(--teal-dark);
-}
-
-/* Input Fields with Dark Teal Leading Icons & Crisp White Surfaces */
+/* Neumorphic / Soft Sunken Input Fields */
 .input-field-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .input-label {
     display: block;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 600;
-    color: var(--teal-dark);
-    margin-bottom: 7px;
-    letter-spacing: 0.01em;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
 }
 
 .input-with-icon {
@@ -387,65 +388,75 @@ body.auth-split-body {
 
 .input-leading-icon {
     position: absolute;
-    left: 15px;
-    color: var(--teal-primary);
+    left: 14px;
+    color: var(--text-light-muted);
     font-size: 14px;
     pointer-events: none;
-    transition: color 0.2s ease, transform 0.2s ease;
+    transition: color 0.2s ease;
 }
 
+.input-with-icon:focus-within .input-leading-icon {
+    color: var(--teal-primary);
+}
+
+/* Neumorphic Input Style from Reference Image */
 .auth-text-input {
     width: 100%;
     height: 48px;
-    background: #FAFCFB;
-    border: 1.5px solid rgba(13, 92, 88, 0.2);
-    border-radius: 10px;
-    padding: 0 44px 0 42px;
+    background: var(--auth-input-bg);
+    border: 1.5px solid var(--auth-input-border);
+    border-radius: 12px;
+    padding: 0 42px 0 40px;
     font-size: 13.5px;
-    color: var(--text-primary);
+    color: var(--text-heading);
     font-family: inherit;
-    transition: all 0.25s ease;
-    box-shadow: inset 0 1px 2px rgba(6, 47, 44, 0.02);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.035);
+    transition: all 0.2s ease;
 }
 
 .auth-text-input:focus {
     outline: none;
     background: #FFFFFF;
-    border-color: var(--teal-primary);
-    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
-}
-
-.input-with-icon:focus-within .input-leading-icon {
-    color: var(--teal-accent);
-    transform: scale(1.08);
+    border-color: var(--auth-input-focus);
+    box-shadow: 0 0 0 3.5px var(--auth-input-focus-glow);
 }
 
 .auth-text-input::placeholder {
-    color: #9CA3AF;
+    color: var(--text-light-muted);
     font-weight: 400;
 }
 
-/* Inside Password Toggle Eye Button */
+select.auth-text-input {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 15px;
+}
+
+/* Inside Password Toggle Eye Button with Mint Accent */
 .password-eye-btn {
     position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
+    right: 10px;
+    background: rgba(13, 148, 136, 0.08);
+    border: 1px solid rgba(13, 148, 136, 0.2);
     color: var(--teal-primary);
     cursor: pointer;
-    font-size: 14px;
-    padding: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+    font-size: 12px;
+    transition: all 0.2s ease;
 }
 
 .password-eye-btn:hover {
-    color: var(--teal-deep);
-    background-color: rgba(20, 184, 166, 0.12);
-    transform: scale(1.1);
+    background: var(--teal-primary);
+    color: #FFFFFF;
+    transform: scale(1.08);
 }
 
 /* Helper Row: Remember Me & Forgot Password */
@@ -453,7 +464,7 @@ body.auth-split-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin: 18px 0 22px;
     font-size: 12.5px;
 }
 
@@ -462,99 +473,88 @@ body.auth-split-body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: var(--text-secondary);
-    user-select: none;
+    color: var(--text-body);
 }
 
 .custom-checkbox-wrap input[type="checkbox"] {
     accent-color: var(--teal-primary);
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     cursor: pointer;
 }
 
-.gold-link, .teal-link {
+.teal-link, .gold-link {
     color: var(--teal-primary);
     text-decoration: none;
     font-weight: 600;
-    transition: color 0.2s ease, text-decoration 0.2s ease;
+    transition: color 0.2s ease;
 }
 
-.gold-link:hover, .teal-link:hover {
+.teal-link:hover, .gold-link:hover {
     color: var(--teal-deep);
     text-decoration: underline;
 }
 
-/* Primary Dark Teal Action Button with Micro-Glow & Shimmer Animation */
-.btn-gold-submit, .btn-teal-submit {
+/* Vibrant Glowing Cyan-Teal Action Button (Exact Reference Match) */
+.btn-teal-submit, .btn-gold-submit {
     width: 100%;
-    height: 48px;
+    height: 50px;
     border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #0D5C56 0%, #0F766E 60%, #115E59 100%);
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0D9488 0%, #14B8A6 60%, #06B6D4 100%);
     color: #FFFFFF;
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     cursor: pointer;
-    box-shadow: 0 4px 18px rgba(13, 92, 88, 0.35);
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.45);
     transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
+    margin-top: 10px;
 }
 
-.btn-gold-submit::after, .btn-teal-submit::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-    transform: skewX(-20deg);
-    transition: left 0.6s ease;
-}
-
-.btn-gold-submit:hover, .btn-teal-submit:hover {
-    background: linear-gradient(135deg, #0A4A45 0%, #0D5C56 60%, #0A4A45 100%);
+.btn-teal-submit:hover, .btn-gold-submit:hover {
+    background: linear-gradient(135deg, #0F766E 0%, #0D9488 60%, #0891B2 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 22px rgba(13, 92, 88, 0.45);
+    box-shadow: 0 12px 30px rgba(20, 184, 166, 0.6);
 }
 
-.btn-gold-submit:hover::after, .btn-teal-submit:hover::after {
-    left: 150%;
-}
-
-.btn-gold-submit:active, .btn-teal-submit:active {
+.btn-teal-submit:active, .btn-gold-submit:active {
     transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(13, 92, 88, 0.3);
+    box-shadow: 0 4px 14px rgba(20, 184, 166, 0.35);
 }
 
-/* Pre-Configured Demo Credentials Hint Box */
+/* Demo Credentials Hint Box */
 .credentials-hint-card {
-    background: #F0FDF4;
-    border: 1px solid rgba(13, 148, 136, 0.25);
+    background: #F0FDF9;
+    border: 1px solid rgba(20, 184, 166, 0.25);
     border-radius: 10px;
-    padding: 14px 16px;
-    margin-top: 24px;
+    padding: 12px 14px;
+    margin-top: 20px;
     font-size: 11.5px;
     line-height: 1.6;
-    color: var(--teal-dark);
+    color: var(--teal-deep);
 }
 
 .credentials-hint-card strong {
-    color: var(--teal-deep);
+    color: #064E3B;
     font-family: 'JetBrains Mono', monospace;
 }
 
 .auth-switch-prompt {
     text-align: center;
     font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 24px;
+    color: var(--text-muted);
+    margin-top: 22px;
+}
+
+/* Two Column Layout Helper for Username / Role & Password / Confirm */
+.grid-inputs-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
 }
 
 /* Responsive Breakpoints */
@@ -564,7 +564,9 @@ body.auth-split-body {
     }
     .auth-right-panel {
         flex: 1;
+        padding: 24px 16px;
+    }
+    .auth-form-card {
         padding: 32px 24px;
-        background: #FFFFFF;
     }
 }
