@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Audio Analysis & Model Comparison{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Forensic Audio Analysis & Model Studio</h1>
+        <p class="page-subtitle">Deep dive acoustic inspection comparing Python CNN and Google Teachable Machine (GTM) predictions.</p>
+    </div>
+    <div class="page-actions-row">
+        <select id="analysis-event-select" style="min-width: 240px;" onchange="loadEventDetails(this.value)">
+            <!-- Populated via JS -->
+        </select>
+        <a href="{{ url_for('reports') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-file-invoice"></i> View Report
+        </a>
+    </div>
+</div>
+
+<!-- Metadata Breakdown -->
+<div class="card-panel">
+    <div class="grid-4" id="analysis-meta-grid">
+        <!-- Populated via JS -->
+    </div>
+</div>
+
+<!-- Interactive Audio Scrubber Bar -->
+<div class="card-panel" style="padding: 12px 18px; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="btn btn-primary btn-sm" id="analysis-play-btn" onclick="togglePlayback()">
+            <i class="fas fa-play" id="analysis-play-icon"></i>
+        </button>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-family: 'JetBrains Mono', monospace;">
+                <span id="play-time-curr">0:00</span>
+                <span id="play-file-name" style="font-weight: 600;">facility_east_wing_gunshot_01.wav</span>
+                <span id="play-time-total">0:03</span>
+            </div>
+            <input type="range" id="play-scrubber" min="0" max="100" value="0" style="width: 100%; accent-color: var(--text-accent);">
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-volume-up text-muted"></i>
+            <input type="range" min="0" max="1" step="0.05" value="0.7" style="width: 70px;" onchange="sonicAudio.setVolume(this.value)">
+        </div>
+    </div>
+</div>
+
+<!-- Waveform and Spectrogram Static Forensic Canvases -->
+<div class="grid-2" style="margin-bottom: 20px;">
+    <div class="card-panel" style="margin-bottom: 0;">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-wave-square"></i> Static Waveform Profile</span>
+            <span class="badge badge-info font-mono">24-bit • 44.1 kHz</span>
+        </div>
+        <div class="canvas-panel" style="height: 180px;">
+            <canvas id="analysis-wave-canvas" width="600" height="180"></canvas>
+            <div class="canvas-tag">AMPLITUDE ENVELOPE</div>
+        </div>
+    </div>
+
+    <div class="card-panel" style="margin-bottom: 0;">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-chart-area"></i> Mel-Spectrogram Heatmap</span>
+            <span class="badge badge-info font-mono">128 Mel Bands</span>
+        </div>
+        <div class="canvas-panel" style="height: 180px;">
+            <canvas id="analysis-spec-canvas" width="600" height="180"></canvas>
+            <div class="canvas-tag">SPECTRAL FREQUENCY DENSITY</div>
+        </div>
+    </div>
+</div>
+
+<!-- Dual Model Predictions & Top-3 Rankings -->
+<div class="grid-2" style="margin-bottom: 20px;">
+    <!-- Python Model -->
+    <div class="card-panel" style="border-top: 3px solid var(--text-accent);">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fab fa-python" style="color: var(--text-accent);"></i> Python CNN Model</span>
+            <span class="badge badge-success">Target: &gt; 85% Recall</span>
+        </div>
+        <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px;" class="font-mono" id="an-py-top">
+            Gunshot (96.4%)
+        </div>
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Top-3 Predictions (SRS Step 11)</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;" id="an-py-top3">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+
+    <!-- GTM Model -->
+    <div class="card-panel" style="border-top: 3px solid #a855f7;">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-brain" style="color: #a855f7;"></i> Google Teachable Machine</span>
+            <span class="badge badge-info">Independent Validation</span>
+        </div>
+        <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #c084fc;" class="font-mono" id="an-gtm-top">
+            Gunshot (94.8%)
+        </div>
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Top-3 Predictions (SRS Step 11)</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;" id="an-gtm-top3">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- 10-Class Full Confidence Distribution -->
+<div class="card-panel">
+    <div class="card-panel-header">
+        <span class="panel-heading"><i class="fas fa-chart-bar"></i> Full 10-Category Confidence Distribution</span>
+        <span class="badge badge-info">Python (Blue) vs GTM (Purple)</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;" id="full-10-bars">
+        <!-- Populated via JS -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentEvent = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('analysis-event-select');
+    if (sel && SONIC_DATA) {
+        sel.innerHTML = SONIC_DATA.events.map(e => `
+            <option value="${e.audioId}">${e.audioId} - ${e.pythonClass} (${e.pythonConf}%)</option>
+        `).join('');
+        loadEventDetails(SONIC_DATA.events[0].audioId);
+    }
+});
+
+function loadEventDetails(audioId) {
+    const ev = SONIC_DATA.events.find(e => e.audioId === audioId) || SONIC_DATA.events[0];
+    currentEvent = ev;
+
+    // Metadata Grid
+    const metaGrid = document.getElementById('analysis-meta-grid');
+    if (metaGrid) {
+        metaGrid.innerHTML = `
+            <div>
+                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Audio ID & Filename</div>
+                <div class="font-mono" style="font-weight: 700; color: var(--text-accent);">${ev.audioId}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${ev.filename}</div>
+            </div>
+            <div>
+                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Format & Quality</div>
+                <div style="font-size: 12px; font-weight: 600;">${ev.format}</div>
+                <div><span class="badge badge-success">${ev.quality} (SNR ${ev.snr} dB)</span></div>
+            </div>
+            <div>
+                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Consistency & Delta</div>
+                <div><span class="badge badge-success">${ev.consistency}</span></div>
+                <div class="font-mono" style="font-size: 11px; color: var(--text-muted);">|Py - GTM| = ${ev.delta}%</div>
+            </div>
+            <div>
+                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Severity & Status</div>
+                <div><span class="badge badge-${ev.severity.toLowerCase()}">${ev.severity}</span></div>
+                <div style="font-size: 11px; color: var(--text-muted);">${ev.status}</div>
+            </div>
+        `;
+    }
+
+    document.getElementById('play-file-name').innerText = ev.filename;
+    document.getElementById('an-py-top').innerText = `${ev.pythonClass} (${ev.pythonConf}%)`;
+    document.getElementById('an-gtm-top').innerText = `${ev.gtmClass} (${ev.gtmConf}%)`;
+
+    // Top 3 Python
+    document.getElementById('an-py-top3').innerHTML = ev.topPython.map(p => `
+        <div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <span><strong>${p.name}</strong></span>
+                <span class="font-mono">${p.conf}%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width: ${p.conf}%;"></div></div>
+        </div>
+    `).join('');
+
+    // Top 3 GTM
+    document.getElementById('an-gtm-top3').innerHTML = ev.topGTM.map(p => `
+        <div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                <span><strong>${p.name}</strong></span>
+                <span class="font-mono" style="color: #c084fc;">${p.conf}%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width: ${p.conf}%; background: #a855f7;"></div></div>
+        </div>
+    `).join('');
+
+    // Full 10 bars
+    document.getElementById('full-10-bars').innerHTML = SONIC_DATA.categories.map(cat => {
+        const isPy = (cat.name === ev.pythonClass);
+        const isGtm = (cat.name === ev.gtmClass);
+        const pyVal = isPy ? ev.pythonConf : (Math.random() * 3).toFixed(1);
+        const gtmVal = isGtm ? ev.gtmConf : (Math.random() * 4).toFixed(1);
+
+        return `
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
+                <span style="width: 180px; font-weight: 500;"><i class="${cat.icon}" style="margin-right: 6px; color: var(--text-muted);"></i> ${cat.name}</span>
+                <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${pyVal}%;"></div></div></div>
+                <span class="font-mono" style="width: 45px; text-align: right; color: var(--text-accent);">${pyVal}%</span>
+                <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${gtmVal}%; background: #a855f7;"></div></div></div>
+                <span class="font-mono" style="width: 45px; text-align: right; color: #c084fc;">${gtmVal}%</span>
+            </div>
+        `;
+    }).join('');
+
+    // Draw static canvases
+    drawStaticCanvases(ev);
+}
+
+function drawStaticCanvases(ev) {
+    const waveCanvas = document.getElementById('analysis-wave-canvas');
+    const specCanvas = document.getElementById('analysis-spec-canvas');
+    if (!waveCanvas || !specCanvas) return;
+
+    const wCtx = waveCanvas.getContext('2d');
+    wCtx.fillStyle = "#07090e";
+    wCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+    const bars = 100;
+    const bW = waveCanvas.width / bars;
+    wCtx.fillStyle = (ev.severity === 'Critical') ? "#ef4444" : "#3b82f6";
+    for (let i = 0; i < bars; i++) {
+        const r = i / bars;
+        let amp = (r < 0.2) ? 0.9 * Math.exp(-r * 8) : 0.1 + Math.random() * 0.1;
+        const bH = amp * (waveCanvas.height * 0.8);
+        wCtx.fillRect(i * bW, (waveCanvas.height - bH) / 2, bW - 1, bH);
+    }
+
+    const sCtx = specCanvas.getContext('2d');
+    sCtx.fillStyle = "#07090e";
+    sCtx.fillRect(0, 0, specCanvas.width, specCanvas.height);
+    const cols = 60; const rows = 30;
+    const cW = specCanvas.width / cols; const rH = specCanvas.height / rows;
+    for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+            const intensity = Math.random() * 0.8;
+            sCtx.fillStyle = `rgb(${Math.floor(intensity * 240)}, ${Math.floor(intensity * 140)}, ${Math.floor(intensity * 80)})`;
+            sCtx.fillRect(c * cW, r * rH, cW, rH);
+        }
+    }
+}
+
+function togglePlayback() {
+    if (!currentEvent) return;
+    const icon = document.getElementById('analysis-play-icon');
+    if (sonicAudio.isPlaying) {
+        sonicAudio.stopAll();
+        icon.className = "fas fa-play";
+    } else {
+        icon.className = "fas fa-pause";
+        const map = { "Gunshot": "gunshot", "Glass Breaking": "glass", "Alarm or Siren": "siren", "Machinery Fault": "machinery", "Panic Scream": "scream", "Person Asking for Help": "help" };
+        const sType = map[currentEvent.actualClass] || "background";
+        sonicAudio.playSynth(sType, currentEvent.duration || 3.0, () => {
+            icon.className = "fas fa-play";
+        });
+    }
+}
+</script>
+{% endblock %}
