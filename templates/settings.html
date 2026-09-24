@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings & Alert Rules{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">System Settings & Alert Rules Configuration</h1>
+        <p class="page-subtitle">Configure confidence thresholds, consecutive detection windows, and privacy retention rules.</p>
+    </div>
+    <div class="page-actions-row">
+        <button class="btn btn-primary btn-sm" onclick="showToast('Alert rule changes saved.', 'success')">
+            <i class="fas fa-save"></i> Save Settings
+        </button>
+    </div>
+</div>
+
+<!-- Alert Rules Engine -->
+<div class="card-panel">
+    <div class="card-panel-header">
+        <span class="panel-heading"><i class="fas fa-sliders-h"></i> Configurable Alert Rules (SRS 1.6 - liii)</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rule ID</th>
+                    <th>Category</th>
+                    <th>Min Confidence</th>
+                    <th>Top-2 Margin</th>
+                    <th>Consecutive Windows</th>
+                    <th>Model Agreement</th>
+                    <th>Severity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">RULE-01</td>
+                    <td style="font-weight: 600;">Gunshot</td>
+                    <td><input type="number" value="80" style="width: 70px;"> %</td>
+                    <td><input type="number" value="25" style="width: 70px;"> %</td>
+                    <td>1 window</td>
+                    <td><span class="badge badge-info">Optional</span></td>
+                    <td><span class="badge badge-critical">Critical</span></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Rule 01 updated', 'info')">Update</button></td>
+                </tr>
+                <tr>
+                    <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">RULE-02</td>
+                    <td style="font-weight: 600;">Panic Scream</td>
+                    <td><input type="number" value="75" style="width: 70px;"> %</td>
+                    <td><input type="number" value="20" style="width: 70px;"> %</td>
+                    <td>2 windows</td>
+                    <td><span class="badge badge-success">Required</span></td>
+                    <td><span class="badge badge-critical">Critical</span></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Rule 02 updated', 'info')">Update</button></td>
+                </tr>
+                <tr>
+                    <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">RULE-03</td>
+                    <td style="font-weight: 600;">Person Asking for Help</td>
+                    <td><input type="number" value="78" style="width: 70px;"> %</td>
+                    <td><input type="number" value="15" style="width: 70px;"> %</td>
+                    <td>1 window</td>
+                    <td><span class="badge badge-info">Optional</span></td>
+                    <td><span class="badge badge-critical">Critical</span></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Rule 03 updated', 'info')">Update</button></td>
+                </tr>
+                <tr>
+                    <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">RULE-04</td>
+                    <td style="font-weight: 600;">Glass Breaking</td>
+                    <td><input type="number" value="82" style="width: 70px;"> %</td>
+                    <td><input type="number" value="20" style="width: 70px;"> %</td>
+                    <td>1 window</td>
+                    <td><span class="badge badge-success">Required</span></td>
+                    <td><span class="badge badge-high">High</span></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Rule 04 updated', 'info')">Update</button></td>
+                </tr>
+                <tr>
+                    <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">RULE-07</td>
+                    <td style="font-weight: 600;">Machinery Fault</td>
+                    <td><input type="number" value="78" style="width: 70px;"> %</td>
+                    <td><input type="number" value="15" style="width: 70px;"> %</td>
+                    <td>3 windows</td>
+                    <td><span class="badge badge-success">Required</span></td>
+                    <td><span class="badge badge-high">High</span></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="showToast('Rule 07 updated', 'info')">Update</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Privacy & Data Retention Settings -->
+<div class="grid-2">
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-user-shield"></i> Acoustic Privacy & Microphone Controls (SRS 1.6 - lxxix)</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px; font-size: 12px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" checked>
+                <span>Notify operator with visible icon when microphone is actively capturing</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" checked>
+                <span>Enforce strict temporal window buffer purge (Zero raw unflagged audio saved)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" checked>
+                <span>Sound emergency siren chime on Critical hazard detection</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-database"></i> Data Retention Scheduler (SRS 1.6 - lxxx)</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Retain Critical Threat Audio Clips:</label>
+                <select style="width: 100%; margin-top: 4px;">
+                    <option value="90">90 Days (Standard Enterprise Audit)</option>
+                    <option value="180">180 Days</option>
+                    <option value="365">1 Year</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Retain Ambient Noise & Horn Logs:</label>
+                <select style="width: 100%; margin-top: 4px;">
+                    <option value="14">14 Days</option>
+                    <option value="30">30 Days</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

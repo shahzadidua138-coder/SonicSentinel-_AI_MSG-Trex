@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Operator Profile & Security Credentials</h1>
+        <p class="page-subtitle">Manage your operator identity, monitoring terminal assignment, and personal workspace preferences.</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Profile Edit Form -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-user-edit"></i> Edit Profile Information</span>
+        </div>
+
+        <form action="{{ url_for('profile') }}" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group">
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Username (Read-only)</label>
+                <input type="text" value="{{ user['username'] }}" style="width: 100%; opacity: 0.7;" readonly>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Work Email (Read-only)</label>
+                <input type="email" value="{{ user['email'] }}" style="width: 100%; opacity: 0.7;" readonly>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Full Name</label>
+                <input type="text" name="full_name" value="{{ user['full_name'] }}" style="width: 100%;" required>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Assigned Monitoring Station</label>
+                <input type="text" name="station" value="{{ user['station'] }}" style="width: 100%;" required>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Theme Preference</label>
+                <select name="theme" style="width: 100%;">
+                    <option value="dark" {% if user['theme_preference'] == 'dark' %}selected{% endif %}>Enterprise Dark (Standard)</option>
+                    <option value="light" {% if user['theme_preference'] == 'light' %}selected{% endif %}>Operational Light</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save Profile Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Identity Summary Card -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-id-badge"></i> Assigned Credentials Summary</span>
+            <span class="badge badge-success">Active Operator</span>
+        </div>
+
+        <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px;">
+            <div class="user-avatar-initial" style="width: 52px; height: 52px; font-size: 20px;">
+                {{ user['full_name'][:1] }}
+            </div>
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700;">{{ user['full_name'] }}</h3>
+                <div style="font-size: 12px; color: var(--text-muted);">{{ user['organization'] }}</div>
+                <span class="badge badge-low" style="margin-top: 4px;">{{ user['role'] }}</span>
+            </div>
+        </div>
+
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <td style="color: var(--text-muted);">Operator ID</td>
+                    <td class="font-mono">OPR-{{ user['id'] + 9000 }}</td>
+                </tr>
+                <tr>
+                    <td style="color: var(--text-muted);">Assigned Terminal</td>
+                    <td>{{ user['station'] }}</td>
+                </tr>
+                <tr>
+                    <td style="color: var(--text-muted);">Account Created</td>
+                    <td class="font-mono" style="font-size: 11px; color: var(--text-muted);">{{ user['created_at'] }}</td>
+                </tr>
+                <tr>
+                    <td style="color: var(--text-muted);">Last Session Login</td>
+                    <td class="font-mono" style="font-size: 11px; color: var(--text-muted);">{{ user['last_login'] or 'Current Session' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
