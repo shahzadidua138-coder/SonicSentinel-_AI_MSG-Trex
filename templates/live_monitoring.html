@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Live Acoustic Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Live Acoustic Monitoring Center</h1>
+        <p class="page-subtitle">Continuous multi-channel temporal window capture (1-3s sliding window) with dual-model inference.</p>
+    </div>
+    <div class="page-actions-row">
+        <button class="btn btn-primary" id="mic-toggle-btn">
+            <i class="fas fa-microphone"></i> <span id="mic-btn-text">Start Live Mic</span>
+        </button>
+        <button class="btn btn-secondary" id="sim-toggle-btn">
+            <i class="fas fa-play-circle"></i> <span id="sim-btn-text">Start Simulation Feed</span>
+        </button>
+    </div>
+</div>
+
+<!-- Active Critical Alert Notice -->
+<div id="live-alert-box" class="card-panel" style="display: none; background: rgba(220, 38, 38, 0.1); border-color: var(--sev-critical); margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #ef4444;"></i>
+            <div>
+                <div style="font-weight: 700; color: #fca5a5; font-size: 14px;" id="live-alert-title">CRITICAL HAZARD DETECTED: Gunshot (96.4%)</div>
+                <div style="font-size: 11px; color: var(--text-muted);" id="live-alert-sub">East Wing Perimeter Sensor #12 • Automatic Dispatch Armed</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-danger btn-sm" onclick="showToast('Lockdown broadcast dispatched to facility floor wardens.', 'error')">
+                <i class="fas fa-bullhorn"></i> Dispatch Lockdown
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('live-alert-box').style.display='none'">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Canvases: Waveform & Spectrogram -->
+<div class="grid-2" style="margin-bottom: 20px;">
+    <div class="card-panel" style="margin-bottom: 0;">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-wave-square"></i> Real-Time Oscilloscope Waveform</span>
+            <span class="badge badge-info font-mono" id="mic-status-label">Mic: Available</span>
+        </div>
+        <div class="canvas-panel" style="height: 180px;">
+            <canvas id="live-wave-canvas" width="600" height="180"></canvas>
+            <div class="canvas-tag">OSCILLOSCOPE • 44.1 kHz</div>
+        </div>
+    </div>
+
+    <div class="card-panel" style="margin-bottom: 0;">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-chart-area"></i> Live Mel-Spectrogram (0Hz - 8192Hz)</span>
+            <span class="badge badge-info font-mono">FFT: 512</span>
+        </div>
+        <div class="canvas-panel" style="height: 180px;">
+            <canvas id="live-spec-canvas" width="600" height="180"></canvas>
+            <div class="canvas-tag">SPECTROGRAM HEATMAP</div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Acoustic Features & Dual Predictions -->
+<div class="grid-2">
+    <!-- Left: Live Acoustic Feature Extraction -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-microchip"></i> Acoustic Feature Extraction Telemetry</span>
+            <span class="badge badge-info">SRS Step 6</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span class="text-muted">RMS Energy Level</span>
+                    <span class="font-mono" id="live-rms">0.420 (-14.2 dBFS)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="live-rms-fill" style="width: 42%;"></div></div>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span class="text-muted">Spectral Centroid (Acoustic Brightness)</span>
+                    <span class="font-mono" id="live-centroid">3,450 Hz</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="live-centroid-fill" style="width: 58%;"></div></div>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span class="text-muted">Zero-Crossing Rate (ZCR)</span>
+                    <span class="font-mono" id="live-zcr">0.185</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="live-zcr-fill" style="width: 37%;"></div></div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 6px;">
+                <div class="metric-box" style="padding: 10px;">
+                    <span class="metric-box-title">Estimated SNR</span>
+                    <span class="metric-box-value" style="font-size: 16px;" id="live-snr">28.4 dB</span>
+                </div>
+                <div class="metric-box" style="padding: 10px;">
+                    <span class="metric-box-title">Signal Quality</span>
+                    <span class="metric-box-value" style="font-size: 16px; color: #34d399;" id="live-quality">GOOD</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Dual Model Comparison Gauge -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-balance-scale"></i> Dual Model Live Consensus</span>
+            <span class="badge badge-success" id="live-match-badge">Acceptable Match</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Python Model -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 12px;"><i class="fab fa-python" style="color: var(--text-accent); margin-right: 4px;"></i> Python CNN (v2.4)</span>
+                    <span class="font-mono" style="font-weight: 700; color: var(--text-accent);" id="live-py-conf">96.4%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
+                    <span class="text-muted">Detected Sound:</span>
+                    <strong id="live-py-class">Gunshot</strong>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="live-py-fill" style="width: 96.4%;"></div></div>
+            </div>
+
+            <!-- GTM Model -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 12px;"><i class="fas fa-brain" style="color: #a855f7; margin-right: 4px;"></i> Google Teachable Machine (v1.8)</span>
+                    <span class="font-mono" style="font-weight: 700; color: #c084fc;" id="live-gtm-conf">94.8%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
+                    <span class="text-muted">Detected Sound:</span>
+                    <strong id="live-gtm-class">Gunshot</strong>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="live-gtm-fill" style="width: 94.8%; background: #a855f7;"></div></div>
+            </div>
+
+            <!-- Delta difference -->
+            <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 6px 10px; background: var(--bg-input); border-radius: 4px;">
+                <span>Confidence Delta: <strong class="font-mono" id="live-delta">|96.4% - 94.8%| = 1.6%</strong></span>
+                <span>Consecutive Detections: <strong class="font-mono text-success">2 / 2 (Confirmed)</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let animId = null;
+let simTimer = null;
+let isSimActive = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const waveCanvas = document.getElementById('live-wave-canvas');
+    const specCanvas = document.getElementById('live-spec-canvas');
+    const micBtn = document.getElementById('mic-toggle-btn');
+    const micText = document.getElementById('mic-btn-text');
+    const simBtn = document.getElementById('sim-toggle-btn');
+    const simText = document.getElementById('sim-btn-text');
+
+    // Canvas render loop
+    function renderLoop() {
+        sonicAudio.drawWaveform(waveCanvas);
+        sonicAudio.drawSpectrogram(specCanvas);
+        animId = requestAnimationFrame(renderLoop);
+    }
+    renderLoop();
+
+    // Mic toggle
+    if (micBtn) {
+        micBtn.addEventListener('click', async () => {
+            if (!sonicAudio.isMicActive) {
+                const ok = await sonicAudio.startMic((status) => {
+                    document.getElementById('mic-status-label').innerText = `Mic: ${status}`;
+                });
+                if (ok) {
+                    micText.innerText = "Stop Live Mic";
+                    micBtn.className = "btn btn-danger";
+                    showToast("Microphone active: Processing live acoustic windows.", "info");
+                }
+            } else {
+                sonicAudio.stopMic((status) => {
+                    document.getElementById('mic-status-label').innerText = `Mic: ${status}`;
+                });
+                micText.innerText = "Start Live Mic";
+                micBtn.className = "btn btn-primary";
+                showToast("Microphone stream stopped.", "info");
+            }
+        });
+    }
+
+    // Simulation toggle
+    if (simBtn) {
+        simBtn.addEventListener('click', () => {
+            isSimActive = !isSimActive;
+            if (isSimActive) {
+                simText.innerText = "Pause Simulation";
+                simBtn.className = "btn btn-primary";
+                startSimulation();
+                showToast("Synthetic continuous telemetry stream started.", "info");
+            } else {
+                simText.innerText = "Start Simulation Feed";
+                simBtn.className = "btn btn-secondary";
+                clearInterval(simTimer);
+                showToast("Simulation stream paused.", "info");
+            }
+        });
+    }
+
+    function startSimulation() {
+        const streamItems = [
+            { cat: "Background Noise", py: 97.1, gtm: 96.0, sev: "Informational" },
+            { cat: "Vehicle Horn", py: 91.5, gtm: 89.2, sev: "Low" },
+            { cat: "Machinery Fault", py: 95.8, gtm: 93.1, sev: "High" },
+            { cat: "Gunshot", py: 96.4, gtm: 94.8, sev: "Critical" },
+            { cat: "Panic Scream", py: 91.2, gtm: 89.7, sev: "Critical" },
+            { cat: "Person Asking for Help", py: 88.5, gtm: 87.0, sev: "Critical" }
+        ];
+
+        let idx = 0;
+        simTimer = setInterval(() => {
+            const item = streamItems[idx % streamItems.length];
+            idx++;
+
+            document.getElementById('live-py-class').innerText = item.cat;
+            document.getElementById('live-py-conf').innerText = `${item.py}%`;
+            document.getElementById('live-py-fill').style.width = `${item.py}%`;
+
+            document.getElementById('live-gtm-class').innerText = item.cat;
+            document.getElementById('live-gtm-conf').innerText = `${item.gtm}%`;
+            document.getElementById('live-gtm-fill').style.width = `${item.gtm}%`;
+
+            const delta = Math.abs(item.py - item.gtm).toFixed(1);
+            document.getElementById('live-delta').innerText = `|${item.py}% - ${item.gtm}%| = ${delta}%`;
+
+            if (item.sev === "Critical") {
+                const box = document.getElementById('live-alert-box');
+                box.style.display = 'block';
+                document.getElementById('live-alert-title').innerText = `CRITICAL HAZARD DETECTED: ${item.cat} (${item.py}%)`;
+                showToast(`Critical hazard alert: ${item.cat}`, 'error');
+            }
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}
