@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & BI Intelligence{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Acoustic Analytics & Operational BI</h1>
+        <p class="page-subtitle">Evaluation metrics, category distribution, and dual-model classification benchmarks.</p>
+    </div>
+    <div class="page-actions-row">
+        <a href="{{ url_for('reports') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-file-invoice"></i> Generate Report
+        </a>
+    </div>
+</div>
+
+<!-- Accuracy Benchmarks -->
+<div class="metrics-row">
+    <div class="metric-box">
+        <span class="metric-box-title">Python Test Accuracy</span>
+        <span class="metric-box-value font-mono">91.4%</span>
+        <span class="metric-box-sub" style="color: #10b981;">&ge; 85.0% Target Met</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">GTM Test Accuracy</span>
+        <span class="metric-box-value font-mono" style="color: #c084fc;">88.6%</span>
+        <span class="metric-box-sub" style="color: #10b981;">&ge; 85.0% Target Met</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Macro F1-Score</span>
+        <span class="metric-box-value font-mono">0.89</span>
+        <span class="metric-box-sub" style="color: #10b981;">&ge; 0.80 Target Met</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Consensus Concordance</span>
+        <span class="metric-box-value font-mono">93.2%</span>
+        <span class="metric-box-sub text-muted">Python & GTM Agreement</span>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="grid-2">
+    <!-- Category Distribution -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-chart-bar"></i> Category Ingestion Frequency</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Background Noise</span><span class="font-mono">19.5% (4,850)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width: 19.5%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Vehicle Horn</span><span class="font-mono">12.9% (3,210)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width: 12.9%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Machinery Fault</span><span class="font-mono">11.4% (2,840)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill warning" style="width: 11.4%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Glass Breaking</span><span class="font-mono">9.3% (2,310)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill warning" style="width: 9.3%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Gunshot (Critical)</span><span class="font-mono">8.0% (1,980)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill danger" style="width: 8.0%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Panic Scream (Critical)</span><span class="font-mono">6.5% (1,610)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill danger" style="width: 6.5%;"></div></div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>Person Asking for Help (Critical)</span><span class="font-mono">5.9% (1,480)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill danger" style="width: 5.9%;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hazard Ratio -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <span class="panel-heading"><i class="fas fa-shield-alt"></i> Threat Severity Distribution</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+            <div style="background: var(--bg-subtle); padding: 14px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                    <span style="color: #ef4444; font-weight: 600;">Critical Hazards (Gunshot, Scream, Help)</span>
+                    <span class="font-mono">18.4% (4,579)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill danger" style="width: 18.4%;"></div></div>
+            </div>
+
+            <div style="background: var(--bg-subtle); padding: 14px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                    <span style="color: #ea580c; font-weight: 600;">High Hazards (Glass, Alarm, Fault, Aggression)</span>
+                    <span class="font-mono">32.1% (7,989)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill warning" style="width: 32.1%;"></div></div>
+            </div>
+
+            <div style="background: var(--bg-subtle); padding: 14px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                    <span style="color: var(--text-accent); font-weight: 600;">Low / Info (Horn, Animal, Ambient)</span>
+                    <span class="font-mono">49.5% (12,322)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width: 49.5%;"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

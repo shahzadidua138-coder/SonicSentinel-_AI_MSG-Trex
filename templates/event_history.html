@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Event History Registry{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Event History & Audit Registry</h1>
+        <p class="page-subtitle">Searchable log of all acoustic captures, dual-model predictions, and reviewer actions.</p>
+    </div>
+    <div class="page-actions-row">
+        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-download"></i> Download Audit (CSV)
+        </a>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card-panel" style="padding: 14px 18px; margin-bottom: 20px;">
+    <div class="grid-4" style="gap: 12px;">
+        <div>
+            <label style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Search ID / Filename:</label>
+            <input type="text" id="hist-search" placeholder="e.g. AUD-2026 or gunshot..." style="width: 100%; margin-top: 4px;" onkeyup="filterHistory()">
+        </div>
+        <div>
+            <label style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Category:</label>
+            <select id="hist-cat" style="width: 100%; margin-top: 4px;" onchange="filterHistory()">
+                <option value="All">All 10 Categories</option>
+                <option value="Gunshot">Gunshot</option>
+                <option value="Glass Breaking">Glass Breaking</option>
+                <option value="Alarm or Siren">Alarm or Siren</option>
+                <option value="Machinery Fault">Machinery Fault</option>
+                <option value="Panic Scream">Panic Scream</option>
+                <option value="Person Asking for Help">Person Asking for Help</option>
+                <option value="Vehicle Horn">Vehicle Horn</option>
+                <option value="Animal Sound">Animal Sound</option>
+                <option value="Aggression or Violent Conflict">Aggression</option>
+                <option value="Background Noise">Background Noise</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Severity:</label>
+            <select id="hist-sev" style="width: 100%; margin-top: 4px;" onchange="filterHistory()">
+                <option value="All">All Severities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+                <option value="Informational">Informational</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Quality:</label>
+            <select id="hist-qual" style="width: 100%; margin-top: 4px;" onchange="filterHistory()">
+                <option value="All">All Qualities</option>
+                <option value="Good">Good</option>
+                <option value="Acceptable">Acceptable</option>
+                <option value="Poor">Poor</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="card-panel">
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Audio ID</th>
+                    <th>Timestamp</th>
+                    <th>Filename</th>
+                    <th>Detected Class</th>
+                    <th>Python Conf</th>
+                    <th>GTM Conf</th>
+                    <th>Delta</th>
+                    <th>Quality</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="history-tbody">
+                <!-- Populated via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    renderHistory();
+});
+
+function renderHistory() {
+    const tbody = document.getElementById('history-tbody');
+    if (!tbody || !SONIC_DATA) return;
+
+    tbody.innerHTML = SONIC_DATA.events.map(e => `
+        <tr>
+            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
+            <td style="font-size: 11px; color: var(--text-muted);">${e.timestamp}</td>
+            <td style="font-size: 12px;">${e.filename}</td>
+            <td style="font-weight: 600;">${e.pythonClass}</td>
+            <td class="font-mono">${e.pythonConf}%</td>
+            <td class="font-mono" style="color: #c084fc;">${e.gtmConf}%</td>
+            <td class="font-mono">${e.delta}%</td>
+            <td><span class="badge badge-info">${e.quality}</span></td>
+            <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
+            <td><span class="badge badge-${e.status === 'Active' ? 'critical' : 'success'}">${e.status}</span></td>
+        </tr>
+    `).join('');
+}
+
+function filterHistory() {
+    const q = (document.getElementById('hist-search').value || '').toLowerCase();
+    const cat = document.getElementById('hist-cat').value;
+    const sev = document.getElementById('hist-sev').value;
+    const qual = document.getElementById('hist-qual').value;
+
+    const tbody = document.getElementById('history-tbody');
+    if (!tbody || !SONIC_DATA) return;
+
+    const filtered = SONIC_DATA.events.filter(e => {
+        const mQ = e.audioId.toLowerCase().includes(q) || e.filename.toLowerCase().includes(q) || e.pythonClass.toLowerCase().includes(q);
+        const mCat = (cat === 'All' || e.pythonClass === cat);
+        const mSev = (sev === 'All' || e.severity === sev);
+        const mQual = (qual === 'All' || e.quality === qual);
+        return mQ && mCat && mSev && mQual;
+    });
+
+    tbody.innerHTML = filtered.map(e => `
+        <tr>
+            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
+            <td style="font-size: 11px; color: var(--text-muted);">${e.timestamp}</td>
+            <td style="font-size: 12px;">${e.filename}</td>
+            <td style="font-weight: 600;">${e.pythonClass}</td>
+            <td class="font-mono">${e.pythonConf}%</td>
+            <td class="font-mono" style="color: #c084fc;">${e.gtmConf}%</td>
+            <td class="font-mono">${e.delta}%</td>
+            <td><span class="badge badge-info">${e.quality}</span></td>
+            <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
+            <td><span class="badge badge-${e.status === 'Active' ? 'critical' : 'success'}">${e.status}</span></td>
+        </tr>
+    `).join('');
+}
+</script>
+{% endblock %}
