@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Review Queue{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Manual Review & Decision Override Queue</h1>
+        <p class="page-subtitle">Human-in-the-loop acoustic verification for model disagreements, low confidence, and poor-quality audio.</p>
+    </div>
+    <div class="page-actions-row">
+        <span class="badge badge-medium font-mono">2 PENDING VERIFICATION</span>
+    </div>
+</div>
+
+<!-- Queue Table -->
+<div class="card-panel">
+    <div class="card-panel-header">
+        <span class="panel-heading"><i class="fas fa-clipboard-list"></i> Ambiguous & Divergent Detections (SRS Step 17)</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Audio ID</th>
+                    <th>Filename</th>
+                    <th>Python Prediction</th>
+                    <th>GTM Prediction</th>
+                    <th>Divergence Reason</th>
+                    <th>Quality</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="review-queue-tbody">
+                <!-- Populated via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Active Review Decision Studio Box -->
+<div class="card-panel" id="review-studio">
+    <div class="card-panel-header">
+        <span class="panel-heading"><i class="fas fa-user-check"></i> Reviewer Verdict Studio</span>
+        <span class="badge badge-info font-mono" id="active-rev-id">AUD-2026-8807</span>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h4 style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Audio Segment Playback</h4>
+            <div style="background: var(--bg-subtle); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <button class="btn btn-primary btn-sm" onclick="playReviewSound()">
+                    <i class="fas fa-play"></i> Listen
+                </button>
+                <div>
+                    <div style="font-weight: 600;" id="rev-filename">loading_zone_ambiguous_echo.wav</div>
+                    <div style="font-size: 11px; color: var(--text-muted);" id="rev-reason">Disagreement: Py says Alarm (54.2%), GTM says Horn (61.8%)</div>
+                </div>
+            </div>
+            <div class="canvas-panel" style="height: 120px;">
+                <canvas id="rev-wave-canvas" width="500" height="120"></canvas>
+            </div>
+        </div>
+
+        <div>
+            <h4 style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Reviewer Decision (SRS 1.6 - lix, lxi)</h4>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Class Decision (Confirm / Override):</label>
+                    <select id="rev-override-select" style="width: 100%; margin-top: 4px;">
+                        <option value="Vehicle Horn">Vehicle Horn (GTM Preferred)</option>
+                        <option value="Alarm or Siren">Alarm or Siren (Python Preferred)</option>
+                        <option value="Machinery Fault">Machinery Fault</option>
+                        <option value="Glass Breaking">Glass Breaking</option>
+                        <option value="Gunshot">Gunshot</option>
+                        <option value="Panic Scream">Panic Scream</option>
+                        <option value="Aggression or Violent Conflict">Aggression</option>
+                        <option value="Person Asking for Help">Person Asking for Help</option>
+                        <option value="Background Noise">Background Noise</option>
+                        <option value="Unknown">Unknown / Inconclusive Sound</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Reviewer Notes & Justification:</label>
+                    <textarea id="rev-notes" rows="3" style="width: 100%; margin-top: 4px;" placeholder="Document acoustic reasoning for verification..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('rev-notes').value=''">Discard</button>
+                    <button class="btn btn-primary btn-sm" onclick="commitReviewVerdict()">
+                        <i class="fas fa-check"></i> Commit Verdict to Audit Log
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentRevId = "AUD-2026-8807";
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderReviewQueue();
+    loadReviewItem("AUD-2026-8807");
+});
+
+function renderReviewQueue() {
+    const tbody = document.getElementById('review-queue-tbody');
+    if (!tbody || !SONIC_DATA) return;
+
+    const items = SONIC_DATA.events.filter(e => e.status === "Active" && (e.consistency === "Model Disagreement" || e.consistency === "Weak Match"));
+    tbody.innerHTML = items.map(e => `
+        <tr>
+            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
+            <td>${e.filename}</td>
+            <td class="font-mono">${e.pythonClass} (${e.pythonConf}%)</td>
+            <td class="font-mono" style="color: #c084fc;">${e.gtmClass} (${e.gtmConf}%)</td>
+            <td><span class="badge badge-medium">${e.consistency}</span></td>
+            <td><span class="badge badge-info">${e.quality}</span></td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="loadReviewItem('${e.audioId}')">
+                    <i class="fas fa-edit"></i> Review
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function loadReviewItem(audioId) {
+    currentRevId = audioId;
+    const ev = SONIC_DATA.events.find(e => e.audioId === audioId);
+    if (!ev) return;
+
+    document.getElementById('active-rev-id').innerText = ev.audioId;
+    document.getElementById('rev-filename').innerText = ev.filename;
+    document.getElementById('rev-reason').innerText = `Divergence: Py says ${ev.pythonClass} (${ev.pythonConf}%), GTM says ${ev.gtmClass} (${ev.gtmConf}%)`;
+
+    // Draw canvas
+    const canvas = document.getElementById('rev-wave-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#07090e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#ea580c";
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x += 4) {
+            const y = canvas.height/2 + Math.sin(x*0.08)*30*(Math.random()*0.5+0.5);
+            if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+}
+
+function playReviewSound() {
+    showToast(`Playing audio segment for ${currentRevId}`, 'info');
+    sonicAudio.playSynth("siren", 2.5);
+}
+
+function commitReviewVerdict() {
+    const selectedClass = document.getElementById('rev-override-select').value;
+    const notes = document.getElementById('rev-notes').value;
+
+    const ev = SONIC_DATA.events.find(e => e.audioId === currentRevId);
+    if (ev) {
+        ev.status = "Reviewed";
+        ev.reviewStatus = `Confirmed (${selectedClass})`;
+        renderReviewQueue();
+        showToast(`Decision committed: ${currentRevId} set to '${selectedClass}'. Original model predictions preserved in audit trail.`, 'success');
+    }
+}
+</script>
+{% endblock %}
