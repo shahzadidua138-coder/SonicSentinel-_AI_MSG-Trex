@@ -96,28 +96,12 @@
                         </div>
                     </div>
 
-                    <!-- Username & Assigned Role (2-column row) -->
-                    <div class="grid-inputs-2">
-                        <div class="input-field-group">
-                            <label class="input-label" for="username">Username</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-at input-leading-icon"></i>
-                                <input type="text" id="username" name="username" class="auth-text-input" placeholder="officer.brody" value="{{ username or '' }}" required>
-                            </div>
-                        </div>
-
-                        <div class="input-field-group">
-                            <label class="input-label" for="role">Assigned Role</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-key input-leading-icon"></i>
-                                <select id="role" name="role" class="auth-text-input">
-                                    <option value="Security Operator" {% if role == 'Security Operator' %}selected{% endif %}>Security Operator</option>
-                                    <option value="Audio Reviewer" {% if role == 'Audio Reviewer' %}selected{% endif %}>Audio Reviewer</option>
-                                    <option value="Maintenance Operator" {% if role == 'Maintenance Operator' %}selected{% endif %}>Maintenance Operator</option>
-                                    <option value="Normal user" {% if role == 'Normal user' %}selected{% endif %}>Normal user</option>
-                                    <option value="Administrator" {% if role == 'Administrator' %}selected{% endif %}>Administrator</option>
-                                </select>
-                            </div>
+                    <!-- Username -->
+                    <div class="input-field-group">
+                        <label class="input-label" for="username">Username</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-at input-leading-icon"></i>
+                            <input type="text" id="username" name="username" class="auth-text-input" placeholder="officer.brody" value="{{ username or '' }}" required autocomplete="username">
                         </div>
                     </div>
 
@@ -158,12 +142,12 @@
                     <!-- Submit Button -->
                     <button type="submit" class="btn-teal-submit">
                         <i class="fas fa-user-plus"></i>
-                        <span>Register Operator Account</span>
+                        <span>Register User Account</span>
                     </button>
                 </form>
 
                 <div class="auth-switch-prompt">
-                    Already an authorized operator? <a href="{{ url_for('login') }}" class="teal-link">Sign in to console</a>
+                    Already an authorized user? <a href="{{ url_for('login') }}" class="teal-link">Sign in to console</a>
                 </div>
             </div>
         </div>

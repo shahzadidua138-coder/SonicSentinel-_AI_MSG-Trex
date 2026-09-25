@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden - Access Restricted{% endblock %}
+
+{% block content %}
+<div style="min-height: 65vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="card-panel" style="max-width: 580px; width: 100%; text-align: center; padding: 44px 38px; border-radius: 18px; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08); border: 1.5px solid rgba(220, 38, 38, 0.2);">
+        <div style="width: 76px; height: 76px; border-radius: 50%; background: rgba(220, 38, 38, 0.1); border: 2px solid rgba(220, 38, 38, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: #DC2626; font-size: 32px;">
+            <i class="fas fa-lock"></i>
+        </div>
+        
+        <div class="badge" style="background: rgba(220, 38, 38, 0.1); color: #DC2626; border: 1px solid rgba(220, 38, 38, 0.3); margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            HTTP 403 FORBIDDEN • RBAC VIOLATION
+        </div>
+        
+        <h1 style="font-size: 26px; font-weight: 800; color: #0F172A; margin-bottom: 12px; letter-spacing: -0.02em;">
+            Access Strictly Restricted
+        </h1>
+        
+        <p style="font-size: 14px; color: #64748B; line-height: 1.6; margin-bottom: 24px;">
+            Your assigned role <strong>&laquo;{{ user_role or session.get('role', 'Normal User') }}&raquo;</strong> does not have authorization to access this module (<code>{{ target_endpoint or request.path }}</code>).
+        </p>
+
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; text-align: left; margin-bottom: 28px; font-size: 12.5px; color: #475569;">
+            <div style="font-weight: 700; color: #0F172A; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-shield-alt" style="color: #0D9488;"></i> Security Policy Notice:
+            </div>
+            <div>Module access is governed by strict Role-Based Access Control (RBAC). Privilege escalation attempts are recorded and monitored in security audit logs.</div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="padding: 10px 22px; font-size: 13.5px; font-weight: 600;">
+                <i class="fas fa-home"></i> Return to Your Dashboard
+            </a>
+            <a href="{{ url_for('profile') }}" class="btn btn-secondary" style="padding: 10px 22px; font-size: 13.5px;">
+                <i class="fas fa-user-circle"></i> View Account Permissions
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

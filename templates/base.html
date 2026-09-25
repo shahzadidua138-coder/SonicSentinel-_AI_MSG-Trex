@@ -33,56 +33,100 @@
 
             <div class="sidebar-menu">
                 <div class="menu-category">Operations</div>
-                <a href="{{ url_for('dashboard') }}" class="menu-link {% if active_page == 'dashboard' %}active{% endif %}">
-                    <i class="fas fa-th-large"></i>
-                    <span>Overview Hub</span>
+                {% if current_user and current_user['role'] == 'Administrator' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="menu-link {% if active_page == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Dashboard</span>
                 </a>
+                {% elif current_user and current_user['role'] == 'Security Operator' %}
+                <a href="{{ url_for('operator_dashboard') }}" class="menu-link {% if active_page == 'operator_dashboard' %}active{% endif %}">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Security Dashboard</span>
+                </a>
+                {% elif current_user and current_user['role'] == 'Audio Reviewer' %}
+                <a href="{{ url_for('reviewer_dashboard') }}" class="menu-link {% if active_page == 'reviewer_dashboard' %}active{% endif %}">
+                    <i class="fas fa-headphones"></i>
+                    <span>Reviewer Dashboard</span>
+                </a>
+                {% elif current_user and current_user['role'] == 'Maintenance Operator' %}
+                <a href="{{ url_for('maintenance_dashboard') }}" class="menu-link {% if active_page == 'maintenance_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tools"></i>
+                    <span>Maintenance Dashboard</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('user_dashboard') }}" class="menu-link {% if active_page == 'user_dashboard' %}active{% endif %}">
+                    <i class="fas fa-th-large"></i>
+                    <span>User Dashboard</span>
+                </a>
+                {% endif %}
+
+                {% if not current_user or current_user['role'] != 'Normal User' %}
                 <a href="{{ url_for('live_monitoring') }}" class="menu-link {% if active_page == 'live_monitoring' %}active{% endif %}">
                     <i class="fas fa-microphone-alt"></i>
                     <span>Live Monitoring</span>
                     <span class="menu-badge badge-critical font-mono">LIVE</span>
                 </a>
+                {% endif %}
+
                 <a href="{{ url_for('audio_upload') }}" class="menu-link {% if active_page == 'audio_upload' %}active{% endif %}">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Ingest & Validate</span>
                 </a>
+
+                {% if current_user and current_user['role'] in ['Administrator', 'Security Operator', 'Audio Reviewer'] %}
                 <a href="{{ url_for('audio_analysis') }}" class="menu-link {% if active_page == 'audio_analysis' %}active{% endif %}">
                     <i class="fas fa-chart-area"></i>
                     <span>Forensic Analysis</span>
                 </a>
+                {% endif %}
 
+                {% if not current_user or current_user['role'] != 'Normal User' %}
                 <div class="menu-category">Incident Triage</div>
                 <a href="{{ url_for('alerts') }}" class="menu-link {% if active_page == 'alerts' %}active{% endif %}">
                     <i class="fas fa-bell"></i>
                     <span>Hazard Alerts</span>
                     <span class="menu-badge badge-critical">3</span>
                 </a>
+                {% endif %}
+
+                {% if current_user and current_user['role'] in ['Administrator', 'Audio Reviewer', 'Security Operator'] %}
                 <a href="{{ url_for('manual_review') }}" class="menu-link {% if active_page == 'manual_review' %}active{% endif %}">
                     <i class="fas fa-clipboard-check"></i>
                     <span>Review Queue</span>
                     <span class="menu-badge badge-medium">2</span>
                 </a>
+                {% endif %}
+
                 <a href="{{ url_for('event_history') }}" class="menu-link {% if active_page == 'events' %}active{% endif %}">
                     <i class="fas fa-history"></i>
                     <span>Event History</span>
                 </a>
+
+                {% if current_user and current_user['role'] in ['Administrator', 'Security Operator'] %}
                 <a href="{{ url_for('analytics') }}" class="menu-link {% if active_page == 'analytics' %}active{% endif %}">
                     <i class="fas fa-chart-pie"></i>
                     <span>Analytics & BI</span>
                 </a>
+                {% endif %}
+
+                {% if current_user and current_user['role'] in ['Administrator', 'Audio Reviewer'] %}
                 <a href="{{ url_for('reports') }}" class="menu-link {% if active_page == 'reports' %}active{% endif %}">
                     <i class="fas fa-file-invoice"></i>
                     <span>Certificates</span>
                 </a>
+                {% endif %}
 
-                <div class="menu-category">Administration</div>
+                <div class="menu-category">Account & Control</div>
+                {% if current_user and current_user['role'] == 'Administrator' %}
                 <a href="{{ url_for('settings') }}" class="menu-link {% if active_page == 'settings' %}active{% endif %}">
                     <i class="fas fa-cog"></i>
-                    <span>Alert Rules</span>
+                    <span>System Policies</span>
                 </a>
+                {% endif %}
+
                 <a href="{{ url_for('profile') }}" class="menu-link {% if active_page == 'profile' %}active{% endif %}">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Operator Profile</span>
+                    <i class="fas fa-user-circle"></i>
+                    <span>Account Profile</span>
                 </a>
                 <a href="{{ url_for('logout') }}" class="menu-link" style="color: #ef4444;">
                     <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>

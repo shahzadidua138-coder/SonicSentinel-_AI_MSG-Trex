@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Audio Reviewer Dashboard - SonicSentinel AI{% endblock %}
+
+{% block content %}
+<!-- Audio Reviewer Hero Banner -->
+<div class="card-panel" style="background: linear-gradient(135deg, #021D24 0%, #083344 50%, #0E7490 100%); border: 1.5px solid rgba(6, 182, 212, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(8, 51, 68, 0.15); color: #FFFFFF;">
+    <div class="grid-2" style="align-items: center;">
+        <div>
+            <div class="badge" style="background: rgba(6, 182, 212, 0.2); color: #67E8F9; border: 1px solid rgba(6, 182, 212, 0.4); margin-bottom: 12px;">
+                <i class="fas fa-headphones"></i> Acoustic Forensics Lab • Forensic Analysis Hub
+            </div>
+            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
+                Welcome, {{ current_user['full_name'] if current_user else 'Audio Reviewer' }}
+            </h1>
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
+                Review flagged audio classifications, resolve model discrepancies between Python CNN & Google Teachable Machine, and inspect Mel-spectrogram frequency characteristics.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="background: #06B6D4; border-color: #06B6D4;">
+                    <i class="fas fa-clipboard-check"></i> Open Review Queue (2 Flagged)
+                </a>
+                <a href="{{ url_for('audio_analysis') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-wave-square"></i> Mel-Spectrogram Analyzer
+                </a>
+                <a href="{{ url_for('audio_upload') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-upload"></i> Forensic Ingest
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="canvas-panel" style="height: 130px; border-color: rgba(6, 182, 212, 0.35); background: #021714; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px;">
+                <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Forensics Waveform" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forensics Metrics -->
+<div class="metrics-row" style="margin-bottom: 24px;">
+    <div class="metric-box" style="border-left: 3px solid #06B6D4;">
+        <span class="metric-box-title">Pending Manual Review</span>
+        <span class="metric-box-value font-mono" style="color: #06B6D4;">2 Clips</span>
+        <span class="metric-box-sub" style="color: #06B6D4;">Model Discrepancies</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Average Confidence Delta</span>
+        <span class="metric-box-value font-mono" style="color: var(--gold-light);">4.8%</span>
+        <span class="metric-box-sub">Python CNN vs GTM</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Reviewed Today</span>
+        <span class="metric-box-value font-mono" style="color: #10B981;">18 Events</span>
+        <span class="metric-box-sub" style="color: #10B981;">Verified & Archived</span>
+    </div>
+    <div class="metric-box">
+        <span class="metric-box-title">Audio Quality Pass Rate</span>
+        <span class="metric-box-value font-mono">98.2%</span>
+        <span class="metric-box-sub">SNR &gt; 18 dB Standard</span>
+    </div>
+</div>
+
+<!-- Quick Review Action Card -->
+<div class="card-panel" style="border-radius: 14px; padding: 24px;">
+    <div class="card-panel-header" style="margin-bottom: 18px;">
+        <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">Discrepancy Triage Queue (SRS Section 1.6 - Audio Reviewer)</h3>
+            <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0;">Events where Python CNN and Google Teachable Machine confidence delta exceeds tolerance.</p>
+        </div>
+        <a href="{{ url_for('manual_review') }}" class="btn btn-secondary btn-sm">Full Queue &rarr;</a>
+    </div>
+
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+            <tr style="border-bottom: 2px solid #E2E8F0; text-align: left; color: #475569; font-size: 12px; text-transform: uppercase;">
+                <th style="padding: 10px 12px;">Audio ID</th>
+                <th style="padding: 10px 12px;">Python CNN</th>
+                <th style="padding: 10px 12px;">Google Teachable Machine</th>
+                <th style="padding: 10px 12px;">Delta</th>
+                <th style="padding: 10px 12px;">Quality</th>
+                <th style="padding: 10px 12px; text-align: right;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="border-bottom: 1px solid #F1F5F9;">
+                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">AUD-2026-8807</td>
+                <td style="padding: 12px;"><span class="badge" style="background: #FEF3C7; color: #92400E;">Vehicle Horn (54.2%)</span></td>
+                <td style="padding: 12px;"><span class="badge" style="background: #E0E7FF; color: #3730A3;">Glass Breaking (61.8%)</span></td>
+                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; color: #DC2626; font-weight: 700;">7.6% (FLAGGED)</td>
+                <td style="padding: 12px;"><span class="badge" style="background: #FEE2E2; color: #991B1B;">Poor SNR</span></td>
+                <td style="padding: 12px; text-align: right;">
+                    <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="font-size: 11px;">Inspect Waveform</a>
+                </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #F1F5F9;">
+                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">AUD-2026-8808</td>
+                <td style="padding: 12px;"><span class="badge" style="background: #FEF2F2; color: #991B1B;">Panic Scream (64.5%)</span></td>
+                <td style="padding: 12px;"><span class="badge" style="background: #F3E8FF; color: #6B21A8;">Person Calling Help (61.0%)</span></td>
+                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; color: #D97706; font-weight: 700;">3.5% (EVAL)</td>
+                <td style="padding: 12px;"><span class="badge" style="background: #ECFDF5; color: #065F46;">Acceptable</span></td>
+                <td style="padding: 12px; text-align: right;">
+                    <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="font-size: 11px;">Inspect Waveform</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
