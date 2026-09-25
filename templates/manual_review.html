@@ -100,43 +100,79 @@
 
 {% block extra_js %}
 <script>
-let currentRevId = "AUD-2026-8807";
+let currentRevId = "AUD-07";
+let serverReviews = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderReviewQueue();
-    loadReviewItem("AUD-2026-8807");
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchReviewQueue();
 });
+
+async function fetchReviewQueue() {
+    try {
+        const resp = await fetch('/api/review/queue');
+        if (resp.ok) {
+            serverReviews = await resp.json();
+            renderReviewQueue();
+            if (serverReviews.length > 0) {
+                loadReviewItem(serverReviews[0].id || serverReviews[0].audio_id);
+            }
+        }
+    } catch (e) {
+        console.error("Failed fetching review queue:", e);
+    }
+}
 
 function renderReviewQueue() {
     const tbody = document.getElementById('review-queue-tbody');
-    if (!tbody || !SONIC_DATA) return;
+    if (!tbody) return;
 
-    const items = SONIC_DATA.events.filter(e => e.status === "Active" && (e.consistency === "Model Disagreement" || e.consistency === "Weak Match"));
-    tbody.innerHTML = items.map(e => `
-        <tr>
-            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
-            <td>${e.filename}</td>
-            <td class="font-mono">${e.pythonClass} (${e.pythonConf}%)</td>
-            <td class="font-mono" style="color: #c084fc;">${e.gtmClass} (${e.gtmConf}%)</td>
-            <td><span class="badge badge-medium">${e.consistency}</span></td>
-            <td><span class="badge badge-info">${e.quality}</span></td>
-            <td>
-                <button class="btn btn-primary btn-sm" onclick="loadReviewItem('${e.audioId}')">
-                    <i class="fas fa-edit"></i> Review
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    if (serverReviews.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No items currently awaiting forensic review. All models in consensus.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = serverReviews.map(e => {
+        const revId = e.id;
+        const audioId = e.audio_id || revId;
+        const fn = e.original_filename || audioId;
+        const pyCl = e.python_predicted_class || 'N/A';
+        const pyCf = e.python_top_confidence ? (e.python_top_confidence * 100).toFixed(1) : 70;
+        const gtmCl = e.gtm_predicted_class || 'N/A';
+        const gtmCf = e.gtm_top_confidence ? (e.gtm_top_confidence * 100).toFixed(1) : 65;
+        const reason = e.triage_reason || 'Model Disagreement';
+        const quality = e.quality_grade || 'Acceptable';
+
+        return `
+            <tr>
+                <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">
+                    <a href="/audio-analysis?event=${audioId}" style="color: inherit; text-decoration: underline;">${audioId}</a>
+                </td>
+                <td>${fn}</td>
+                <td class="font-mono">${pyCl} (${pyCf}%)</td>
+                <td class="font-mono" style="color: #c084fc;">${gtmCl} (${gtmCf}%)</td>
+                <td><span class="badge badge-medium">${reason}</span></td>
+                <td><span class="badge badge-info">${quality}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="loadReviewItem('${revId}')">
+                        <i class="fas fa-edit"></i> Review
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
-function loadReviewItem(audioId) {
-    currentRevId = audioId;
-    const ev = SONIC_DATA.events.find(e => e.audioId === audioId);
+function loadReviewItem(revId) {
+    currentRevId = revId;
+    const ev = serverReviews.find(e => e.id === revId || e.audio_id === revId);
     if (!ev) return;
 
-    document.getElementById('active-rev-id').innerText = ev.audioId;
-    document.getElementById('rev-filename').innerText = ev.filename;
-    document.getElementById('rev-reason').innerText = `Divergence: Py says ${ev.pythonClass} (${ev.pythonConf}%), GTM says ${ev.gtmClass} (${ev.gtmConf}%)`;
+    const audioId = ev.audio_id || ev.id;
+    document.getElementById('active-rev-id').innerText = audioId;
+    document.getElementById('rev-filename').innerText = ev.original_filename || audioId;
+    const pyCl = ev.python_predicted_class || 'N/A';
+    const gtmCl = ev.gtm_predicted_class || 'N/A';
+    document.getElementById('rev-reason').innerText = `Divergence: Python classified '${pyCl}', while GTM classified '${gtmCl}' (${ev.triage_reason}).`;
 
     // Draw canvas
     const canvas = document.getElementById('rev-wave-canvas');
@@ -144,7 +180,7 @@ function loadReviewItem(audioId) {
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = "#07090e";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#ea580c";
+        ctx.strokeStyle = "#06b6d4";
         ctx.beginPath();
         for (let x = 0; x < canvas.width; x += 4) {
             const y = canvas.height/2 + Math.sin(x*0.08)*30*(Math.random()*0.5+0.5);
@@ -155,20 +191,32 @@ function loadReviewItem(audioId) {
 }
 
 function playReviewSound() {
-    showToast(`Playing audio segment for ${currentRevId}`, 'info');
+    showToast(`Playing audio segment for review item ${currentRevId}`, 'info');
     sonicAudio.playSynth("siren", 2.5);
 }
 
-function commitReviewVerdict() {
+async function commitReviewVerdict() {
     const selectedClass = document.getElementById('rev-override-select').value;
-    const notes = document.getElementById('rev-notes').value;
+    const notes = document.getElementById('rev-notes').value || "Forensic acoustic override applied by Lead Reviewer.";
 
-    const ev = SONIC_DATA.events.find(e => e.audioId === currentRevId);
-    if (ev) {
-        ev.status = "Reviewed";
-        ev.reviewStatus = `Confirmed (${selectedClass})`;
-        renderReviewQueue();
-        showToast(`Decision committed: ${currentRevId} set to '${selectedClass}'. Original model predictions preserved in audit trail.`, 'success');
+    try {
+        const resp = await fetch(`/api/review/${currentRevId}/override`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                final_decision: selectedClass,
+                comments: notes
+            })
+        });
+        const res = await resp.json();
+        if (res.success) {
+            showToast(`Verdict committed: Incident set to '${selectedClass}'. Saved to immutable audit log.`, 'success');
+            await fetchReviewQueue();
+        } else {
+            showToast(res.error || "Failed committing verdict.", "error");
+        }
+    } catch (e) {
+        showToast("Network error submitting review override.", "error");
     }
 }
 </script>

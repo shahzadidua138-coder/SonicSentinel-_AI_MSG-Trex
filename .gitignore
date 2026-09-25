@@ -27,6 +27,12 @@ secrets.json
 *.swp
 *.swo
 
+# Temporary uploads & generated plots
+uploads/*
+!uploads/.gitkeep
+static/plots/*
+!static/plots/.gitkeep
+
 # OS specific files
 .DS_Store
 Thumbs.db

@@ -1,0 +1,31 @@
+Case_ID,Sound_Category,File_Source,Duration_s,Audio_Quality,SNR_dB,Python_Predicted,Python_Conf,GTM_Predicted,GTM_Conf,Confidence_Delta,Top2_Margin,Consistency_Status,Final_Decision,Alert_Triggered
+CAS-01,Gunshot,facility_east_gunshot_01.wav,0.80,Good,31.5,Gunshot,0.942,Gunshot,0.915,0.027,0.885,Strong Match,Gunshot,True
+CAS-02,Gunshot,range_impulse_gunshot_02.wav,0.75,Good,33.0,Gunshot,0.958,Gunshot,0.932,0.026,0.910,Strong Match,Gunshot,True
+CAS-03,Gunshot,corridor_shockwave_03.wav,0.85,Acceptable,19.2,Gunshot,0.891,Gunshot,0.865,0.026,0.820,Strong Match,Gunshot,True
+CAS-04,Panic Scream,stairwell_scream_01.flac,1.50,Good,26.4,Panic Scream,0.912,Panic Scream,0.884,0.028,0.795,Strong Match,Panic Scream,True
+CAS-05,Panic Scream,hallway_distress_02.wav,1.40,Good,24.8,Panic Scream,0.887,Panic Scream,0.860,0.027,0.750,Strong Match,Panic Scream,True
+CAS-06,Panic Scream,parking_shriek_03.wav,1.60,Acceptable,18.5,Panic Scream,0.864,Panic Scream,0.835,0.029,0.710,Strong Match,Panic Scream,True
+CAS-07,Glass Breaking,window_shatter_01.mp3,1.20,Good,28.1,Glass Breaking,0.935,Glass Breaking,0.910,0.025,0.840,Strong Match,Glass Breaking,True
+CAS-08,Glass Breaking,door_impact_glass_02.wav,1.10,Good,27.5,Glass Breaking,0.920,Glass Breaking,0.895,0.025,0.810,Strong Match,Glass Breaking,True
+CAS-09,Glass Breaking,skylight_fracture_03.wav,1.30,Acceptable,19.8,Glass Breaking,0.875,Glass Breaking,0.850,0.025,0.730,Strong Match,Glass Breaking,True
+CAS-10,Machinery Fault,pump_cavitation_01.wav,3.00,Good,23.5,Machinery Fault,0.915,Machinery Fault,0.890,0.025,0.820,Strong Match,Machinery Fault,True
+CAS-11,Machinery Fault,bearing_friction_02.wav,2.80,Good,22.0,Machinery Fault,0.895,Machinery Fault,0.870,0.025,0.780,Strong Match,Machinery Fault,True
+CAS-12,Machinery Fault,motor_vibration_03.wav,3.20,Acceptable,17.4,Machinery Fault,0.860,Machinery Fault,0.830,0.030,0.710,Strong Match,Machinery Fault,True
+CAS-13,Alarm or Siren,fire_strobe_siren_01.wav,2.50,Good,34.2,Alarm or Siren,0.978,Alarm or Siren,0.965,0.013,0.940,Strong Match,Alarm or Siren,True
+CAS-14,Alarm or Siren,industrial_hooter_02.wav,2.40,Good,32.0,Alarm or Siren,0.962,Alarm or Siren,0.948,0.014,0.910,Strong Match,Alarm or Siren,True
+CAS-15,Alarm or Siren,evacuation_tone_03.wav,2.60,Acceptable,18.0,Alarm or Siren,0.910,Alarm or Siren,0.885,0.025,0.820,Strong Match,Alarm or Siren,True
+CAS-16,Person Asking for Help,help_call_01.wav,2.20,Good,25.0,Person Asking for Help,0.895,Person Asking for Help,0.870,0.025,0.790,Strong Match,Person Asking for Help,True
+CAS-17,Person Asking for Help,emergency_phrase_02.wav,2.40,Acceptable,19.5,Person Asking for Help,0.874,Person Asking for Help,0.845,0.029,0.740,Strong Match,Person Asking for Help,True
+CAS-18,Person Asking for Help,distress_intercom_03.wav,2.50,Acceptable,17.8,Person Asking for Help,0.850,Person Asking for Help,0.820,0.030,0.690,Strong Match,Person Asking for Help,True
+CAS-19,Aggression,shouting_conflict_01.wav,2.00,Good,22.5,Aggression,0.840,Aggression,0.815,0.025,0.680,Strong Match,Aggression,True
+CAS-20,Aggression,physical_dispute_02.wav,2.10,Acceptable,18.2,Aggression,0.810,Aggression,0.785,0.025,0.620,Strong Match,Aggression,True
+CAS-21,Vehicle Horn,truck_dual_tone_01.wav,1.50,Good,26.0,Vehicle Horn,0.910,Vehicle Horn,0.885,0.025,0.810,Strong Match,Vehicle Horn,False
+CAS-22,Vehicle Horn,loading_dock_horn_02.wav,1.40,Acceptable,19.0,Vehicle Horn,0.880,Vehicle Horn,0.855,0.025,0.760,Strong Match,Vehicle Horn,False
+CAS-23,Animal Sound,dog_bark_fence_01.mp3,1.00,Good,29.5,Animal Sound,0.925,Animal Sound,0.900,0.025,0.840,Strong Match,Animal Sound,False
+CAS-24,Animal Sound,canine_alert_02.mp3,1.10,Good,28.0,Animal Sound,0.910,Animal Sound,0.885,0.025,0.820,Strong Match,Animal Sound,False
+CAS-25,Background Noise,hvac_ventilation_01.wav,3.00,Good,30.0,Background Noise,0.985,Background Noise,0.975,0.010,0.960,Strong Match,Background Noise,False
+CAS-26,Background Noise,ambient_rain_02.wav,3.00,Good,28.5,Background Noise,0.970,Background Noise,0.960,0.010,0.940,Strong Match,Background Noise,False
+CAS-27,Model Disagreement,metallic_clank_echo.wav,2.10,Acceptable,16.3,Machinery Fault,0.720,Alarm or Siren,0.680,0.040,0.120,Model Disagreement,Machinery Fault,True
+CAS-28,Audio Clipping,distorted_clipping_test.wav,1.50,Unusable,4.2,Gunshot,0.580,Glass Breaking,0.520,0.060,0.060,Unusable Quality,Quality Rejected,False
+CAS-29,Silent Recording,silent_empty_room.wav,3.00,Unusable,0.0,Background Noise,0.990,Background Noise,0.990,0.000,0.980,Silent Recording,Background Noise,False
+CAS-30,Boundary Noise Case,distant_horn_in_rain.wav,2.50,Acceptable,12.8,Background Noise,0.610,Vehicle Horn,0.580,0.030,0.030,Uncertain Result,Background Noise,True

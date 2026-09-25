@@ -56,47 +56,117 @@
 {% block extra_js %}
 <script>
 let activeFilter = 'All';
+let serverAlerts = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderAlerts();
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchAlerts();
 });
+
+async function fetchAlerts() {
+    try {
+        const resp = await fetch('/api/alerts/active');
+        if (resp.ok) {
+            serverAlerts = await resp.json();
+            renderAlerts();
+        }
+    } catch (e) {
+        console.error("Failed fetching alerts:", e);
+    }
+}
 
 function renderAlerts() {
     const tbody = document.getElementById('alerts-table-body');
-    if (!tbody || !SONIC_DATA) return;
+    if (!tbody) return;
+
+    const data = (serverAlerts && serverAlerts.length > 0) ? serverAlerts : (SONIC_DATA ? SONIC_DATA.events : []);
 
     const filtered = (activeFilter === 'All') 
-        ? SONIC_DATA.events.filter(e => e.severity !== 'Informational')
-        : SONIC_DATA.events.filter(e => e.severity === activeFilter);
+        ? data.filter(e => e.severity !== 'Informational')
+        : data.filter(e => e.severity === activeFilter);
 
-    tbody.innerHTML = filtered.map(e => `
-        <tr>
-            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
-            <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
-            <td>
-                <div style="font-weight: 600;">${e.pythonClass}</div>
-                <div style="font-size: 10px; color: var(--text-muted);">${e.timestamp}</div>
-            </td>
-            <td style="color: var(--text-muted);">${e.location}</td>
-            <td class="font-mono">${e.pythonConf}% / ${e.gtmConf}%</td>
-            <td><span class="badge badge-${e.status === 'Active' ? 'critical' : 'success'}">${e.status}</span></td>
-            <td>
-                <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary btn-sm" onclick="acknowledgeAlert('${e.audioId}')" title="Acknowledge">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="escalateAlert('${e.audioId}')" title="Escalate">
-                        <i class="fas fa-arrow-up"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    document.getElementById('alert-count-label').innerText = `${filtered.length} Active Hazards`;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No alerts matching filter '${activeFilter}'.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(e => {
+        const audioId = e.audio_id || e.audioId || e.id;
+        const alertId = e.id || ('ALT-' + audioId);
+        const threat = e.threat_category || e.python_predicted_class || e.pythonClass;
+        const pyConf = e.python_top_confidence ? (e.python_top_confidence * 100).toFixed(1) : (e.pythonConf || 90);
+        const gtmConf = e.gtm_top_confidence ? (e.gtm_top_confidence * 100).toFixed(1) : (e.gtmConf || 88);
+        const sev = e.severity || 'High';
+        const st = e.status || 'Active';
+        const time = e.created_at || e.timestamp || 'Just now';
+
+        return `
+            <tr>
+                <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">
+                    <a href="/audio-analysis?event=${audioId}" style="color: inherit; text-decoration: underline;">${audioId}</a>
+                </td>
+                <td><span class="badge badge-${sev.toLowerCase()}">${sev}</span></td>
+                <td>
+                    <div style="font-weight: 600;">${threat}</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">${time}</div>
+                </td>
+                <td style="color: var(--text-muted); font-size: 11px;">${e.recommended_action ? e.recommended_action.substring(0, 38) + '...' : 'Sector Perimeter Node'}</td>
+                <td class="font-mono">${pyConf}% / ${gtmConf}%</td>
+                <td><span class="badge badge-${st === 'Active' ? 'critical' : (st === 'Escalated' ? 'danger' : 'success')}">${st}</span></td>
+                <td>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="acknowledgeAlert('${alertId}')" title="Acknowledge">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="escalateAlert('${alertId}')" title="Escalate">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <a href="/api/reports/${audioId}/pdf" class="btn btn-secondary btn-sm" title="Download Report">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function filterAlerts(sev) {
     activeFilter = sev;
     renderAlerts();
+}
+
+async function acknowledgeAlert(alertId) {
+    try {
+        await fetch(`/api/alerts/${alertId}/ack`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Acknowledged' })
+        });
+        showToast(`Incident #${alertId} acknowledged.`, 'info');
+        await fetchAlerts();
+    } catch (e) {
+        showToast("Error acknowledging alert.", "error");
+    }
+}
+
+async function escalateAlert(alertId) {
+    try {
+        await fetch(`/api/alerts/${alertId}/ack`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Escalated' })
+        });
+        showToast(`Incident #${alertId} ESCALATED to emergency patrol!`, 'error');
+        await fetchAlerts();
+    } catch (e) {
+        showToast("Error escalating alert.", "error");
+    }
+}
+
+function triggerTestAlert() {
+    showToast("Simulated threat broadcasted across sector nodes.", "warning");
 }
 
 function acknowledgeAlert(audioId) {

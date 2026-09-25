@@ -20,6 +20,12 @@ def run_tests():
     print("  SonicSentinel AI - Backend Auth & RBAC Tests")
     print("==================================================")
 
+    # Clean up test accounts to ensure idempotency
+    conn = database.get_db_connection()
+    conn.execute("DELETE FROM users WHERE username IN ('normaltester1', 'rachel_operator')")
+    conn.commit()
+    conn.close()
+
     # 1. Public Register: Attempt role override / privilege escalation
     opener = get_session()
     reg_data = urllib.parse.urlencode({

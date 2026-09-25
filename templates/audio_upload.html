@@ -71,18 +71,17 @@ function handleSelectedFiles(files) {
     Array.from(files).forEach(f => {
         const ext = f.name.split('.').pop().toLowerCase();
         const isValid = allowed.includes(ext);
-        const isSilent = f.name.toLowerCase().includes("silence");
-        const isClipped = f.name.toLowerCase().includes("clip");
 
         uploadQueue.push({
             id: 'UP-' + Math.floor(1000 + Math.random() * 9000),
+            file: f,
             name: f.name,
             format: ext.toUpperCase(),
             size: (f.size / 1024).toFixed(1) + " KB",
-            duration: "3.2s",
-            isSilent: isSilent,
-            isClipped: isClipped,
-            status: (!isValid) ? "Unsupported Format" : (isSilent ? "Rejected (Silent)" : "Valid"),
+            duration: "Analyzing...",
+            isSilent: false,
+            isClipped: false,
+            status: isValid ? "Ready" : "Unsupported Format",
             result: "Pending"
         });
     });
@@ -101,22 +100,27 @@ function renderQueue() {
 
     tbody.innerHTML = uploadQueue.map(item => `
         <tr>
-            <td style="font-weight: 600;">${item.name}</td>
+            <td style="font-weight: 600;">
+                ${item.audioId ? `<a href="/audio-analysis?event=${item.audioId}" style="color: var(--text-accent); text-decoration: underline;">${item.name}</a>` : item.name}
+            </td>
             <td><span class="badge badge-info">${item.format}</span> ${item.size}</td>
             <td class="font-mono">${item.duration}</td>
             <td>
-                ${item.isSilent ? '<span style="color: #ef4444;"><i class="fas fa-volume-mute"></i> Silent (< -60 dB)</span>' : (item.isClipped ? '<span style="color: #f59e0b;"><i class="fas fa-wave-square"></i> Severe Clipping</span>' : '<span style="color: #10b981;"><i class="fas fa-check"></i> Intact</span>')}
+                ${item.isSilent ? '<span style="color: #ef4444;"><i class="fas fa-volume-mute"></i> Silent (< -60 dB)</span>' : (item.isClipped ? '<span style="color: #f59e0b;"><i class="fas fa-wave-square"></i> Severe Clipping</span>' : (item.qualityGrade ? `<span style="color: #10b981;"><i class="fas fa-check"></i> ${item.qualityGrade}</span>` : '<span class="text-muted">Pending Check</span>'))}
             </td>
             <td>
-                <span class="badge ${item.status === 'Valid' ? 'badge-success' : 'badge-critical'}">${item.status}</span>
+                <span class="badge ${item.status === 'Classified' ? 'badge-success' : (item.status === 'Processing...' ? 'badge-info' : (item.status === 'Ready' ? 'badge-accent' : 'badge-critical'))}">${item.status}</span>
             </td>
             <td class="font-mono" style="font-weight: 600;">
                 ${item.result === 'Pending' ? '<span class="text-muted">Awaiting Engine</span>' : `<span style="color: var(--text-accent);">${item.result}</span>`}
             </td>
             <td>
-                <button class="btn btn-secondary btn-sm" onclick="removeQueueItem('${item.id}')">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div style="display: flex; gap: 6px;">
+                    ${item.audioId ? `<a href="/api/reports/${item.audioId}/pdf" class="btn btn-secondary btn-sm" title="Download PDF Certificate"><i class="fas fa-file-pdf"></i></a>` : ''}
+                    <button class="btn btn-secondary btn-sm" onclick="removeQueueItem('${item.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
@@ -133,26 +137,48 @@ function clearQueue() {
     showToast("Ingestion queue cleared.", "info");
 }
 
-function processQueue() {
-    if (uploadQueue.length === 0) {
-        showToast("Upload queue is empty.", "warning");
+async function processQueue() {
+    const pendingItems = uploadQueue.filter(i => i.status === "Ready");
+    if (pendingItems.length === 0) {
+        showToast("No ready items in queue to classify.", "warning");
         return;
     }
 
-    uploadQueue.forEach(item => {
-        if (item.status === "Valid") {
-            const lower = item.name.toLowerCase();
-            if (lower.includes("gun")) item.result = "Gunshot";
-            else if (lower.includes("glass")) item.result = "Glass Breaking";
-            else if (lower.includes("siren") || lower.includes("alarm")) item.result = "Alarm or Siren";
-            else if (lower.includes("machin")) item.result = "Machinery Fault";
-            else if (lower.includes("scream")) item.result = "Panic Scream";
-            else if (lower.includes("help")) item.result = "Person Asking for Help";
-            else item.result = "Background Noise";
+    showToast(`Processing ${pendingItems.length} audio file(s)...`, "info");
+
+    for (let item of pendingItems) {
+        item.status = "Processing...";
+        renderQueue();
+
+        const formData = new FormData();
+        formData.append("audio", item.file);
+
+        try {
+            const resp = await fetch("/api/audio/upload", {
+                method: "POST",
+                body: formData
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                item.status = "Classified";
+                item.result = data.prediction.final_class;
+                item.audioId = data.audio_id;
+                item.duration = data.duration + "s";
+                item.qualityGrade = data.quality.quality_grade;
+                item.isSilent = data.quality.is_silent;
+                item.isClipped = data.quality.is_clipped;
+            } else {
+                item.status = "Failed";
+                item.result = data.error || "Error";
+            }
+        } catch (err) {
+            item.status = "Network Error";
+            item.result = "Failed";
         }
-    });
-    renderQueue();
-    showToast("Batch processing complete.", "success");
+        renderQueue();
+    }
+    showToast("Batch acoustic ingestion & classification complete!", "success");
 }
 </script>
 {% endblock %}

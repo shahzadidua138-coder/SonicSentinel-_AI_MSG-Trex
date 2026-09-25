@@ -6,11 +6,25 @@ Backend Server using Python Flask and SQLite Authentication
 import os
 import csv
 import io
+import json
+import uuid
+from datetime import datetime
 from functools import wraps
+from werkzeug.utils import secure_filename
 from flask import (
-    Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response, abort
+    Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response, abort, send_file
 )
 import database
+from src.utils.audio_hash import compute_audio_hash
+from src.services.quality_assessor import assess_audio_quality
+from src.services.feature_extractor import extract_spectral_features
+from src.services.audio_dsp import (
+    load_audio_file, parse_pcm_buffer, render_waveform_image, render_spectrogram_image
+)
+from src.services.ml_service import classify_audio_dual
+from src.services.alert_engine import evaluate_alert, reload_rules
+from src.services.pdf_generator import generate_incident_pdf
+from config.settings import UPLOAD_FOLDER
 
 app = Flask(__name__)
 # Cryptographically signed sessions
@@ -495,7 +509,7 @@ def profile():
 @app.route('/export-csv')
 @login_required
 def export_csv():
-    """Export standard events to CSV file"""
+    """Export standard events from SQLite database to CSV file"""
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -506,21 +520,20 @@ def export_csv():
     ]
     writer.writerow(headers)
 
-    sample_rows = [
-        ["AUD-2026-8801", "facility_east_wing_gunshot_01.wav", "Gunshot", "96.4%", "94.8%", "1.6%", "Good", "Critical", "Active", "2026-09-24 08:12:45"],
-        ["AUD-2026-8802", "emergency_stairwell_scream_03.flac", "Panic Scream", "91.2%", "89.7%", "1.5%", "Good", "Critical", "Escalated", "2026-09-24 08:14:10"],
-        ["AUD-2026-8803", "loading_bay_help_call_02.wav", "Person Asking for Help", "88.5%", "87.0%", "1.5%", "Acceptable", "Critical", "Acknowledged", "2026-09-24 08:18:22"],
-        ["AUD-2026-8804", "warehouse_window_shatter.mp3", "Glass Breaking", "94.0%", "92.5%", "1.5%", "Good", "High", "Reviewed", "2026-09-24 07:45:00"],
-        ["AUD-2026-8805", "generator_bearing_cavitation.wav", "Machinery Fault", "95.8%", "93.1%", "2.7%", "Good", "High", "Reviewed", "2026-09-24 06:30:15"],
-        ["AUD-2026-8806", "fire_evacuation_strobe_siren.wav", "Alarm or Siren", "98.2%", "97.5%", "0.7%", "Good", "High", "Closed", "2026-09-24 05:10:00"],
-        ["AUD-2026-8807", "loading_zone_ambiguous_echo.wav", "Vehicle Horn", "54.2%", "61.8%", "7.6%", "Poor", "Medium", "Manual Review", "2026-09-24 08:05:12"],
-        ["AUD-2026-8808", "hallway_shouting_dispute.wav", "Aggression", "64.5%", "61.0%", "3.5%", "Acceptable", "High", "Manual Review", "2026-09-24 07:58:30"],
-        ["AUD-2026-8809", "perimeter_fence_canine_bark.mp3", "Animal Sound", "93.4%", "91.8%", "1.6%", "Good", "Low", "Closed", "2026-09-24 07:15:40"],
-        ["AUD-2026-8810", "hvac_ventilation_ambient_08.ogg", "Background Noise", "97.1%", "96.0%", "1.1%", "Good", "Informational", "Closed", "2026-09-24 06:00:22"]
-    ]
-
-    for row in sample_rows:
-        writer.writerow(row)
+    events = database.get_all_audio_events()
+    for e in events:
+        writer.writerow([
+            e['id'],
+            e['original_filename'] or 'N/A',
+            e['final_detected_class'] or e['python_predicted_class'] or 'N/A',
+            f"{float(e['python_top_confidence'] or 0)*100:.1f}%",
+            f"{float(e['gtm_top_confidence'] or 0)*100:.1f}%",
+            f"{float(e['confidence_difference'] or 0)*100:.1f}%",
+            e['quality_grade'] or 'Good',
+            e['severity'] or 'Informational',
+            e['alert_status'] or 'Active',
+            str(e['created_at'])
+        ])
 
     output.seek(0)
     return Response(
@@ -528,6 +541,266 @@ def export_csv():
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment;filename=SonicSentinel_Event_Audit.csv"}
     )
+
+
+# ==========================================
+# ACOUSTIC REST & STREAMING API ENDPOINTS
+# ==========================================
+
+@app.route('/api/audio/upload', methods=['POST'])
+@login_required
+def api_audio_upload():
+    """
+    Ingests and analyzes single or batch audio files (SRS §6, §7, §8).
+    Performs SHA-256 deduplication, audio quality check, feature extraction,
+    dual AI classification, alert evaluation, and persistence.
+    """
+    if 'audio' not in request.files and 'file' not in request.files:
+        return jsonify({"error": "No audio file provided in multipart payload"}), 400
+
+    file = request.files.get('audio') or request.files.get('file')
+    if not file or file.filename == '':
+        return jsonify({"error": "Empty filename provided"}), 400
+
+    filename = secure_filename(file.filename)
+    audio_bytes = file.read()
+    if len(audio_bytes) == 0:
+        return jsonify({"error": "Uploaded file is 0 bytes"}), 400
+
+    # 1. SHA-256 Fingerprint
+    sha256_hash = compute_audio_hash(audio_bytes)
+
+    # Check duplicate detection (AUD-10)
+    conn = database.get_db_connection()
+    existing_rec = conn.execute("SELECT * FROM audio_records WHERE sha256_hash = ?", (sha256_hash,)).fetchone()
+    conn.close()
+
+    audio_id = f"AUD-{uuid.uuid4().hex[:8].upper()}"
+    saved_path = os.path.join(UPLOAD_FOLDER, f"{audio_id}_{filename}")
+    with open(saved_path, 'wb') as f:
+        f.write(audio_bytes)
+
+    # 2. Audio DSP Loading & Resampling
+    samples, sr, duration = load_audio_file(saved_path)
+
+    # 3. Audio Quality Gatekeeper
+    quality_result = assess_audio_quality(samples, sr)
+
+    # 4. Feature Extraction
+    features = extract_spectral_features(samples, sr)
+
+    # 5. Dual AI Model Inference & Arbitration
+    pred_result = classify_audio_dual(samples, features, quality_result, filename=filename)
+
+    # If duplicate detected, flag consistency
+    if existing_rec:
+        pred_result["consistency_status"] = f"Duplicate Audio Hash (Matches {existing_rec['id']})"
+
+    # 6. Alert Policy Evaluation
+    alert_result = evaluate_alert(pred_result, session_id=f"user_{session.get('user_id', 'anon')}")
+
+    # 7. Generate Waveform and Mel-Spectrogram Heatmap Images
+    wave_url = render_waveform_image(samples, audio_id)
+    spec_url = render_spectrogram_image(samples, audio_id)
+
+    # 8. Persist to Database
+    user_id = session.get('user_id')
+    conn = database.get_db_connection()
+    conn.execute('''
+        INSERT INTO audio_records (
+            id, user_id, source_type, file_path, original_filename,
+            duration_seconds, sample_rate, channels, sha256_hash,
+            quality_grade, is_clipped, is_silent, snr_db
+        ) VALUES (?, ?, 'upload', ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+    ''', (
+        audio_id, user_id, saved_path, filename,
+        round(duration, 2), sr, sha256_hash,
+        quality_result["quality_grade"],
+        1 if quality_result["is_clipped"] else 0,
+        1 if quality_result["is_silent"] else 0,
+        quality_result["snr_db"]
+    ))
+
+    pred_id = f"PRED-{uuid.uuid4().hex[:8].upper()}"
+    conn.execute('''
+        INSERT INTO predictions (
+            id, audio_id, python_predicted_class, python_top_confidence,
+            python_probabilities, gtm_predicted_class, gtm_top_confidence,
+            gtm_probabilities, confidence_difference, top_two_margin,
+            consistency_status, final_detected_class, waveform_image_path,
+            spectrogram_image_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        pred_id, audio_id,
+        pred_result["python_class"], pred_result["python_confidence"],
+        json.dumps(pred_result["python_probabilities"]),
+        pred_result["gtm_class"], pred_result["gtm_confidence"],
+        json.dumps(pred_result["gtm_probabilities"]),
+        pred_result["confidence_difference"], pred_result["top_two_margin"],
+        pred_result["consistency_status"], pred_result["final_class"],
+        wave_url, spec_url
+    ))
+
+    alt_id = f"ALT-{uuid.uuid4().hex[:8].upper()}"
+    conn.execute('''
+        INSERT INTO alerts (
+            id, audio_id, threat_category, severity, status,
+            is_confirmed_repeated, recommended_action
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        alt_id, audio_id,
+        alert_result["threat_category"], alert_result["severity"],
+        alert_result["status"],
+        1 if alert_result["is_confirmed_repeated"] else 0,
+        alert_result["recommended_action"]
+    ))
+
+    if pred_result["consistency_status"] in ["Model Disagreement", "Uncertain Result"] or "Duplicate" in pred_result["consistency_status"]:
+        rev_id = f"REV-{uuid.uuid4().hex[:8].upper()}"
+        conn.execute('''
+            INSERT INTO reviews (
+                id, audio_id, triage_reason, original_decision,
+                final_decision, is_override, reviewer_comments
+            ) VALUES (?, ?, ?, ?, ?, 0, 'Pending forensic evaluation by Audio Reviewer.')
+        ''', (
+            rev_id, audio_id, pred_result["consistency_status"],
+            pred_result["final_class"], pred_result["final_class"]
+        ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "audio_id": audio_id,
+        "filename": filename,
+        "duration": round(duration, 2),
+        "sha256": sha256_hash,
+        "quality": quality_result,
+        "prediction": pred_result,
+        "alert": alert_result,
+        "waveform_url": wave_url,
+        "spectrogram_url": spec_url
+    })
+
+
+@app.route('/api/audio/live-chunk', methods=['POST'])
+@login_required
+def api_audio_live_chunk():
+    """
+    Ingests live 1.5s sliding window PCM chunks from client Web Audio API (SRS §10).
+    Evaluates real-time threat detection and consecutive window confirmation.
+    """
+    data = request.get_data()
+    if not data or len(data) < 100:
+        return jsonify({"error": "Empty audio buffer"}), 400
+
+    samples = parse_pcm_buffer(data)
+    quality = assess_audio_quality(samples)
+    features = extract_spectral_features(samples)
+    prediction = classify_audio_dual(samples, features, quality, filename="live_mic_stream.raw")
+    session_id = f"user_{session.get('user_id', 1)}"
+    alert = evaluate_alert(prediction, session_id=session_id)
+
+    return jsonify({
+        "success": True,
+        "quality": quality,
+        "prediction": prediction,
+        "alert": alert,
+        "timestamp": datetime.utcnow().strftime("%H:%M:%S")
+    })
+
+
+@app.route('/api/audio/events', methods=['GET'])
+@login_required
+def api_audio_events():
+    events = database.get_all_audio_events()
+    return jsonify([dict(e) for e in events])
+
+
+@app.route('/api/audio/<audio_id>', methods=['GET'])
+@login_required
+def api_audio_detail(audio_id):
+    ev = database.get_audio_event_by_id(audio_id)
+    if not ev:
+        return jsonify({"error": "Audio event not found"}), 404
+
+    d = dict(ev)
+    if d.get('python_probabilities'):
+        try:
+            d['python_probabilities'] = json.loads(d['python_probabilities'])
+        except Exception:
+            pass
+    if d.get('gtm_probabilities'):
+        try:
+            d['gtm_probabilities'] = json.loads(d['gtm_probabilities'])
+        except Exception:
+            pass
+    return jsonify(d)
+
+
+@app.route('/api/alerts/active', methods=['GET'])
+@login_required
+def api_active_alerts():
+    alerts = database.get_active_alerts()
+    return jsonify([dict(a) for a in alerts])
+
+
+@app.route('/api/alerts/<alert_id>/ack', methods=['POST'])
+@login_required
+def api_alert_ack(alert_id):
+    status = request.json.get('status', 'Acknowledged') if request.is_json else 'Acknowledged'
+    database.update_alert_status(alert_id, status, user_id=session.get('user_id'))
+    return jsonify({"success": True, "alert_id": alert_id, "new_status": status})
+
+
+@app.route('/api/review/queue', methods=['GET'])
+@login_required
+def api_review_queue():
+    queue = database.get_review_queue()
+    return jsonify([dict(q) for q in queue])
+
+
+@app.route('/api/review/<review_id>/override', methods=['POST'])
+@login_required
+@roles_required(database.ROLE_AUDIO_REVIEWER, database.ROLE_ADMINISTRATOR)
+def api_review_override(review_id):
+    payload = request.get_json() or request.form
+    final_decision = payload.get('final_decision')
+    comments = payload.get('comments', 'Forensic override applied.')
+    if not final_decision:
+        return jsonify({"error": "final_decision is required"}), 400
+
+    success, msg = database.submit_review_override(
+        review_id, final_decision, comments, reviewer_id=session.get('user_id')
+    )
+    if success:
+        return jsonify({"success": True, "message": msg})
+    return jsonify({"error": msg}), 400
+
+
+@app.route('/api/reports/<audio_id>/pdf', methods=['GET'])
+@login_required
+def api_download_report_pdf(audio_id):
+    ev = database.get_audio_event_by_id(audio_id)
+    if not ev:
+        abort(404, "Audio event not found")
+
+    pdf_bytes = generate_incident_pdf(dict(ev))
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"SonicSentinel_Incident_{audio_id}.pdf"
+    )
+
+
+@app.route('/api/admin/rules/reload', methods=['POST'])
+@login_required
+@roles_required(database.ROLE_ADMINISTRATOR)
+def api_reload_rules():
+    success = reload_rules()
+    return jsonify({"reloaded": success, "message": "Alert policies successfully hot-reloaded."})
 
 
 if __name__ == '__main__':
@@ -543,4 +816,5 @@ if __name__ == '__main__':
     print("    User:        user        |  Password: User@123")
     print("==========================================================")
     app.run(host='127.0.0.1', port=5000, debug=True)
+
 

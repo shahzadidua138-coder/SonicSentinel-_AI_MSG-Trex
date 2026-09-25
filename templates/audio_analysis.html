@@ -119,94 +119,141 @@
 {% block extra_js %}
 <script>
 let currentEvent = null;
+let allEvents = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    const sel = document.getElementById('analysis-event-select');
-    if (sel && SONIC_DATA) {
-        sel.innerHTML = SONIC_DATA.events.map(e => `
-            <option value="${e.audioId}">${e.audioId} - ${e.pythonClass} (${e.pythonConf}%)</option>
-        `).join('');
-        loadEventDetails(SONIC_DATA.events[0].audioId);
-    }
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchEventsList();
 });
 
-function loadEventDetails(audioId) {
-    const ev = SONIC_DATA.events.find(e => e.audioId === audioId) || SONIC_DATA.events[0];
-    currentEvent = ev;
+async function fetchEventsList() {
+    try {
+        const resp = await fetch('/api/audio/events');
+        if (resp.ok) {
+            allEvents = await resp.json();
+            const sel = document.getElementById('analysis-event-select');
+            if (sel && allEvents.length > 0) {
+                sel.innerHTML = allEvents.map(e => {
+                    const pyConf = e.python_top_confidence ? (e.python_top_confidence * 100).toFixed(1) : 90;
+                    return `<option value="${e.id}">${e.id} - ${e.final_detected_class || e.python_predicted_class} (${pyConf}%)</option>`;
+                }).join('');
 
-    // Metadata Grid
-    const metaGrid = document.getElementById('analysis-meta-grid');
-    if (metaGrid) {
-        metaGrid.innerHTML = `
-            <div>
-                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Audio ID & Filename</div>
-                <div class="font-mono" style="font-weight: 700; color: var(--text-accent);">${ev.audioId}</div>
-                <div style="font-size: 11px; color: var(--text-muted);">${ev.filename}</div>
-            </div>
-            <div>
-                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Format & Quality</div>
-                <div style="font-size: 12px; font-weight: 600;">${ev.format}</div>
-                <div><span class="badge badge-success">${ev.quality} (SNR ${ev.snr} dB)</span></div>
-            </div>
-            <div>
-                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Consistency & Delta</div>
-                <div><span class="badge badge-success">${ev.consistency}</span></div>
-                <div class="font-mono" style="font-size: 11px; color: var(--text-muted);">|Py - GTM| = ${ev.delta}%</div>
-            </div>
-            <div>
-                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Severity & Status</div>
-                <div><span class="badge badge-${ev.severity.toLowerCase()}">${ev.severity}</span></div>
-                <div style="font-size: 11px; color: var(--text-muted);">${ev.status}</div>
-            </div>
-        `;
+                // Check query string
+                const params = new URLSearchParams(window.location.search);
+                const targetId = params.get('event') || allEvents[0].id;
+                sel.value = targetId;
+                await loadEventDetails(targetId);
+            }
+        }
+    } catch (e) {
+        console.error("Failed fetching events list:", e);
     }
+}
 
-    document.getElementById('play-file-name').innerText = ev.filename;
-    document.getElementById('an-py-top').innerText = `${ev.pythonClass} (${ev.pythonConf}%)`;
-    document.getElementById('an-gtm-top').innerText = `${ev.gtmClass} (${ev.gtmConf}%)`;
+async function loadEventDetails(audioId) {
+    try {
+        const resp = await fetch(`/api/audio/${audioId}`);
+        if (!resp.ok) return;
+        const ev = await resp.json();
+        currentEvent = ev;
 
-    // Top 3 Python
-    document.getElementById('an-py-top3').innerHTML = ev.topPython.map(p => `
-        <div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <span><strong>${p.name}</strong></span>
-                <span class="font-mono">${p.conf}%</span>
+        const pyConf = ev.python_top_confidence ? (ev.python_top_confidence * 100).toFixed(1) : 92.0;
+        const gtmConf = ev.gtm_top_confidence ? (ev.gtm_top_confidence * 100).toFixed(1) : 89.0;
+        const delta = ev.confidence_difference ? (ev.confidence_difference * 100).toFixed(1) : Math.abs(pyConf - gtmConf).toFixed(1);
+        const sev = ev.severity || 'Critical';
+        const st = ev.alert_status || 'Active';
+        const quality = ev.quality_grade || 'Good';
+        const snr = ev.snr_db ? `${ev.snr_db} dB` : '28.4 dB';
+
+        // Update Report Link
+        const reportBtn = document.querySelector("a[href*='reports']");
+        if (reportBtn) {
+            reportBtn.href = `/api/reports/${ev.id}/pdf`;
+            reportBtn.innerHTML = `<i class="fas fa-file-pdf"></i> Download PDF Certificate`;
+        }
+
+        // Metadata Grid
+        const metaGrid = document.getElementById('analysis-meta-grid');
+        if (metaGrid) {
+            metaGrid.innerHTML = `
+                <div>
+                    <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Audio ID & Filename</div>
+                    <div class="font-mono" style="font-weight: 700; color: var(--text-accent);">${ev.id}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${ev.original_filename || 'Recording'}</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Format & Quality</div>
+                    <div style="font-size: 12px; font-weight: 600;">22.05 kHz Mono (${ev.duration_seconds || 1.5}s)</div>
+                    <div><span class="badge badge-success">${quality} (SNR ${snr})</span></div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Consistency & Delta</div>
+                    <div><span class="badge badge-success">${ev.consistency_status || 'Strong Match'}</span></div>
+                    <div class="font-mono" style="font-size: 11px; color: var(--text-muted);">|Py - GTM| = ${delta}%</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Severity & Status</div>
+                    <div><span class="badge badge-${sev.toLowerCase()}">${sev}</span></div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${st}</div>
+                </div>
+            `;
+        }
+
+        document.getElementById('play-file-name').innerText = ev.original_filename || ev.id;
+        document.getElementById('an-py-top').innerText = `${ev.python_predicted_class} (${pyConf}%)`;
+        document.getElementById('an-gtm-top').innerText = `${ev.gtm_predicted_class} (${gtmConf}%)`;
+
+        // Top 3 Python
+        const pyProbs = ev.python_probabilities || {};
+        const pySorted = Object.entries(pyProbs).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        document.getElementById('an-py-top3').innerHTML = pySorted.map(([cat, conf]) => `
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span><strong>${cat}</strong></span>
+                    <span class="font-mono">${(conf * 100).toFixed(1)}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width: ${conf * 100}%;"></div></div>
             </div>
-            <div class="progress-track"><div class="progress-fill" style="width: ${p.conf}%;"></div></div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Top 3 GTM
-    document.getElementById('an-gtm-top3').innerHTML = ev.topGTM.map(p => `
-        <div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-                <span><strong>${p.name}</strong></span>
-                <span class="font-mono" style="color: #c084fc;">${p.conf}%</span>
+        // Top 3 GTM
+        const gtmProbs = ev.gtm_probabilities || {};
+        const gtmSorted = Object.entries(gtmProbs).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        document.getElementById('an-gtm-top3').innerHTML = gtmSorted.map(([cat, conf]) => `
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span><strong>${cat}</strong></span>
+                    <span class="font-mono" style="color: #c084fc;">${(conf * 100).toFixed(1)}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width: ${conf * 100}%; background: #a855f7;"></div></div>
             </div>
-            <div class="progress-track"><div class="progress-fill" style="width: ${p.conf}%; background: #a855f7;"></div></div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Full 10 bars
-    document.getElementById('full-10-bars').innerHTML = SONIC_DATA.categories.map(cat => {
-        const isPy = (cat.name === ev.pythonClass);
-        const isGtm = (cat.name === ev.gtmClass);
-        const pyVal = isPy ? ev.pythonConf : (Math.random() * 3).toFixed(1);
-        const gtmVal = isGtm ? ev.gtmConf : (Math.random() * 4).toFixed(1);
+        // Full 10 bars
+        const categories = [
+            "Machinery Fault", "Glass Breaking", "Alarm or Siren", "Vehicle Horn",
+            "Animal Sound", "Gunshot", "Panic Scream", "Aggression",
+            "Person Asking for Help", "Background Noise"
+        ];
 
-        return `
-            <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
-                <span style="width: 180px; font-weight: 500;"><i class="${cat.icon}" style="margin-right: 6px; color: var(--text-muted);"></i> ${cat.name}</span>
-                <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${pyVal}%;"></div></div></div>
-                <span class="font-mono" style="width: 45px; text-align: right; color: var(--text-accent);">${pyVal}%</span>
-                <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${gtmVal}%; background: #a855f7;"></div></div></div>
-                <span class="font-mono" style="width: 45px; text-align: right; color: #c084fc;">${gtmVal}%</span>
-            </div>
-        `;
-    }).join('');
+        document.getElementById('full-10-bars').innerHTML = categories.map(cat => {
+            const pyVal = pyProbs[cat] !== undefined ? (pyProbs[cat] * 100).toFixed(1) : (cat === ev.python_predicted_class ? pyConf : 0.5);
+            const gtmVal = gtmProbs[cat] !== undefined ? (gtmProbs[cat] * 100).toFixed(1) : (cat === ev.gtm_predicted_class ? gtmConf : 0.4);
 
-    // Draw static canvases
-    drawStaticCanvases(ev);
+            return `
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
+                    <span style="width: 180px; font-weight: 500;">${cat}</span>
+                    <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${pyVal}%;"></div></div></div>
+                    <span class="font-mono" style="width: 45px; text-align: right; color: var(--text-accent);">${pyVal}%</span>
+                    <div style="flex: 1;"><div class="progress-track"><div class="progress-fill" style="width: ${gtmVal}%; background: #a855f7;"></div></div></div>
+                    <span class="font-mono" style="width: 45px; text-align: right; color: #c084fc;">${gtmVal}%</span>
+                </div>
+            `;
+        }).join('');
+
+        drawStaticCanvases(ev);
+    } catch (e) {
+        console.error("Error loading event detail:", e);
+    }
 }
 
 function drawStaticCanvases(ev) {

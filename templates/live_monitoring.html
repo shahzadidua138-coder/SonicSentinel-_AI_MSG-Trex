@@ -177,6 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLoop();
 
     // Mic toggle
+    let liveStreamTimer = null;
+
     if (micBtn) {
         micBtn.addEventListener('click', async () => {
             if (!sonicAudio.isMicActive) {
@@ -186,15 +188,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (ok) {
                     micText.innerText = "Stop Live Mic";
                     micBtn.className = "btn btn-danger";
-                    showToast("Microphone active: Processing live acoustic windows.", "info");
+                    showToast("Microphone active: Streaming acoustic sliding windows to dual-AI backend.", "info");
+
+                    // Start streaming sliding window chunks every 1.5s
+                    liveStreamTimer = setInterval(async () => {
+                        if (!sonicAudio.isMicActive || !sonicAudio.analyser) return;
+
+                        // Capture Float32 time-domain buffer
+                        const buffer = new Float32Array(sonicAudio.analyser.frequencyBinCount);
+                        sonicAudio.analyser.getFloatTimeDomainData(buffer);
+
+                        try {
+                            const resp = await fetch('/api/audio/live-chunk', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/octet-stream' },
+                                body: buffer.buffer
+                            });
+                            const data = await resp.json();
+                            if (data.success) {
+                                const p = data.prediction;
+                                const q = data.quality;
+                                const a = data.alert;
+
+                                // Update Python prediction
+                                document.getElementById('live-py-class').innerText = p.python_class;
+                                const pyPct = (p.python_confidence * 100).toFixed(1);
+                                document.getElementById('live-py-conf').innerText = `${pyPct}%`;
+                                document.getElementById('live-py-fill').style.width = `${pyPct}%`;
+
+                                // Update GTM prediction
+                                document.getElementById('live-gtm-class').innerText = p.gtm_class;
+                                const gtmPct = (p.gtm_confidence * 100).toFixed(1);
+                                document.getElementById('live-gtm-conf').innerText = `${gtmPct}%`;
+                                document.getElementById('live-gtm-fill').style.width = `${gtmPct}%`;
+
+                                // Update Delta & Badge
+                                const deltaPct = (p.confidence_difference * 100).toFixed(1);
+                                document.getElementById('live-delta').innerText = `|${pyPct}% - ${gtmPct}%| = ${deltaPct}%`;
+                                const matchBadge = document.getElementById('live-match-badge');
+                                matchBadge.innerText = p.consistency_status;
+                                matchBadge.className = `badge ${p.consistency_status === 'Strong Match' ? 'badge-success' : (p.consistency_status === 'Model Disagreement' ? 'badge-critical' : 'badge-warning')}`;
+
+                                // Update Quality & SNR
+                                document.getElementById('live-quality').innerText = q.quality_grade.toUpperCase();
+                                document.getElementById('live-snr').innerText = `${q.snr_db} dB`;
+
+                                // Check Alert Trigger
+                                if (a.alert_triggered) {
+                                    const box = document.getElementById('live-alert-box');
+                                    box.style.display = 'block';
+                                    document.getElementById('live-alert-title').innerText = `${a.severity.toUpperCase()} ALERT: ${a.threat_category} (${pyPct}%)`;
+                                    document.getElementById('live-alert-sub').innerText = a.recommended_action;
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Live chunk error:", err);
+                        }
+                    }, 1500);
                 }
             } else {
+                if (liveStreamTimer) clearInterval(liveStreamTimer);
                 sonicAudio.stopMic((status) => {
                     document.getElementById('mic-status-label').innerText = `Mic: ${status}`;
                 });
                 micText.innerText = "Start Live Mic";
                 micBtn.className = "btn btn-primary";
-                showToast("Microphone stream stopped.", "info");
+                showToast("Live microphone streaming stopped.", "info");
             }
         });
     }

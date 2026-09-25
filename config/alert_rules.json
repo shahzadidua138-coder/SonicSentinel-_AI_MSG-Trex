@@ -1,0 +1,88 @@
+{
+  "rules_version": "1.0.0",
+  "last_updated": "2026-09-25T00:00:00Z",
+  "consecutive_windows_required": 2,
+  "instant_trigger_confidence": 0.85,
+  "categories": {
+    "Gunshot": {
+      "severity": "Critical",
+      "immediate_action": "CRITICAL LOCKDOWN: Dispatch armed security patrol, trigger perimeter containment, and alert municipal emergency response.",
+      "confirmation_rule": "Min Confidence >= 0.80, Both Models Agree, or 2 Consecutive Windows.",
+      "color": "#ef4444",
+      "icon": "fas fa-crosshairs",
+      "escalation_target": "Emergency Dispatch & Tactical Security"
+    },
+    "Panic Scream": {
+      "severity": "Critical",
+      "immediate_action": "EMERGENCY SAFETY ALERT: Dispatch on-site medical and rapid security response to active acoustic sector.",
+      "confirmation_rule": "Min Confidence >= 0.75, Audio Quality >= Acceptable.",
+      "color": "#ef4444",
+      "icon": "fas fa-exclamation-triangle",
+      "escalation_target": "Floor Wardens & First Aid Team"
+    },
+    "Person Asking for Help": {
+      "severity": "Critical",
+      "immediate_action": "SAFETY ASSISTANCE REQUIRED: Open bidirectional intercom channel and dispatch designated first responder.",
+      "confirmation_rule": "Keyword match safety phrases ('Help me', 'Somebody help', 'Emergency') with Confidence >= 0.75.",
+      "color": "#ef4444",
+      "icon": "fas fa-hands-helping",
+      "escalation_target": "Safety Desk & Medical Unit"
+    },
+    "Glass Breaking": {
+      "severity": "High",
+      "immediate_action": "PERIMETER ALARM: Direct nearest PTZ camera to sector, verify window integrity, alert patrol officer.",
+      "confirmation_rule": "Min Confidence >= 0.70 with spectral brightness verification.",
+      "color": "#f59e0b",
+      "icon": "fas fa-shield-virus",
+      "escalation_target": "Perimeter Guard Patrol"
+    },
+    "Aggression": {
+      "severity": "High",
+      "immediate_action": "DE-ESCALATION ALERT: Deploy floor security personnel to intervene in active verbal/physical dispute.",
+      "confirmation_rule": "Repeated across >= 2 consecutive sliding windows.",
+      "color": "#f59e0b",
+      "icon": "fas fa-fist-raised",
+      "escalation_target": "Floor Security Supervisor"
+    },
+    "Alarm or Siren": {
+      "severity": "High",
+      "immediate_action": "SYSTEM VALIDATION: Cross-reference building fire/evacuation alarm telemetry panel.",
+      "confirmation_rule": "Continuous harmonic tone persistence > 2.0 seconds.",
+      "color": "#f59e0b",
+      "icon": "fas fa-bullhorn",
+      "escalation_target": "Facility Operations Center"
+    },
+    "Machinery Fault": {
+      "severity": "High",
+      "immediate_action": "MECHANICAL ADVISORY: Flag anomalous cavitation/bearing wear signature for mechanical maintenance diagnostic.",
+      "confirmation_rule": "Harmonic spectral distortion verified over baseline.",
+      "color": "#06b6d4",
+      "icon": "fas fa-cogs",
+      "escalation_target": "Plant Maintenance Engineer"
+    },
+    "Vehicle Horn": {
+      "severity": "Low",
+      "immediate_action": "TRAFFIC TELEMETRY: Log acoustic transit density record for external loading zone.",
+      "confirmation_rule": "Informational acoustic event logging.",
+      "color": "#10b981",
+      "icon": "fas fa-truck",
+      "escalation_target": "Traffic Logistics Log"
+    },
+    "Animal Sound": {
+      "severity": "Low",
+      "immediate_action": "FACILITY AUDIT: Log wildlife or domestic canine acoustic signature near perimeter barrier.",
+      "confirmation_rule": "Informational logging.",
+      "color": "#10b981",
+      "icon": "fas fa-paw",
+      "escalation_target": "Perimeter Observation Log"
+    },
+    "Background Noise": {
+      "severity": "Informational",
+      "immediate_action": "BASELINE NOISE: Ambient acoustic floor maintained within normal parameters.",
+      "confirmation_rule": "Silent audit logging.",
+      "color": "#64748b",
+      "icon": "fas fa-water",
+      "escalation_target": "System Baseline"
+    }
+  }
+}
