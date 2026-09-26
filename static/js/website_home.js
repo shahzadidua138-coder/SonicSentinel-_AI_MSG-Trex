@@ -1110,13 +1110,15 @@ function appendIncidentToFeed(pred, quality, filename) {
 function initHeaderScroll() {
     const header = document.getElementById('siteHeader');
     if (!header) return;
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 25) {
+    function checkHeaderScroll() {
+        if (window.scrollY > 30) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
-    });
+    }
+    window.addEventListener('scroll', checkHeaderScroll, { passive: true });
+    checkHeaderScroll();
 }
 
 function initMobileNav() {
