@@ -4,20 +4,80 @@
 {% block content %}
 <!-- Technology Hero -->
 <section class="page-hero">
-    <div style="max-width: 900px; margin: 0 auto;">
+    <div style="max-width: 960px; margin: 0 auto;">
         <div class="hero-threat-pill" style="margin: 0 auto 16px;">
             <i class="fa-solid fa-microchip"></i>
             <span>373 Features &bull; Dual-AI Fusion &bull; Sub-350ms Inference</span>
         </div>
         <h1 class="hero-main-title" style="font-size: 38px; line-height: 1.25; margin-bottom: 16px;">
             Dual-AI Acoustic Architecture
-            <span class="gradient-headline" style="display: block; font-size: 32px; margin-top: 6px;">
+            <span class="gradient-headline" style="display: block; font-size: 30px; margin-top: 6px;">
                 Mathematical Rigor &amp; Signal Processing
             </span>
         </h1>
-        <p class="hero-subtext" style="margin: 0 auto 28px; max-width: 720px; font-size: 16px;">
-            Discover the engineering stack powering SonicSentinel AI: from Librosa-based acoustic feature extraction to parallel Support Vector Machine and Google Teachable Machine arbitration.
-        </p>
+
+        <!-- Interactive DSP Math & Feature Explorer Console -->
+        <div class="interactive-pipeline-tuner" style="margin: 26px auto; max-width: 860px; background: rgba(6, 35, 32, 0.45); backdrop-filter: blur(16px); border: 1px solid rgba(45, 212, 191, 0.3); border-radius: 20px; padding: 22px; box-shadow: 0 12px 35px rgba(0,0,0,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                <span style="font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: #2DD4BF; letter-spacing: 0.1em; text-transform: uppercase;">
+                    <i class="fa-solid fa-calculator"></i> Interactive DSP Math &amp; Feature Explorer:
+                </span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #10B981;" id="activeDspStatus">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; margin-right: 4px;"></span> Active Engine: 128-Band Mel-Filterbank
+                </span>
+            </div>
+
+            <!-- DSP Mode Selector Chips -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
+                <button class="hero-audition-chip active-chip" id="dspBtnMel" onclick="switchDspMode('mel')" style="flex: 1; min-width: 170px; justify-content: center; padding: 9px 12px; font-size: 12.5px;">
+                    <i class="fa-solid fa-wave-square" style="color: #2DD4BF;"></i> 128 Mel-Bands
+                </button>
+                <button class="hero-audition-chip" id="dspBtnMfcc" onclick="switchDspMode('mfcc')" style="flex: 1; min-width: 170px; justify-content: center; padding: 9px 12px; font-size: 12.5px;">
+                    <i class="fa-solid fa-barcode" style="color: #3B82F6;"></i> 40 MFCC Descriptors
+                </button>
+                <button class="hero-audition-chip" id="dspBtnZcr" onclick="switchDspMode('zcr')" style="flex: 1; min-width: 170px; justify-content: center; padding: 9px 12px; font-size: 12.5px;">
+                    <i class="fa-solid fa-bolt" style="color: #F59E0B;"></i> Zero-Crossing Rate
+                </button>
+                <button class="hero-audition-chip" id="dspBtnCentroid" onclick="switchDspMode('centroid')" style="flex: 1; min-width: 170px; justify-content: center; padding: 9px 12px; font-size: 12.5px;">
+                    <i class="fa-solid fa-circle-radiation" style="color: #8B5CF6;"></i> Spectral Centroid
+                </button>
+            </div>
+
+            <!-- Dynamic Mathematical Formula & Parameter Display -->
+            <div style="background: rgba(4, 25, 23, 0.7); border-radius: 14px; border: 1px solid rgba(45, 212, 191, 0.25); padding: 18px; margin-bottom: 16px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 11px; font-family: var(--font-mono); color: #2DD4BF; text-transform: uppercase;" id="dspFormulaLabel">TRANSFORMATION FORMULA:</span>
+                    <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);" id="dspFormulaComplexity">Complexity: O(N log N) via FFT</span>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #FFFFFF; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px; border-left: 3px solid #2DD4BF; overflow-x: auto; white-space: nowrap;" id="dspFormulaCode">
+                    m = 2595 &times; log10(1 + f / 700)
+                </div>
+                <p style="margin: 10px 0 0; font-size: 12.5px; color: #94A3B8; line-height: 1.5;" id="dspFormulaDesc">
+                    Maps linear Hertz frequencies to non-linear perceptual Mel scale, replicating human cochlear frequency sensitivity to isolate low-frequency explosions from ambient hum.
+                </p>
+            </div>
+
+            <!-- Dynamic Telemetry HUD Row -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: left;" id="dspTelemetryGrid">
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">VECTOR DIMS</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #2DD4BF;" id="dspDim">256 (128&mu; + 128&sigma;)</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">FFT WINDOW</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;" id="dspWindow">2048 / 512 Hop</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">DSP TIME</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;" id="dspTime">4.2 ms</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">TARGET USE</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #10B981;" id="dspTarget">Explosion / Gunshot</div>
+                </div>
+            </div>
+        </div>
+
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
             <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-hero-primary">
                 <i class="fa-solid fa-play"></i> Test Interactive Studio
@@ -210,4 +270,99 @@
         </div>
     </div>
 </section>
+
+<script>
+const dspData = {
+    mel: {
+        title: "128-Band Mel-Filterbank",
+        complexity: "Complexity: O(N log N) via FFT",
+        formula: "m = 2595 \u00D7 log10(1 + f / 700)",
+        desc: "Maps linear Hertz frequencies to non-linear perceptual Mel scale, replicating human cochlear frequency sensitivity to isolate low-frequency explosions from ambient hum.",
+        dims: "256 (128\u03BC + 128\u03C3)",
+        window: "2048 / 512 Hop",
+        time: "4.2 ms",
+        target: "Explosion / Gunshot"
+    },
+    mfcc: {
+        title: "40 MFCC Descriptors",
+        complexity: "Complexity: O(K log K) via Type-II DCT",
+        formula: "c[n] = \u2211 (log S[k] \u00D7 cos(\u03C0 \u00D7 n \u00D7 (k - 0.5) / K))",
+        desc: "Applies Discrete Cosine Transform on log Mel-filterbank energies to capture vocal tract shape, timbre, and acoustic envelope essential for screaming and glass break detection.",
+        dims: "80 (40\u03BC + 40\u03C3)",
+        window: "2048 / 512 Hop",
+        time: "3.1 ms",
+        target: "Scream / Glass Break"
+    },
+    zcr: {
+        title: "Zero-Crossing Rate (ZCR)",
+        complexity: "Complexity: O(N) Linear Time",
+        formula: "ZCR = (1 / 2N) \u00D7 \u2211 |sgn(x[n]) - sgn(x[n-1])|",
+        desc: "Calculates the rate of sign-changes along the signal timeline. Essential for rapidly discriminating unvoiced noise bursts, high-frequency shattering, and gun transients from voiced speech.",
+        dims: "2 (1\u03BC + 1\u03C3)",
+        window: "512 Samples",
+        time: "0.8 ms",
+        target: "Glass Shatter / Gunshot"
+    },
+    centroid: {
+        title: "Spectral Centroid & Brightness",
+        complexity: "Complexity: O(N) Spectral Mass",
+        formula: "Centroid = \u2211(f \u00D7 S[f]) / \u2211(S[f])",
+        desc: "Represents the center of mass of the sound power spectrum. Bright sounds like screaming sirens or screeching tires have elevated centroids above 3500 Hz.",
+        dims: "2 (1\u03BC + 1\u03C3)",
+        window: "2048 / 512 Hop",
+        time: "1.4 ms",
+        target: "Siren / Screaming"
+    }
+};
+
+function switchDspMode(mode) {
+    const data = dspData[mode];
+    if (!data) return;
+
+    ['mel', 'mfcc', 'zcr', 'centroid'].forEach(m => {
+        const btn = document.getElementById('dspBtn' + m.charAt(0).toUpperCase() + m.slice(1));
+        if (btn) btn.classList.toggle('active-chip', m === mode);
+    });
+
+    const statusEl = document.getElementById('activeDspStatus');
+    if (statusEl) {
+        statusEl.innerHTML = `<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; margin-right: 4px;"></span> Active Engine: ${data.title}`;
+    }
+
+    const compEl = document.getElementById('dspFormulaComplexity');
+    if (compEl) compEl.textContent = data.complexity;
+
+    const codeEl = document.getElementById('dspFormulaCode');
+    if (codeEl) codeEl.innerHTML = data.formula;
+
+    const descEl = document.getElementById('dspFormulaDesc');
+    if (descEl) descEl.textContent = data.desc;
+
+    const dimEl = document.getElementById('dspDim');
+    if (dimEl) dimEl.textContent = data.dims;
+
+    const winEl = document.getElementById('dspWindow');
+    if (winEl) winEl.textContent = data.window;
+
+    const timeEl = document.getElementById('dspTime');
+    if (timeEl) timeEl.textContent = data.time;
+
+    const targetEl = document.getElementById('dspTarget');
+    if (targetEl) targetEl.textContent = data.target;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const freqs = { mel: 440, mfcc: 587.33, zcr: 783.99, centroid: 987.77 };
+        osc.frequency.setValueAtTime(freqs[mode] || 520, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+    } catch(e) {}
+}
+</script>
 {% endblock %}

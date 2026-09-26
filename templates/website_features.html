@@ -4,26 +4,65 @@
 {% block content %}
 <!-- Features Hero Section -->
 <section class="page-hero">
-    <div style="max-width: 900px; margin: 0 auto;">
-        <div class="hero-threat-pill" style="margin: 0 auto 16px;">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>TechWiz 7 Functional Architecture &bull; 20 Core SRS Steps</span>
-        </div>
-        <h1 class="hero-main-title" style="font-size: 38px; line-height: 1.25; margin-bottom: 16px;">
-            Comprehensive Acoustic Intelligence Features
+    <div style="max-width: 960px; margin: 0 auto;">
+        <h1 class="hero-main-title" style="font-size: 42px; line-height: 1.15; margin-bottom: 14px;">
+            Acoustic Intelligence Features
             <span class="gradient-headline" style="display: block; font-size: 32px; margin-top: 6px;">
                 Engineered for Zero-Latency Threat Prevention
             </span>
         </h1>
-        <p class="hero-subtext" style="margin: 0 auto 28px; max-width: 720px; font-size: 16px;">
-            Explore the complete suite of signal-processing algorithms, dual-AI neural models, real-time alert policies, and forensic auditing capabilities implemented according to the SonicSentinel SRS specification.
-        </p>
-        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+
+        <!-- Interactive Live Pipeline Architecture Controller -->
+        <div class="interactive-pipeline-tuner" style="margin: 28px auto; max-width: 820px; background: rgba(6, 35, 32, 0.45); backdrop-filter: blur(16px); border: 1px solid rgba(45, 212, 191, 0.3); border-radius: 20px; padding: 20px; box-shadow: 0 12px 35px rgba(0,0,0,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                <span style="font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: #2DD4BF; letter-spacing: 0.1em; text-transform: uppercase;">
+                    <i class="fa-solid fa-sliders"></i> Interactive Architecture Simulator:
+                </span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #10B981;" id="activeModeStatus">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; margin-right: 4px;"></span> Active Pipeline: Perimeter Security
+                </span>
+            </div>
+
+            <!-- Mode Selector Chips -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;">
+                <button class="hero-audition-chip active-chip" id="modeBtnPerimeter" onclick="switchFeatureMode('perimeter')" style="flex: 1; min-width: 180px; justify-content: center; padding: 10px 14px;">
+                    <i class="fa-solid fa-shield-halved" style="color: #2DD4BF;"></i> Perimeter Threat
+                </button>
+                <button class="hero-audition-chip" id="modeBtnIndustrial" onclick="switchFeatureMode('industrial')" style="flex: 1; min-width: 180px; justify-content: center; padding: 10px 14px;">
+                    <i class="fa-solid fa-gears" style="color: #F59E0B;"></i> Industrial Machinery
+                </button>
+                <button class="hero-audition-chip" id="modeBtnDistress" onclick="switchFeatureMode('distress')" style="flex: 1; min-width: 180px; justify-content: center; padding: 10px 14px;">
+                    <i class="fa-solid fa-person-burst" style="color: #EF4444;"></i> Public Space Distress
+                </button>
+            </div>
+
+            <!-- Dynamic Telemetry HUD Row -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: left;" id="featureTelemetryGrid">
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">LATENCY</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #2DD4BF;" id="featMetricLatency">180 ms</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">MEL BANDS</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;" id="featMetricBands">128 Bands</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">SAMPLE RATE</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;" id="featMetricRate">22.05 kHz</div>
+                </div>
+                <div style="background: rgba(4, 25, 23, 0.6); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">ACCURACY</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #10B981;" id="featMetricAcc">98.4%</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
             <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-hero-primary">
-                <i class="fa-solid fa-play"></i> Try Sandbox
+                <i class="fa-solid fa-play"></i> Open Interactive Studio
             </a>
             <a href="{{ url_for('website_technology') }}" class="btn-hero-secondary">
-                <i class="fa-solid fa-microchip"></i> View Technical Architecture
+                <i class="fa-solid fa-microchip"></i> Explore Math Architecture
             </a>
         </div>
     </div>
@@ -197,4 +236,60 @@
         </div>
     </div>
 </section>
+
+<script>
+function switchFeatureMode(mode) {
+    const modes = {
+        'perimeter': {
+            status: '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;margin-right:4px;"></span> Active Pipeline: Perimeter Threat Detection',
+            latency: '180 ms',
+            bands: '128 Bands',
+            rate: '22.05 kHz',
+            acc: '98.4%'
+        },
+        'industrial': {
+            status: '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F59E0B;margin-right:4px;"></span> Active Pipeline: Industrial Vibration & Harmonics',
+            latency: '240 ms',
+            bands: '256 Bands',
+            rate: '44.10 kHz',
+            acc: '96.2%'
+        },
+        'distress': {
+            status: '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EF4444;margin-right:4px;"></span> Active Pipeline: Panic & Human Distress Speech',
+            latency: '145 ms',
+            bands: '128 Bands',
+            rate: '16.00 kHz',
+            acc: '97.8%'
+        }
+    };
+
+    const cfg = modes[mode] || modes['perimeter'];
+    const statusEl = document.getElementById('activeModeStatus');
+    const latEl = document.getElementById('featMetricLatency');
+    const bandEl = document.getElementById('featMetricBands');
+    const rateEl = document.getElementById('featMetricRate');
+    const accEl = document.getElementById('featMetricAcc');
+
+    if (statusEl) statusEl.innerHTML = cfg.status;
+    if (latEl) latEl.textContent = cfg.latency;
+    if (bandEl) bandEl.textContent = cfg.bands;
+    if (rateEl) rateEl.textContent = cfg.rate;
+    if (accEl) accEl.textContent = cfg.acc;
+
+    ['perimeter', 'industrial', 'distress'].forEach(m => {
+        const btn = document.getElementById('modeBtn' + m.charAt(0).toUpperCase() + m.slice(1));
+        if (btn) {
+            if (m === mode) {
+                btn.style.background = '#0D9488';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = '#2DD4BF';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+            }
+        }
+    });
+}
+</script>
 {% endblock %}
