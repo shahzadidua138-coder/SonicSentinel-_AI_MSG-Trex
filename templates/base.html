@@ -27,6 +27,25 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="website-body">
+    <!-- Ethereal Silver Fairy Pixie Dust Trail Canvas -->
+    <canvas id="glitterTailCanvas" class="glitter-tail-canvas"></canvas>
+
+    <!-- Custom Futuristic Cursor Elements -->
+    <div class="custom-cursor-ring" id="customCursorRing"></div>
+    <div class="custom-cursor-dot" id="customCursorDot"></div>
+
+    <!-- Acoustic Frequency Scroll Telemetry HUD (Interactive Scroll Meter) -->
+    <aside class="scroll-telemetry-hud" id="scrollTelemetryHud" aria-hidden="true">
+        <div class="telemetry-hud-inner">
+            <span class="hud-band-title">SPECTRUM</span>
+            <div class="hud-freq-label" id="hudScrollFreq">20 Hz</div>
+            <div class="hud-scroll-meter">
+                <div class="hud-meter-bar" id="hudMeterBar"></div>
+            </div>
+            <div class="hud-db-indicator" id="hudScrollDb">-48 dB</div>
+        </div>
+    </aside>
+
     <!-- Smooth Liquid Wave Canvas for ambient background animation -->
     <canvas id="ambientWaveCanvas" class="ambient-wave-canvas"></canvas>
 

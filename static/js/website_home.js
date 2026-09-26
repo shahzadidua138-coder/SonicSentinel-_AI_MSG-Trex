@@ -6,6 +6,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
+    initCustomCursor();
+    initPixieDustGlitter();
+    initSonarClickEngine();
+    initScrollTelemetryHud();
+    init3DCardTilt();
+    initHeroHoloCore();
     initScrollAnimations();
     initAmbientWaveCanvas();
     initHeroMicToggle();
@@ -1140,4 +1146,503 @@ function initMobileNav() {
             navMenu.style.flexDirection = 'column';
         }
     });
+}
+
+/* ==========================================================================
+   7. CUSTOM FUTURISTIC MAGNETIC CURSOR ENGINE
+   ========================================================================== */
+function initCustomCursor() {
+    const ring = document.getElementById('customCursorRing');
+    const dot = document.getElementById('customCursorDot');
+    if (!ring || !dot) return;
+
+    let targetX = -100, targetY = -100;
+    let ringX = -100, ringY = -100;
+
+    window.addEventListener('mousemove', (e) => {
+        targetX = e.clientX;
+        targetY = e.clientY;
+        dot.style.transform = `translate(${targetX}px, ${targetY}px) translate(-50%, -50%)`;
+    }, { passive: true });
+
+    function renderCursor() {
+        ringX += (targetX - ringX) * 0.22;
+        ringY += (targetY - ringY) * 0.22;
+        ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+        requestAnimationFrame(renderCursor);
+    }
+    requestAnimationFrame(renderCursor);
+
+    // Hover magnet detection
+    const interactives = 'a, button, input, textarea, select, .sound-category-item-card, .why-feature-card, .hero-audition-chip, .preset-chip-btn, .canvas-container-box, .hero-mic-circle-btn, .hero-holo-core-canvas, .check-feature-item';
+    
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(interactives)) {
+            ring.classList.add('hover-magnet');
+        }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(interactives)) {
+            ring.classList.remove('hover-magnet');
+        }
+    });
+
+    document.addEventListener('mousedown', () => ring.classList.add('click-pulse'));
+    document.addEventListener('mouseup', () => ring.classList.remove('click-pulse'));
+}
+
+/* ==========================================================================
+   8. ETHEREAL SILVER FAIRY PIXIE DUST GLITTER TRAIL ENGINE
+   ========================================================================== */
+function initPixieDustGlitter() {
+    const canvas = document.getElementById('glitterTailCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const maxParticles = 160;
+
+    // Palette: Shimmering Silver, Platinum, Starlight Specular, with delicate Cyan Glow
+    const colors = [
+        '#FFFFFF',
+        '#F8FAFC',
+        '#F1F5F9',
+        '#E2E8F0',
+        '#CBD5E1',
+        'rgba(241, 245, 249, 0.95)',
+        'rgba(203, 213, 225, 0.9)',
+        'rgba(45, 212, 191, 0.7)'
+    ];
+
+    function spawnParticle(x, y, count = 1, isBurst = false) {
+        for (let i = 0; i < count; i++) {
+            if (particles.length > maxParticles) particles.shift();
+            const angle = Math.random() * Math.PI * 2;
+            const speed = isBurst ? Math.random() * 4.5 + 2.0 : Math.random() * 1.8 + 0.4;
+            const size = Math.random() * 3.2 + 1.2;
+            const type = Math.random() < 0.45 ? 'star' : (Math.random() < 0.4 ? 'diamond' : 'orb');
+
+            particles.push({
+                x: x + (Math.random() - 0.5) * 8,
+                y: y + (Math.random() - 0.5) * 8,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - (isBurst ? 1.2 : 0.45),
+                size: size,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                alpha: 1.0,
+                decay: Math.random() * 0.02 + 0.016,
+                type: type,
+                rotation: Math.random() * Math.PI,
+                rotSpeed: (Math.random() - 0.5) * 0.14,
+                twinklePhase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    let lastMouseX = -100, lastMouseY = -100;
+    window.addEventListener('mousemove', (e) => {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > 3) {
+            const num = Math.min(Math.floor(dist / 5) + 1, 5);
+            spawnParticle(e.clientX, e.clientY, num, false);
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        }
+    }, { passive: true });
+
+    // Touch support for touch screens
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            const touch = e.touches[0];
+            spawnParticle(touch.clientX, touch.clientY, 3, false);
+        }
+    }, { passive: true });
+
+    // Magical silver burst on user click
+    window.addEventListener('click', (e) => {
+        spawnParticle(e.clientX, e.clientY, 18, true);
+    });
+
+    function drawSparkleStar(cx, cy, spikes, outerRadius, innerRadius, color, alpha, rot) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = color;
+        ctx.shadowColor = '#FFFFFF';
+        ctx.shadowBlur = 8;
+
+        let rotStep = Math.PI / spikes;
+        let x = 0, y = 0;
+
+        ctx.beginPath();
+        ctx.moveTo(0, -outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            x = Math.cos(rotStep * (2 * i + 1) - Math.PI / 2) * innerRadius;
+            y = Math.sin(rotStep * (2 * i + 1) - Math.PI / 2) * innerRadius;
+            ctx.lineTo(x, y);
+
+            x = Math.cos(rotStep * (2 * i + 2) - Math.PI / 2) * outerRadius;
+            y = Math.sin(rotStep * (2 * i + 2) - Math.PI / 2) * outerRadius;
+            ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function renderGlitter() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.038; // gentle fairy stardust gravity
+            p.vx *= 0.975;
+            p.vy *= 0.975;
+            p.alpha -= p.decay;
+            p.rotation += p.rotSpeed;
+            p.twinklePhase += 0.16;
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            const twinkleAlpha = p.alpha * (0.65 + 0.35 * Math.sin(p.twinklePhase));
+
+            if (p.type === 'star') {
+                drawSparkleStar(p.x, p.y, 4, p.size * 2.2, p.size * 0.45, p.color, twinkleAlpha, p.rotation);
+            } else if (p.type === 'diamond') {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.globalAlpha = Math.max(0, twinkleAlpha);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = '#E2E8F0';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                ctx.moveTo(0, -p.size * 1.6);
+                ctx.lineTo(p.size * 0.85, 0);
+                ctx.lineTo(0, p.size * 1.6);
+                ctx.lineTo(-p.size * 0.85, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, twinkleAlpha);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = '#FFFFFF';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        requestAnimationFrame(renderGlitter);
+    }
+    requestAnimationFrame(renderGlitter);
+}
+
+/* ==========================================================================
+   9. SONAR RADAR CLICK SHOCKWAVE & AUDIO FEEDBACK
+   ========================================================================== */
+function initSonarClickEngine() {
+    let clickCtx = null;
+
+    function playClickChirp() {
+        try {
+            if (!clickCtx) {
+                clickCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (clickCtx.state === 'suspended') {
+                clickCtx.resume();
+            }
+            const now = clickCtx.currentTime;
+            const osc = clickCtx.createOscillator();
+            const gain = clickCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1750, now);
+            osc.frequency.exponentialRampToValueAtTime(480, now + 0.045);
+
+            gain.gain.setValueAtTime(0.035, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+            osc.connect(gain);
+            gain.connect(clickCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.045);
+        } catch (e) {
+            // Audio policy fallback
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        playClickChirp();
+
+        // Expanding sonar shockwave
+        const ripple = document.createElement('div');
+        ripple.className = 'sonar-click-ripple';
+        const size = Math.max(window.innerWidth, window.innerHeight) * 0.22;
+        ripple.style.width = `${size}px`;
+        ripple.style.height = `${size}px`;
+        ripple.style.left = `${e.clientX}px`;
+        ripple.style.top = `${e.clientY}px`;
+        document.body.appendChild(ripple);
+
+        setTimeout(() => ripple.remove(), 750);
+    });
+}
+
+/* ==========================================================================
+   10. KINETIC SCROLL ACOUSTIC TELEMETRY HUD (20 Hz - 20,000 Hz)
+   ========================================================================== */
+function initScrollTelemetryHud() {
+    const meterBar = document.getElementById('hudMeterBar');
+    const freqLabel = document.getElementById('hudScrollFreq');
+    const dbIndicator = document.getElementById('hudScrollDb');
+    if (!meterBar || !freqLabel) return;
+
+    function updateScrollHud() {
+        const scrollTop = window.scrollY;
+        const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+        const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+
+        meterBar.style.height = `${progress * 100}%`;
+
+        // Logarithmic frequency progression: 20 Hz to 20,000 Hz
+        const freq = Math.round(20 * Math.pow(1000, progress));
+        if (freq >= 1000) {
+            freqLabel.textContent = `${(freq / 1000).toFixed(1)} kHz`;
+        } else {
+            freqLabel.textContent = `${freq} Hz`;
+        }
+
+        // Live amplitude decibel scale
+        if (dbIndicator) {
+            const dbVal = (-54 + progress * 56).toFixed(1);
+            dbIndicator.textContent = `${dbVal > 0 ? '+' : ''}${dbVal} dB`;
+            dbIndicator.style.color = progress > 0.75 ? '#EF4444' : (progress > 0.4 ? '#2DD4BF' : '#94A3B8');
+        }
+    }
+
+    window.addEventListener('scroll', updateScrollHud, { passive: true });
+    updateScrollHud();
+}
+
+/* ==========================================================================
+   11. 3D INTERACTIVE CARD TILT & HOLOGRAPHIC SHEEN ENGINE
+   ========================================================================== */
+function init3DCardTilt() {
+    const cardSelectors = [
+        '.sound-category-item-card',
+        '.why-feature-card',
+        '.pipeline-step-node',
+        '.floating-alert-card',
+        '.floating-success-card',
+        '.q-metric-card',
+        '.location-card'
+    ];
+
+    const cards = document.querySelectorAll(cardSelectors.join(', '));
+
+    cards.forEach(card => {
+        card.classList.add('tilt-card-3d');
+
+        // Append holographic glare layer if not present
+        if (!card.querySelector('.card-holographic-glare')) {
+            const glare = document.createElement('div');
+            glare.className = 'card-holographic-glare';
+            card.appendChild(glare);
+        }
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+
+            const normX = (x / rect.width) - 0.5;
+            const normY = (y / rect.height) - 0.5;
+
+            const rotY = (normX * 14).toFixed(2);
+            const rotX = (-normY * 14).toFixed(2);
+
+            card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.025, 1.025, 1.025)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    });
+}
+
+/* ==========================================================================
+   12. 3D HOLOGRAPHIC ACOUSTIC IRIS CORE CANVAS (HERO CENTERPIECE)
+   ========================================================================== */
+function initHeroHoloCore() {
+    const canvas = document.getElementById('heroHoloCoreCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = 480;
+    canvas.width = size;
+    canvas.height = size;
+
+    let mouseX = size / 2, mouseY = size / 2;
+    let targetRotX = 0, targetRotY = 0;
+    let rotX = 0, rotY = 0;
+    let isCorePulsing = false;
+    let pulseScale = 1.0;
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        targetRotY = ((mouseX / size) - 0.5) * 1.2;
+        targetRotX = -((mouseY / size) - 0.5) * 1.2;
+    });
+
+    canvas.addEventListener('click', () => {
+        isCorePulsing = true;
+        pulseScale = 1.35;
+        // Trigger Threat Audition
+        if (typeof triggerHeroAudition === 'function') {
+            triggerHeroAudition('gunshot', 'Gunshot Shockwave', '98.4%', 'Quantum Acoustic Core Resonating');
+        }
+    });
+
+    // 3D Spherical Particle Nodes
+    const particleCount = 140;
+    const coreParticles = [];
+    const radius = 135;
+
+    for (let i = 0; i < particleCount; i++) {
+        const theta = Math.acos(2 * Math.random() - 1);
+        const phi = Math.random() * Math.PI * 2;
+        coreParticles.push({
+            origX: radius * Math.sin(theta) * Math.cos(phi),
+            origY: radius * Math.sin(theta) * Math.sin(phi),
+            origZ: radius * Math.cos(theta),
+            radius: Math.random() * 2.2 + 1.2,
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+
+    let time = 0;
+
+    function renderHoloCore() {
+        time += 0.02;
+        rotX += (targetRotX - rotX) * 0.08;
+        rotY += (targetRotY - rotY) * 0.08;
+
+        if (pulseScale > 1.0) {
+            pulseScale -= 0.015;
+        }
+
+        ctx.clearRect(0, 0, size, size);
+
+        const cx = size / 2;
+        const cy = size / 2;
+
+        // Central Luminous Quantum Glow
+        const glowGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 180 * pulseScale);
+        glowGrad.addColorStop(0, 'rgba(0, 242, 254, 0.45)');
+        glowGrad.addColorStop(0.3, 'rgba(45, 212, 191, 0.25)');
+        glowGrad.addColorStop(0.7, 'rgba(13, 148, 136, 0.08)');
+        glowGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 180 * pulseScale, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3D Particles rotation & projection
+        const currentRotY = rotY + time * 0.5;
+        const currentRotX = rotX + Math.sin(time * 0.3) * 0.2;
+
+        const projected = [];
+
+        coreParticles.forEach(p => {
+            const waveMod = Math.sin(time * 3 + p.phase) * 8 * pulseScale;
+            const currentR = (radius + waveMod) * pulseScale;
+
+            const len = Math.hypot(p.origX, p.origY, p.origZ) || 1;
+            const px = (p.origX / len) * currentR;
+            const py = (p.origY / len) * currentR;
+            const pz = (p.origZ / len) * currentR;
+
+            const cosY = Math.cos(currentRotY), sinY = Math.sin(currentRotY);
+            const x1 = px * cosY + pz * sinY;
+            const z1 = -px * sinY + pz * cosY;
+
+            const cosX = Math.cos(currentRotX), sinX = Math.sin(currentRotX);
+            const y2 = py * cosX - z1 * sinX;
+            const z2 = py * sinX + z1 * cosX;
+
+            const fov = 350;
+            const scale = fov / (fov + z2);
+            const projX = cx + x1 * scale;
+            const projY = cy + y2 * scale;
+
+            projected.push({
+                x: projX,
+                y: projY,
+                z: z2,
+                scale: scale,
+                r: p.radius * scale
+            });
+        });
+
+        projected.sort((a, b) => a.z - b.z);
+
+        // Filament connections
+        ctx.lineWidth = 0.75;
+        for (let i = 0; i < projected.length; i++) {
+            for (let j = i + 1; j < projected.length; j++) {
+                const p1 = projected[i];
+                const p2 = projected[j];
+                const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                if (d < 38) {
+                    const alpha = (1 - d / 38) * 0.45 * Math.min(p1.scale, p2.scale);
+                    ctx.strokeStyle = `rgba(45, 212, 191, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // Particle nodes
+        projected.forEach(p => {
+            const alpha = Math.min(Math.max((p.z + 150) / 300, 0.25), 1.0);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.shadowColor = '#00F2FE';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        requestAnimationFrame(renderHoloCore);
+    }
+    requestAnimationFrame(renderHoloCore);
 }

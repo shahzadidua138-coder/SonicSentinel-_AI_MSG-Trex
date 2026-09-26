@@ -90,8 +90,284 @@ button {
     outline: none;
 }
 
-.teal-accent {
-    color: var(--teal-600);
+/* ==========================================================================
+   NEXT-GEN AWARD-WINNING INTERACTIVE ENGINE
+   - Silver Fairy Pixie Dust Glitter Trail Canvas
+   - Custom Futuristic Magnetic Cursor
+   - Acoustic Sonar Shockwave Ripple on Click
+   - Kinetic Frequency Scroll Telemetry HUD
+   - 3D Holographic Card Tilt & Sheen
+   - Holographic Acoustic Iris Core
+   ========================================================================== */
+
+/* 1. Pixie Dust Glitter Canvas */
+.glitter-tail-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999998;
+}
+
+/* 2. Custom Futuristic Magnetic Cursor */
+@media (pointer: fine) {
+    body.website-body, 
+    body.website-body a, 
+    body.website-body button, 
+    body.website-body input,
+    body.website-body textarea,
+    body.website-body select,
+    body.website-body .sound-category-item-card,
+    body.website-body .hero-audition-chip {
+        cursor: none !important;
+    }
+}
+
+.custom-cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(241, 245, 249, 0.9);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.75), inset 0 0 8px rgba(45, 212, 191, 0.45);
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-50%, -50%);
+    transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                height 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.25s ease, 
+                background-color 0.25s ease,
+                box-shadow 0.25s ease;
+    mix-blend-mode: difference;
+}
+
+.custom-cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 0 10px #FFFFFF, 0 0 16px #2DD4BF;
+    pointer-events: none;
+    z-index: 1000000;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+    transition: transform 0.08s ease;
+}
+
+.custom-cursor-ring.hover-magnet {
+    width: 62px;
+    height: 62px;
+    border-color: #2DD4BF;
+    background: rgba(45, 212, 191, 0.14);
+    box-shadow: 0 0 25px rgba(45, 212, 191, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+.custom-cursor-ring.click-pulse {
+    transform: translate(-50%, -50%) scale(0.72);
+    border-color: #00F2FE;
+    background: rgba(0, 242, 254, 0.25);
+}
+
+/* 3. Sonar Radar Click Shockwave */
+.sonar-click-ripple {
+    position: fixed;
+    border-radius: 50%;
+    border: 2px solid rgba(45, 212, 191, 0.9);
+    box-shadow: 0 0 24px rgba(45, 212, 191, 0.7), inset 0 0 14px rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+    z-index: 999997;
+    animation: sonarRippleAnim 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes sonarRippleAnim {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    50% { opacity: 0.85; border-color: #00F2FE; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* 4. Acoustic Frequency Scroll Telemetry HUD */
+.scroll-telemetry-hud {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    user-select: none;
+}
+
+.telemetry-hud-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(4, 32, 29, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 20px;
+    padding: 14px 8px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+
+.hud-band-title {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+    color: #2DD4BF;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    margin-bottom: 8px;
+}
+
+.hud-freq-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: rgba(45, 212, 191, 0.22);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+}
+
+.hud-scroll-meter {
+    width: 4px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.hud-meter-bar {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #0D9488, #2DD4BF, #00F2FE);
+    border-radius: 4px;
+    box-shadow: 0 0 12px #2DD4BF;
+    transition: height 0.08s ease-out;
+}
+
+.hud-db-indicator {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: #94A3B8;
+    margin-top: 8px;
+    white-space: nowrap;
+}
+
+/* 5. 3D Interactive Card Tilt & Holographic Sheen */
+.tilt-card-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: transform 0.15s ease-out, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-holographic-glare {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.18) 0%, rgba(45, 212, 191, 0.08) 40%, transparent 75%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+    z-index: 4;
+}
+
+.tilt-card-3d:hover .card-holographic-glare {
+    opacity: 1;
+}
+
+/* 6. Non-Traditional Cinematic Hero Core Stage */
+.hero-stage-cinematic {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-holo-core-canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: 480px;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 5;
+    border-radius: 50%;
+}
+
+.holo-radar-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    border: 1px dashed rgba(45, 212, 191, 0.35);
+    animation: radarRotate 25s linear infinite;
+}
+
+.holo-radar-ring.ring-1 { width: 330px; height: 330px; animation-duration: 25s; border-color: rgba(45, 212, 191, 0.3); }
+.holo-radar-ring.ring-2 { width: 430px; height: 430px; animation-duration: 40s; animation-direction: reverse; border-color: rgba(0, 242, 254, 0.25); }
+.holo-radar-ring.ring-3 { width: 510px; height: 510px; animation-duration: 55s; border-style: dotted; border-color: rgba(255, 255, 255, 0.18); }
+
+@keyframes radarRotate {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.holo-core-telemetry-badge {
+    position: absolute;
+    z-index: 6;
+    background: rgba(4, 32, 29, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(45, 212, 191, 0.4);
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 15px rgba(45, 212, 191, 0.2);
+    animation: floatSmooth 4.5s ease-in-out infinite;
+}
+
+.badge-top-left { top: 8%; left: 10px; }
+.badge-bottom-right { bottom: 10%; right: 10px; animation-delay: 2s; }
+.badge-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 10px #10B981; animation: pulseGlow 1.8s infinite; }
+
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
 }
 
 /* ==========================================
