@@ -1,0 +1,805 @@
+{% extends 'base.html' %}
+{% block title %}SonicSentinel AI – Hear the Unseen. Stop the Threat.{% endblock %}
+
+{% block content %}
+<!-- Threat Alert Emergency HUD (Triggered on Critical Detection) -->
+<div class="threat-alert-hud" id="acousticThreatAlertHud">
+    <div class="hud-left-content">
+        <div class="hud-siren-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <div class="hud-title-badge">
+                <i class="fa-solid fa-radiation"></i> CRITICAL ACOUSTIC THREAT DETECTED
+            </div>
+            <h3 class="hud-headline" id="hudThreatHeadline">GUNSHOT DETECTED &bull; 98.4% CONFIDENCE</h3>
+            <p class="hud-subdetail" id="hudThreatDetail">
+                Automatic Dispatch: Sector Alpha Security Unit alerted. Incident Certificate #SS-2026 generated.
+            </p>
+        </div>
+    </div>
+    <div class="hud-right-actions">
+        <a href="#interactiveStudio" class="btn-hud-inspect">
+            <i class="fa-solid fa-magnifying-glass-chart"></i> Inspect in Studio
+        </a>
+        <button class="btn-hud-dismiss" onclick="dismissThreatAlertHud()">
+            <i class="fa-solid fa-xmark"></i> Dismiss
+        </button>
+    </div>
+</div>
+
+<!-- ==========================================
+     HERO SECTION (EXACT VISUAL REPLICA OF REFERENCE DESIGN)
+     Image clear on right, fading smoothly to left
+     ========================================== -->
+<section class="hero-showcase-section" id="heroSection">
+    <!-- Right Background Visual with Smooth Leftward Fade Mask -->
+    <div class="hero-fading-bg-visual"></div>
+
+    <!-- Flowing Ethereal Teal Wave Ribbons emanating across the hero -->
+    <svg class="hero-flowing-waves-svg" viewBox="0 0 1000 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M120 380C340 280 480 520 720 360C860 270 930 420 1020 350" stroke="url(#wave_teal_glow1)" stroke-width="2.2" opacity="0.75"/>
+        <path d="M50 430C280 340 450 560 760 410C920 320 980 480 1050 400" stroke="url(#wave_teal_glow2)" stroke-width="3" opacity="0.6"/>
+        <path d="M200 480C390 410 520 620 800 460C940 370 1000 520 1080 450" stroke="url(#wave_teal_glow1)" stroke-width="1.8" stroke-dasharray="6 4" opacity="0.45"/>
+        <defs>
+            <linearGradient id="wave_teal_glow1" x1="0" y1="350" x2="1000" y2="350" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#2DD4BF" stop-opacity="0"/>
+                <stop offset="0.3" stop-color="#2DD4BF" stop-opacity="0.6"/>
+                <stop offset="0.8" stop-color="#14B8A6" stop-opacity="0.9"/>
+                <stop offset="1" stop-color="#00F2FE" stop-opacity="1"/>
+            </linearGradient>
+            <linearGradient id="wave_teal_glow2" x1="0" y1="400" x2="1000" y2="400" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#5EEAD4" stop-opacity="0"/>
+                <stop offset="0.4" stop-color="#2DD4BF" stop-opacity="0.7"/>
+                <stop offset="0.85" stop-color="#0D9488" stop-opacity="0.95"/>
+                <stop offset="1" stop-color="#2DD4BF" stop-opacity="1"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Main Hero Grid Container -->
+    <div class="hero-main-container">
+        <!-- Left Hero Content Block -->
+        <div class="hero-left-block">
+            <!-- Top Pill Badge -->
+            <div class="hero-threat-pill">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>AI-Powered Threat Detection</span>
+            </div>
+
+            <!-- Main Title -->
+            <h1 class="hero-main-title">
+                SonicSentinel AI
+                <span class="gradient-headline">Hear the Unseen. Stop the Threat.</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="hero-subtext">
+                SonicSentinel AI uses advanced audio intelligence to detect potential threats, analyze suspicious patterns, and keep you one step ahead &mdash; in real time.
+            </p>
+
+            <!-- Quick Threat Audition Strip (Interactive Audio Tester) -->
+            <div class="hero-quick-audition-wrap">
+                <div class="hero-audition-title">
+                    <i class="fa-solid fa-bolt"></i> Interactive Quick Threat Audition:
+                </div>
+                <div class="hero-chips-scroll">
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('gunshot', 'Gunshot', '98.4%', 'Immediate Security Lockdown Dispatch')">
+                        <i class="fa-solid fa-crosshairs" style="color: #EF4444;"></i> Gunshot (98.4%)
+                    </button>
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('scream', 'Panic Scream', '96.9%', 'Medical & Crisis Team Alerted')">
+                        <i class="fa-solid fa-person-circle-exclamation" style="color: #EF4444;"></i> Scream (96.9%)
+                    </button>
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('glass', 'Glass Breaking', '95.8%', 'Perimeter Intrusion Unit Dispatched')">
+                        <i class="fa-solid fa-burst" style="color: #F59E0B;"></i> Glass Shatter
+                    </button>
+                    <button class="hero-audition-chip" onclick="triggerHeroAudition('alarm', 'Alarm / Siren', '97.2%', 'Emergency Protocol Activated')">
+                        <i class="fa-solid fa-bell" style="color: #3B82F6;"></i> Siren Alert
+                    </button>
+                    <button class="hero-audition-chip" onclick="triggerHeroAudition('machinery', 'Machinery Fault', '93.6%', 'Preventive Maintenance Scheduled')">
+                        <i class="fa-solid fa-gears" style="color: #10B981;"></i> Machinery Fault
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Audio Wave Bar with Circular Mic Button -->
+            <div class="hero-audio-bar-wrapper">
+                <button class="hero-mic-circle-btn" id="heroMicBtn" title="Click to test live mic stream" aria-label="Toggle Microphone">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                <div class="hero-soundwave-anim-strip" id="heroSoundwaveStrip">
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                    <span class="sw-bar"></span>
+                </div>
+                <span class="hero-audio-status-label" id="heroAudioStatus">Click chip or mic to test live acoustic stream</span>
+            </div>
+
+            <!-- CTA Action Row -->
+            <div class="hero-action-buttons-row">
+                <a href="{{ url_for('register') }}" class="btn-hero-primary">
+                    Get Started <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <a href="#interactiveStudio" class="btn-hero-secondary">
+                    <span class="play-circle-icon"><i class="fa-solid fa-play"></i></span>
+                    Watch Demo
+                </a>
+            </div>
+
+            <!-- 3 Value Checklist Pills Below -->
+            <div class="hero-checklist-strip">
+                <div class="check-feature-item">
+                    <div class="check-feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <span>Real-Time Detection</span>
+                </div>
+                <div class="check-feature-item">
+                    <div class="check-feature-icon"><i class="fa-solid fa-brain"></i></div>
+                    <span>AI-Powered Analysis</span>
+                </div>
+                <div class="check-feature-item">
+                    <div class="check-feature-icon"><i class="fa-solid fa-lock"></i></div>
+                    <span>Safer Digital Spaces</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Stage: Floating Glassmorphism Cards & Cursive Slogan -->
+        <div class="hero-right-stage-wrapper">
+            <!-- Floating Glassmorphism Card 1 (Top Right): Suspicious Audio Pattern Detected -->
+            <div class="floating-alert-card">
+                <div class="floating-card-header">
+                    <i class="fa-solid fa-triangle-exclamation floating-warn-icon"></i>
+                    <span class="floating-card-title">Suspicious Audio Pattern Detected</span>
+                </div>
+                <div class="floating-card-waveform-graphic">
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                    <span class="mini-wave-bar"></span>
+                </div>
+            </div>
+
+            <!-- Floating Glassmorphism Card 2 (Bottom Right): Analysis Complete - No Threat Found -->
+            <div class="floating-success-card">
+                <div class="floating-success-icon">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="floating-success-text-group">
+                    <span class="floating-success-headline">Analysis Complete</span>
+                    <span class="floating-success-sub">No Threat Found</span>
+                </div>
+            </div>
+
+            <!-- Flowing Cursive Handwritten Slogan Note (Exact match to reference) -->
+            <div class="floating-handwritten-slogan">
+                Smarter Listening.<br>Safer Tomorrow.
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 2: WHY SONICSENTINEL (EXACT MATCH TO REFERENCE)
+     ========================================== -->
+<section class="why-sonicsentinel-section" id="whySonicSentinel">
+    <div class="why-container">
+        <!-- Header Row -->
+        <div class="why-header-row">
+            <div class="why-header-left">
+                <div class="why-eyebrow">WHY SONICSENTINEL</div>
+                <h2 class="why-main-title">Smarter Audio Security<br>with AI</h2>
+            </div>
+            <div class="why-header-right">
+                <p class="why-header-desc">
+                    We combine cutting-edge machine learning with real-time audio analysis to detect threats before they become incidents.
+                </p>
+                <a href="#interactiveStudio" class="why-learn-more-link">
+                    Learn More <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Feature Cards Quad Grid (01, 02, 03, 04) -->
+        <div class="why-cards-quad-grid">
+            <!-- Card 01 -->
+            <div class="why-feature-card">
+                <div class="card-top-row">
+                    <div class="card-icon-bubble">
+                        <i class="fa-solid fa-wave-square"></i>
+                    </div>
+                    <span class="card-step-num">01</span>
+                </div>
+                <h3 class="card-title">Detect Anomalies</h3>
+                <p class="card-description">
+                    Identifies unusual sounds, voices, or patterns in real time with high accuracy.
+                </p>
+                <div class="card-bottom-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Card 02 -->
+            <div class="why-feature-card">
+                <div class="card-top-row">
+                    <div class="card-icon-bubble">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <span class="card-step-num">02</span>
+                </div>
+                <h3 class="card-title">AI Intelligence</h3>
+                <p class="card-description">
+                    Uses advanced ML models to reduce false alarms and improve detection over time.
+                </p>
+                <div class="card-bottom-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Card 03 -->
+            <div class="why-feature-card">
+                <div class="card-top-row">
+                    <div class="card-icon-bubble">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span class="card-step-num">03</span>
+                </div>
+                <h3 class="card-title">Instant Alerts</h3>
+                <p class="card-description">
+                    Get notified immediately when a potential threat is detected across any monitoring station.
+                </p>
+                <div class="card-bottom-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Card 04 -->
+            <div class="why-feature-card">
+                <div class="card-top-row">
+                    <div class="card-icon-bubble">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </div>
+                    <span class="card-step-num">04</span>
+                </div>
+                <h3 class="card-title">Peace of Mind</h3>
+                <p class="card-description">
+                    Protect your space, people and data with intelligent 24/7 continuous acoustic monitoring.
+                </p>
+                <div class="card-bottom-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRUSTED BY LOGO STRIP (EXACT MATCH TO REFERENCE) -->
+        <div class="trusted-by-strip">
+            <span class="trusted-by-label">TRUSTED BY</span>
+            <div class="trusted-logos-list">
+                <div class="trusted-logo-item"><i class="fa-solid fa-cube"></i> TechCorp</div>
+                <div class="trusted-logo-item"><i class="fa-solid fa-shield-cat"></i> NovaSecure</div>
+                <div class="trusted-logo-item"><i class="fa-solid fa-mountain-city"></i> Skyline</div>
+                <div class="trusted-logo-item"><i class="fa-brands fa-google"></i> GuardianTech</div>
+                <div class="trusted-logo-item"><i class="fa-solid fa-network-wired"></i> NextGen</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 3: INTERACTIVE LIVE ACOUSTIC STUDIO (SRS §1.2 & §1.6 Steps 2, 8, 10, 11, 12, 13)
+     ========================================== -->
+<section class="acoustic-studio-section" id="interactiveStudio">
+    <div class="section-head-center">
+        <div class="section-pill-tag">
+            <i class="fa-solid fa-sliders"></i> Interactive Acoustic Sandbox
+        </div>
+        <h2 class="section-title-large">
+            Experience Dual-AI Sound Classification in Action
+        </h2>
+        <p class="section-subtitle-text">
+            Test the live signal processor in real time. Choose from pre-recorded acoustic signatures or stream audio from your microphone to observe waveform analysis, spectrogram generation, and neural model arbitration.
+        </p>
+    </div>
+
+    <!-- Main Studio Console -->
+    <div class="studio-console-card">
+        <div class="studio-console-header">
+            <div class="studio-mode-pills">
+                <button class="studio-mode-btn active" id="btnModePreset">Presets Mode</button>
+                <button class="studio-mode-btn" id="btnModeLive">Live Mic Feed</button>
+                <button class="studio-mode-btn" id="btnModeUpload" onclick="document.getElementById('studioInlineFileInput').click()" title="Select audio file for instant AI analysis">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Clip
+                </button>
+            </div>
+            <div class="studio-hardware-indicator">
+                <span class="green-pulse-dot"></span>
+                <span>DSP ENGINE: ONLINE &bull; 44.1 kHz &bull; 16-BIT PCM</span>
+            </div>
+        </div>
+
+        <div class="studio-workbench-grid">
+            <!-- Col 1: Sound Source & Presets -->
+            <div class="studio-source-pane">
+                <div class="pane-label-bar">
+                    <span>1. Acoustic Source</span>
+                    <i class="fa-solid fa-music"></i>
+                </div>
+
+                <!-- Big Mic Button Box -->
+                <div class="mic-toggle-big-box" id="studioMicToggleBox">
+                    <div class="mic-icon-giant">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <div class="mic-box-title" id="studioMicTitle">Capture Live Microphone</div>
+                    <div class="mic-box-sub" id="studioMicSub">Click to enable real-time browser audio stream & live AI scoring</div>
+                </div>
+
+                <!-- Hidden audio file input for instant file classification -->
+                <input type="file" id="studioInlineFileInput" accept=".wav,.mp3,.flac,.ogg,.m4a" style="display: none;" onchange="handleStudioFileUpload(this.files)">
+
+                <div class="pane-label-bar" style="margin-top: 10px;">
+                    <span>Or Select Real Dataset Sample (10 Classes)</span>
+                    <span style="font-size: 10px; color: var(--teal-400);">SRS §1.2</span>
+                </div>
+
+                <!-- Preset Sound Chips List (All 10 SRS Mandatory Classes) -->
+                <div class="sound-presets-list">
+                    <button class="preset-chip-btn active" data-sound="gunshot">
+                        <span><i class="fa-solid fa-bullseye"></i> Gunshot</span>
+                        <span class="badge-sev critical">Critical</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="glass">
+                        <span><i class="fa-solid fa-burst"></i> Glass Breaking</span>
+                        <span class="badge-sev high">High</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="machinery">
+                        <span><i class="fa-solid fa-gears"></i> Machinery Fault</span>
+                        <span class="badge-sev high">High</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="alarm">
+                        <span><i class="fa-solid fa-bell"></i> Alarm / Siren</span>
+                        <span class="badge-sev high">High</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="scream">
+                        <span><i class="fa-solid fa-person-burst"></i> Panic Scream</span>
+                        <span class="badge-sev critical">Critical</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="aggression">
+                        <span><i class="fa-solid fa-hand-fist"></i> Aggression</span>
+                        <span class="badge-sev high">High</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="help">
+                        <span><i class="fa-solid fa-hands-holding-child"></i> Call for Help</span>
+                        <span class="badge-sev critical">Critical</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="animal">
+                        <span><i class="fa-solid fa-dog"></i> Animal Sound</span>
+                        <span class="badge-sev low">Low</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="horn">
+                        <span><i class="fa-solid fa-car-side"></i> Vehicle Horn</span>
+                        <span class="badge-sev medium">Medium</span>
+                    </button>
+                    <button class="preset-chip-btn" data-sound="noise">
+                        <span><i class="fa-solid fa-wind"></i> Background Noise</span>
+                        <span class="badge-sev low">Info</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Col 2: Audio Waveform & Spectrogram -->
+            <div class="studio-visualizer-pane">
+                <div class="pane-label-bar">
+                    <span>2. Real-Time Oscilloscope &amp; Spectrogram</span>
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+
+                <!-- Waveform Box -->
+                <div class="canvas-container-box">
+                    <span class="canvas-title-tag">Waveform (Time Domain)</span>
+                    <canvas id="studioWaveformCanvas" class="live-audio-canvas"></canvas>
+                </div>
+
+                <!-- Spectrogram Box -->
+                <div class="canvas-container-box">
+                    <span class="canvas-title-tag">Mel-Spectrogram (Frequency Domain)</span>
+                    <canvas id="studioSpectrogramCanvas" class="spectrogram-canvas"></canvas>
+                </div>
+
+                <!-- Quality Gatekeeper Metrics (SRS Step 13) -->
+                <div class="quality-metrics-strip">
+                    <div class="q-metric-card">
+                        <div class="q-metric-val" id="studioSnrVal">34.2 dB</div>
+                        <div class="q-metric-lbl">Signal-to-Noise</div>
+                    </div>
+                    <div class="q-metric-card">
+                        <div class="q-metric-val" id="studioGradeVal">Good</div>
+                        <div class="q-metric-lbl">Quality Grade</div>
+                    </div>
+                    <div class="q-metric-card">
+                        <div class="q-metric-val" id="studioClipVal">0% (Clean)</div>
+                        <div class="q-metric-lbl">Clipping / Silence</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col 3: Dual AI Decision & Arbitration -->
+            <div class="studio-ai-output-pane">
+                <div class="pane-label-bar">
+                    <span>3. Dual-AI Model Fusion</span>
+                    <i class="fa-solid fa-code-compare"></i>
+                </div>
+
+                <!-- Final Decision Card -->
+                <div class="final-decision-hero-card">
+                    <div class="decision-label">Arbitrated Threat Detection</div>
+                    <div class="decision-event-name" id="studioDecisionName">Gunshot</div>
+                    <div class="decision-match-chip" id="studioMatchStatus">
+                        <i class="fa-solid fa-circle-check"></i> Acceptable Match (&Delta; = 2.3%)
+                    </div>
+                </div>
+
+                <!-- Dual Confidence Meters -->
+                <div class="model-confidence-meter-box">
+                    <!-- Python Model -->
+                    <div class="meter-row-group">
+                        <div class="meter-row-header">
+                            <span><i class="fa-brands fa-python" style="color:#2DD4BF;"></i> Python CNN Model</span>
+                            <span id="pyModelConfidence" style="font-family: var(--font-mono); color: var(--teal-300);">98.4%</span>
+                        </div>
+                        <div class="meter-bar-track">
+                            <div class="meter-bar-fill" id="pyModelBarFill" style="width: 98.4%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Google Teachable Machine -->
+                    <div class="meter-row-group">
+                        <div class="meter-row-header">
+                            <span><i class="fa-brands fa-google" style="color:#60A5FA;"></i> Google Teachable Machine</span>
+                            <span id="gtmModelConfidence" style="font-family: var(--font-mono); color: #60A5FA;">96.1%</span>
+                        </div>
+                        <div class="meter-bar-track">
+                            <div class="meter-bar-fill gtm" id="gtmModelBarFill" style="width: 96.1%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arbitration Formula Calculation (SRS Step 11) -->
+                <div class="arbitration-formula-card">
+                    <div class="formula-row">
+                        <span>Confidence &Delta; = |Python - GTM|:</span>
+                        <strong id="confDeltaFormula">2.3%</strong>
+                    </div>
+                    <div class="formula-row">
+                        <span>Top-Two Margin:</span>
+                        <strong id="topTwoMarginFormula">94.2%</strong>
+                    </div>
+                    <div class="formula-row">
+                        <span>Repeated Detection:</span>
+                        <strong style="color: #34D399;">Confirmed (2 Windows)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 4: 10 MANDATORY SOUND CATEGORIES SHOWCASE (SRS §1.2 & §1.6 Step 16)
+     ========================================== -->
+<section class="sound-categories-section" id="tenCategories">
+    <div class="section-head-center">
+        <div class="section-pill-tag">
+            <i class="fa-solid fa-layer-group"></i> Mandatory Acoustic Classes
+        </div>
+        <h2 class="section-title-large">
+            Detecting All 10 Mission-Critical Sound Classes
+        </h2>
+        <p class="section-subtitle-text">
+            Engineered specifically to recognize urgent security, industrial, and safety acoustic events as outlined in the TechWiz 7 specification.
+        </p>
+    </div>
+
+    <div class="categories-showcase-grid">
+        <!-- 1. Machinery Fault -->
+        <div class="sound-category-item-card" data-category-key="machinery">
+            <div class="cat-top-header">
+                <div class="cat-icon-square high"><i class="fa-solid fa-gears"></i></div>
+                <span class="cat-severity-badge badge-sev high">High</span>
+            </div>
+            <h4 class="cat-name-heading">Machinery Fault</h4>
+            <div class="cat-frequency-range">120 Hz &ndash; 2,400 Hz</div>
+            <p class="cat-description-text">Turbine friction, bearing failure, harmonic vibrations, and pump anomalies.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 2. Glass Breaking -->
+        <div class="sound-category-item-card" data-category-key="glass">
+            <div class="cat-top-header">
+                <div class="cat-icon-square high"><i class="fa-solid fa-burst"></i></div>
+                <span class="cat-severity-badge badge-sev high">High</span>
+            </div>
+            <h4 class="cat-name-heading">Glass Breaking</h4>
+            <div class="cat-frequency-range">2,500 Hz &ndash; 9,000 Hz</div>
+            <p class="cat-description-text">Intruder window smash, high-frequency brittle shatter, and projectile impact.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 3. Alarm or Siren -->
+        <div class="sound-category-item-card" data-category-key="alarm">
+            <div class="cat-top-header">
+                <div class="cat-icon-square high"><i class="fa-solid fa-bell"></i></div>
+                <span class="cat-severity-badge badge-sev high">High</span>
+            </div>
+            <h4 class="cat-name-heading">Alarm or Siren</h4>
+            <div class="cat-frequency-range">700 Hz &ndash; 1,800 Hz</div>
+            <p class="cat-description-text">Modulated industrial alarms, fire horn sweeps, and security strobe sirens.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 4. Vehicle Horn -->
+        <div class="sound-category-item-card" data-category-key="horn">
+            <div class="cat-top-header">
+                <div class="cat-icon-square medium"><i class="fa-solid fa-car-side"></i></div>
+                <span class="cat-severity-badge badge-sev medium">Medium</span>
+            </div>
+            <h4 class="cat-name-heading">Vehicle Horn</h4>
+            <div class="cat-frequency-range">400 Hz &ndash; 1,200 Hz</div>
+            <p class="cat-description-text">Dual-tone automotive horns, loading dock klaxons, and perimeter traffic honks.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 5. Animal Sound -->
+        <div class="sound-category-item-card" data-category-key="animal">
+            <div class="cat-top-header">
+                <div class="cat-icon-square low"><i class="fa-solid fa-dog"></i></div>
+                <span class="cat-severity-badge badge-sev low">Low</span>
+            </div>
+            <h4 class="cat-name-heading">Animal Sound</h4>
+            <div class="cat-frequency-range">350 Hz &ndash; 2,800 Hz</div>
+            <p class="cat-description-text">Guard dog barking, wildlife intrusion, distress barks, and livestock anomalies.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 6. Gunshot -->
+        <div class="sound-category-item-card" data-category-key="gunshot">
+            <div class="cat-top-header">
+                <div class="cat-icon-square critical"><i class="fa-solid fa-bullseye"></i></div>
+                <span class="cat-severity-badge badge-sev critical">Critical</span>
+            </div>
+            <h4 class="cat-name-heading">Gunshot</h4>
+            <div class="cat-frequency-range">100 Hz &ndash; 8,000 Hz</div>
+            <p class="cat-description-text">Impulsive acoustic blast, supersonic projectile crack, and muzzle shockwaves.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 7. Panic Scream -->
+        <div class="sound-category-item-card" data-category-key="scream">
+            <div class="cat-top-header">
+                <div class="cat-icon-square critical"><i class="fa-solid fa-person-burst"></i></div>
+                <span class="cat-severity-badge badge-sev critical">Critical</span>
+            </div>
+            <h4 class="cat-name-heading">Panic Scream</h4>
+            <div class="cat-frequency-range">1,200 Hz &ndash; 4,800 Hz</div>
+            <p class="cat-description-text">High-intensity human distress shrieks, emergency screams, and panic formant bursts.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 8. Aggression / Conflict -->
+        <div class="sound-category-item-card" data-category-key="aggression">
+            <div class="cat-top-header">
+                <div class="cat-icon-square high"><i class="fa-solid fa-hand-fist"></i></div>
+                <span class="cat-severity-badge badge-sev high">High</span>
+            </div>
+            <h4 class="cat-name-heading">Aggression / Conflict</h4>
+            <div class="cat-frequency-range">250 Hz &ndash; 3,200 Hz</div>
+            <p class="cat-description-text">Hostile shouting, physical struggle impacts, furniture collapse, and heated disputes.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 9. Person Asking for Help -->
+        <div class="sound-category-item-card" data-category-key="help">
+            <div class="cat-top-header">
+                <div class="cat-icon-square critical"><i class="fa-solid fa-hands-holding-child"></i></div>
+                <span class="cat-severity-badge badge-sev critical">Critical</span>
+            </div>
+            <h4 class="cat-name-heading">Call for Help</h4>
+            <div class="cat-frequency-range">300 Hz &ndash; 3,400 Hz</div>
+            <p class="cat-description-text">Recognizes predefined phrases: "Help me", "Emergency", "Call for help", "Somebody help".</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+
+        <!-- 10. Background Noise -->
+        <div class="sound-category-item-card" data-category-key="noise">
+            <div class="cat-top-header">
+                <div class="cat-icon-square info"><i class="fa-solid fa-wind"></i></div>
+                <span class="cat-severity-badge badge-sev low">Info</span>
+            </div>
+            <h4 class="cat-name-heading">Background Noise</h4>
+            <div class="cat-frequency-range">40 Hz &ndash; 400 Hz</div>
+            <p class="cat-description-text">HVAC hum, wind rush, distant street ambiance, and continuous office noise floor.</p>
+            <div class="cat-listen-btn"><i class="fa-solid fa-volume-high"></i> Click to Audition</div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 5: DUAL AI PIPELINE ARCHITECTURE (SRS §1.3)
+     ========================================== -->
+<section class="pipeline-architecture-section" id="dualAiPipeline">
+    <div class="section-head-center">
+        <div class="section-pill-tag">
+            <i class="fa-solid fa-diagram-project"></i> Architectural Flow
+        </div>
+        <h2 class="section-title-large">
+            End-to-End Acoustic Intelligence Pipeline
+        </h2>
+        <p class="section-subtitle-text">
+            From physical sound pressure waves to cryptographically verified threat alerts in under 350 milliseconds.
+        </p>
+    </div>
+
+    <div class="pipeline-diagram-wrapper">
+        <!-- Node 1 -->
+        <div class="pipeline-step-node">
+            <div class="pipeline-node-icon"><i class="fa-solid fa-microphone"></i></div>
+            <span class="pipeline-step-num">Step 01</span>
+            <h4 class="pipeline-step-title">Ingestion &amp; SHA-256</h4>
+            <p class="pipeline-step-desc">Accepts WAV/MP3/M4A or 1.5s sliding mic windows with duplicate fingerprinting.</p>
+        </div>
+
+        <!-- Node 2 -->
+        <div class="pipeline-step-node">
+            <div class="pipeline-node-icon"><i class="fa-solid fa-filter"></i></div>
+            <span class="pipeline-step-num">Step 02</span>
+            <h4 class="pipeline-step-title">Pre-Processing</h4>
+            <p class="pipeline-step-desc">Resamples to 22.05 kHz mono, trims silence, checks SNR dB and clipping guards.</p>
+        </div>
+
+        <!-- Node 3 -->
+        <div class="pipeline-step-node">
+            <div class="pipeline-node-icon"><i class="fa-solid fa-wave-square"></i></div>
+            <span class="pipeline-step-num">Step 03</span>
+            <h4 class="pipeline-step-title">Feature Extraction</h4>
+            <p class="pipeline-step-desc">Computes 128-band Mel-Spectrograms, MFCCs, Chroma, Spectral Centroid, and ZCR.</p>
+        </div>
+
+        <!-- Node 4 -->
+        <div class="pipeline-step-node">
+            <div class="pipeline-node-icon"><i class="fa-solid fa-brain"></i></div>
+            <span class="pipeline-step-num">Step 04</span>
+            <h4 class="pipeline-step-title">Dual-AI Inference</h4>
+            <p class="pipeline-step-desc">Executes Python CNN &amp; Google Teachable Machine in parallel independent passes.</p>
+        </div>
+
+        <!-- Node 5 -->
+        <div class="pipeline-step-node">
+            <div class="pipeline-node-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <span class="pipeline-step-num">Step 05</span>
+            <h4 class="pipeline-step-title">Policy &amp; Alert Dispatch</h4>
+            <p class="pipeline-step-desc">Evaluates confidence delta, top-two margin, repeated confirmation, and triggers alerts.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 6: REAL-TIME INCIDENT STREAM (SRS Step 18)
+     ========================================== -->
+<section class="incident-stream-section" id="incidentFeed">
+    <div class="incident-stream-card">
+        <div class="stream-card-header">
+            <div class="stream-title-group">
+                <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                    Live Acoustic Incident Stream
+                </h3>
+                <span class="stream-live-indicator">
+                    <span class="live-blink-circle"></span> Live Feed
+                </span>
+            </div>
+            <div style="font-size: 12px; color: var(--teal-700); font-family: var(--font-mono);" id="incidentCountLabel">
+                Showing recent acoustic events
+            </div>
+        </div>
+
+        <div class="stream-table-wrapper">
+            <table class="incident-feed-table">
+                <thead>
+                    <tr>
+                        <th>Event ID</th>
+                        <th>Class Detected</th>
+                        <th>Severity</th>
+                        <th>Python Conf</th>
+                        <th>GTM Conf</th>
+                        <th>Quality</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="incidentFeedTbody">
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-9B417A</td>
+                        <td><i class="fa-solid fa-bullseye" style="color: #EF4444; margin-right: 6px;"></i> Gunshot</td>
+                        <td><span class="badge-sev critical">Critical</span></td>
+                        <td>98.4%</td>
+                        <td>96.1%</td>
+                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
+                        <td><span style="color:#EF4444; font-weight:700;">Alert Dispatched</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-3C891D</td>
+                        <td><i class="fa-solid fa-burst" style="color: #F59E0B; margin-right: 6px;"></i> Glass Breaking</td>
+                        <td><span class="badge-sev high">High</span></td>
+                        <td>95.8%</td>
+                        <td>94.2%</td>
+                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
+                        <td><span style="color:#F59E0B; font-weight:700;">Zone 3 Warning</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-77E2A0</td>
+                        <td><i class="fa-solid fa-gears" style="color: #F59E0B; margin-right: 6px;"></i> Machinery Fault</td>
+                        <td><span class="badge-sev high">High</span></td>
+                        <td>93.6%</td>
+                        <td>91.8%</td>
+                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
+                        <td><span style="color:#3B82F6; font-weight:600;">Inspection Logged</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-1F55C9</td>
+                        <td><i class="fa-solid fa-person-burst" style="color: #EF4444; margin-right: 6px;"></i> Panic Scream</td>
+                        <td><span class="badge-sev critical">Critical</span></td>
+                        <td>96.9%</td>
+                        <td>95.3%</td>
+                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
+                        <td><span style="color:#EF4444; font-weight:700;">Alert Dispatched</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-802D3E</td>
+                        <td><i class="fa-solid fa-wind" style="color: var(--teal-600); margin-right: 6px;"></i> Background Noise</td>
+                        <td><span class="badge-sev low">Info</span></td>
+                        <td>99.1%</td>
+                        <td>98.8%</td>
+                        <td><span style="color:#10B981; font-weight:600;">Acceptable</span></td>
+                        <td><span style="color:var(--text-muted);">Normal Baseline</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 7: CTA CALLOUT BANNER
+     ========================================== -->
+<section class="cta-banner-section">
+    <div class="cta-luminous-box">
+        <div class="cta-left-text">
+            <div class="cta-tag-pill">
+                <i class="fa-solid fa-sparkles"></i> 100% Free &bull; Open-Source
+            </div>
+            <h2 class="cta-headline-giant">
+                Ready to Deploy Autonomous Acoustic Intelligence?
+            </h2>
+            <p class="cta-sub-description">
+                Experience real-time sound threat detection in your environment. Register your account today or test with pre-recorded clips in our sandbox.
+            </p>
+        </div>
+        <div class="cta-right-actions">
+            <a href="{{ url_for('register') }}" class="btn-cta-white">
+                Create Free Account <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#interactiveStudio" class="btn-cta-outline-white">
+                <i class="fa-solid fa-sliders"></i> Open Audio Sandbox
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

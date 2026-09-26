@@ -1,7 +1,8 @@
 """
 database.py - SQLite Database Management for SonicSentinel AI
-Handles user credentials, roles, secure password hashing, and session queries.
+Handles user credentials, secure password hashing, and session queries.
 Implements complete acoustic persistence: audio_records, predictions, alerts, reviews, audit_logs.
+Simplified Auth: Only 'admin' and 'user' roles.
 """
 
 import sqlite3
@@ -13,27 +14,9 @@ from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'sonicsentinel.db')
 
-# Canonical system roles
-ROLE_ADMINISTRATOR = 'Administrator'
-ROLE_SECURITY_OPERATOR = 'Security Operator'
-ROLE_AUDIO_REVIEWER = 'Audio Reviewer'
-ROLE_MAINTENANCE_OPERATOR = 'Maintenance Operator'
-ROLE_NORMAL_USER = 'Normal User'
-
-ALL_ROLES = [
-    ROLE_ADMINISTRATOR,
-    ROLE_SECURITY_OPERATOR,
-    ROLE_AUDIO_REVIEWER,
-    ROLE_MAINTENANCE_OPERATOR,
-    ROLE_NORMAL_USER
-]
-
-# Only these roles can be created by Administrator
-ADMIN_CREATABLE_ROLES = [
-    ROLE_SECURITY_OPERATOR,
-    ROLE_AUDIO_REVIEWER,
-    ROLE_MAINTENANCE_OPERATOR
-]
+# Only two roles in the system
+ROLE_ADMIN = 'admin'
+ROLE_USER = 'user'
 
 
 def get_db_connection():
@@ -60,9 +43,9 @@ def init_db():
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             full_name TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'Normal User',
-            organization TEXT DEFAULT 'Apex Acoustic Defense Operations',
-            station TEXT DEFAULT 'Terminal #04 (Sector B)',
+            role TEXT NOT NULL DEFAULT 'user',
+            organization TEXT DEFAULT 'SonicSentinel Community',
+            station TEXT DEFAULT 'Web Portal',
             theme_preference TEXT DEFAULT 'light',
             is_active INTEGER NOT NULL DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -75,13 +58,6 @@ def init_db():
     columns = [col[1] for col in cursor.fetchall()]
     if 'is_active' not in columns:
         cursor.execute('ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1')
-
-    # Migration: Normalize existing role names in database
-    cursor.execute("UPDATE users SET role = 'Normal User' WHERE LOWER(role) IN ('normal user', 'normal_user')")
-    cursor.execute("UPDATE users SET role = 'Maintenance Operator' WHERE LOWER(role) IN ('maintenance operator', 'maintenance_operator')")
-    cursor.execute("UPDATE users SET role = 'Security Operator' WHERE LOWER(role) IN ('security operator', 'security_operator')")
-    cursor.execute("UPDATE users SET role = 'Audio Reviewer' WHERE LOWER(role) IN ('audio reviewer', 'audio_reviewer')")
-    cursor.execute("UPDATE users SET role = 'Administrator' WHERE LOWER(role) IN ('administrator', 'admin')")
 
     # 2. Audio Records table
     cursor.execute('''
@@ -173,7 +149,7 @@ def init_db():
     ''')
 
     # Ensure built-in Administrator account exists
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'admin' OR LOWER(role) = 'administrator'")
+    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'admin'")
     admin_exists = cursor.fetchone()
 
     if not admin_exists:
@@ -186,40 +162,11 @@ def init_db():
             'admin@sonicsentinel.ai',
             admin_pass_hash,
             'System Administrator',
-            ROLE_ADMINISTRATOR,
-            'Apex Acoustic Defense Command',
-            'Command Central #01',
+            ROLE_ADMIN,
+            'SonicSentinel Command',
+            'Admin Console',
             'light'
         ))
-
-    # Ensure default evaluation accounts exist
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'operator'")
-    if not cursor.fetchone():
-        cursor.execute('''
-            INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        ''', ('operator', 'operator@sonicsentinel.ai', generate_password_hash('Operator@123'), 'Capt. Alexander Vance', ROLE_SECURITY_OPERATOR, 'Apex Acoustic Defense Operations', 'Terminal #04 (Sector B)', 'light'))
-
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'reviewer'")
-    if not cursor.fetchone():
-        cursor.execute('''
-            INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        ''', ('reviewer', 'reviewer@sonicsentinel.ai', generate_password_hash('Reviewer@123'), 'Dr. Elena Rostova', ROLE_AUDIO_REVIEWER, 'Acoustic Forensics Lab', 'Lab Station #02', 'light'))
-
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'maintenance'")
-    if not cursor.fetchone():
-        cursor.execute('''
-            INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        ''', ('maintenance', 'maintenance@sonicsentinel.ai', generate_password_hash('Maint@123'), 'Eng. Marcus Vance', ROLE_MAINTENANCE_OPERATOR, 'Facility Engineering Dept', 'HVAC Diagnostic Dock', 'light'))
-
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'user'")
-    if not cursor.fetchone():
-        cursor.execute('''
-            INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        ''', ('user', 'user@sonicsentinel.ai', generate_password_hash('User@123'), 'Claire Thompson', ROLE_NORMAL_USER, 'General Security Division', 'Observation Post #03', 'light'))
 
     conn.commit()
 
@@ -250,7 +197,7 @@ def seed_competition_scenarios(conn):
     if count >= 11:
         return
 
-    admin_user = cursor.execute("SELECT id FROM users WHERE role = 'Administrator' LIMIT 1").fetchone()
+    admin_user = cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1").fetchone()
     admin_id = admin_user['id'] if admin_user else 1
 
     scenarios = [
@@ -350,7 +297,7 @@ def seed_competition_scenarios(conn):
             "delta": 0.04, "margin": 0.12, "status": "Model Disagreement",
             "final": "Machinery Fault", "severity": "High", "alert_status": "Active",
             "repeated": 0,
-            "action": "MANUAL REVIEW REQUIRED: Divergent model predictions. Queued for Audio Reviewer forensic arbitration."
+            "action": "MANUAL REVIEW REQUIRED: Divergent model predictions. Queued for forensic arbitration."
         },
         {
             "id": "AUD-08",
@@ -461,7 +408,7 @@ def seed_competition_scenarios(conn):
                 INSERT OR REPLACE INTO reviews (
                     id, audio_id, triage_reason, original_decision,
                     final_decision, is_override, reviewer_comments
-                ) VALUES (?, ?, ?, ?, ?, 0, 'Pending forensic evaluation by Audio Reviewer.')
+                ) VALUES (?, ?, ?, ?, ?, 0, 'Pending forensic evaluation.')
             ''', (
                 f"REV-{s['id']}", s["id"], s["status"], s["final"], s["final"]
             ))
@@ -606,7 +553,7 @@ def log_audit_action(user_id, action, details=None):
 
 
 # ==========================================
-# USER & RBAC METHODS (PRESERVED)
+# USER METHODS (SIMPLIFIED - admin + user only)
 # ==========================================
 
 def get_user_by_id(user_id):
@@ -627,18 +574,15 @@ def get_user_by_email_or_username(identifier):
 
 
 def get_all_users():
-    """Retrieve all users for Admin Operator Management"""
+    """Retrieve all users for Admin management"""
     conn = get_db_connection()
     users = conn.execute('''
         SELECT id, username, email, full_name, role, organization, station, is_active, created_at, last_login
         FROM users
         ORDER BY 
             CASE role 
-                WHEN 'Administrator' THEN 1 
-                WHEN 'Security Operator' THEN 2 
-                WHEN 'Audio Reviewer' THEN 3 
-                WHEN 'Maintenance Operator' THEN 4 
-                ELSE 5 
+                WHEN 'admin' THEN 1 
+                ELSE 2 
             END,
             created_at DESC
     ''').fetchall()
@@ -646,10 +590,11 @@ def get_all_users():
     return users
 
 
-def create_user(username, email, password, full_name, role=ROLE_NORMAL_USER, organization='Apex Acoustic Defense Operations', station='Terminal #04 (Sector B)', is_active=1):
+def create_user(username, email, password, full_name, role=ROLE_USER, organization='SonicSentinel Community', station='Web Portal', is_active=1):
     """
     Creates a new user record.
     Enforces password hashing and checks username/email uniqueness.
+    Public registration ALWAYS creates 'user' role.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -687,7 +632,7 @@ def toggle_user_status(user_id):
         conn.close()
         return False, "User not found."
 
-    if user['role'] == ROLE_ADMINISTRATOR:
+    if user['role'] == ROLE_ADMIN:
         conn.close()
         return False, "The built-in Administrator account cannot be deactivated."
 

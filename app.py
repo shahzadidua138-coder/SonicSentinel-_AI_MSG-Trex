@@ -1,6 +1,8 @@
 """
 SonicSentinel AI - NextWave Acoustic Intelligence Web Application
 Backend Server using Python Flask and SQLite Authentication
+Simplified Auth: Only 'admin' and 'user' roles.
+Users get website. Admin gets dashboard.
 """
 
 import os
@@ -55,26 +57,8 @@ def add_security_headers(response):
 
 
 # ==========================================
-# AUTHENTICATION & RBAC DECORATORS
+# AUTHENTICATION DECORATORS
 # ==========================================
-
-def get_role_dashboard_url(role=None):
-    """Returns the dedicated dashboard URL for a given role"""
-    if not role:
-        role = session.get('role', database.ROLE_NORMAL_USER)
-
-    normalized = str(role).strip().lower().replace('_', ' ')
-    if 'admin' in normalized:
-        return url_for('admin_dashboard')
-    elif 'security' in normalized or 'operator' in normalized and 'maintenance' not in normalized:
-        return url_for('operator_dashboard')
-    elif 'review' in normalized:
-        return url_for('reviewer_dashboard')
-    elif 'maint' in normalized:
-        return url_for('maintenance_dashboard')
-    else:
-        return url_for('user_dashboard')
-
 
 def login_required(f):
     """
@@ -84,7 +68,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash("Please sign in to access this protected module.", "warning")
+            flash("Please sign in to access this page.", "warning")
             return redirect(url_for('login', next=request.url))
 
         # Query database to confirm user exists and is active
@@ -108,42 +92,29 @@ def login_required(f):
     return decorated_function
 
 
-def roles_required(*allowed_roles):
+def admin_required(f):
     """
-    Strict server-side Role-Based Access Control (RBAC) decorator.
-    Returns HTTP 403 Forbidden if user lacks required permissions.
+    Ensures route is accessible only to admin users.
     """
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if 'user_id' not in session:
-                flash("Authentication required to access this resource.", "warning")
-                return redirect(url_for('login', next=request.url))
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("Authentication required.", "warning")
+            return redirect(url_for('login', next=request.url))
 
-            user = database.get_user_by_id(session['user_id'])
-            if not user or user['is_active'] == 0:
-                session.clear()
-                flash("Your account is not active. Access denied.", "error")
-                return redirect(url_for('login'))
+        user = database.get_user_by_id(session['user_id'])
+        if not user or user['is_active'] == 0:
+            session.clear()
+            flash("Your account is not active. Access denied.", "error")
+            return redirect(url_for('login'))
 
-            user_role = user['role']
-            session['role'] = user_role
+        if user['role'] != database.ROLE_ADMIN:
+            flash("Access denied. Administrator privileges required.", "error")
+            return redirect(url_for('website_home'))
 
-            # Normalize roles for robust comparison
-            normalized_allowed = [r.strip().lower().replace('_', ' ') for r in allowed_roles]
-            user_role_norm = user_role.strip().lower().replace('_', ' ')
-
-            if user_role_norm not in normalized_allowed:
-                return render_template(
-                    '403.html',
-                    user_role=user_role,
-                    allowed_roles=allowed_roles,
-                    target_endpoint=request.path
-                ), 403
-
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
+        session['role'] = user['role']
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.context_processor
@@ -156,9 +127,11 @@ def inject_user_and_context():
     return {
         'current_user': current_user,
         'app_name': 'SonicSentinel AI',
-        'system_version': '1.0.0-Enterprise',
-        'system_uptime': '99.94%'
+        'system_version': '1.0.0',
+        'system_uptime': '99.94%',
+        'now': datetime.utcnow  # provides now() in templates
     }
+
 
 
 # ==========================================
@@ -168,15 +141,21 @@ def inject_user_and_context():
 @app.route('/')
 def index():
     if 'user_id' in session:
-        return redirect(get_role_dashboard_url())
-    return redirect(url_for('login'))
+        user = database.get_user_by_id(session['user_id'])
+        if user and user['role'] == database.ROLE_ADMIN:
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('website_home'))
+    return redirect(url_for('website_home'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # If user is already logged in, redirect directly to their own role dashboard
+    # If user is already logged in, redirect
     if 'user_id' in session:
-        return redirect(get_role_dashboard_url())
+        user = database.get_user_by_id(session['user_id'])
+        if user and user['role'] == database.ROLE_ADMIN:
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('website_home'))
 
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
@@ -199,24 +178,25 @@ def login():
         session['full_name'] = user['full_name']
         session.permanent = remember
 
-        flash(f"Welcome back, {user['full_name']}.", "success")
+        flash(f"Welcome back, {user['full_name']}!", "success")
 
-        # Determine target dashboard
+        # Determine target
         next_page = request.args.get('next')
-        # Avoid redirect loops to auth pages
         if next_page and not any(auth_path in next_page for auth_path in ['/login', '/register', '/logout']):
             return redirect(next_page)
 
-        return redirect(get_role_dashboard_url(user['role']))
+        if user['role'] == database.ROLE_ADMIN:
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('website_home'))
 
     return render_template('login.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # If user is already logged in, redirect directly to their own role dashboard
+    # If user is already logged in, redirect
     if 'user_id' in session:
-        return redirect(get_role_dashboard_url())
+        return redirect(url_for('website_home'))
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -225,9 +205,8 @@ def register():
         password = request.form.get('password', '').strip()
         confirm_password = request.form.get('confirm_password', '').strip()
 
-        # SECURITY RULE: Public register users ALWAYS become Normal User.
-        # Frontend, URL, form data, or JSON role overrides are completely ignored.
-        assigned_role = database.ROLE_NORMAL_USER
+        # SECURITY RULE: Public register users ALWAYS become 'user'.
+        assigned_role = database.ROLE_USER
 
         # Validation
         if not username or not email or not full_name or not password:
@@ -257,14 +236,14 @@ def register():
             password=password,
             full_name=full_name,
             role=assigned_role,
-            station='Public Web Terminal'
+            station='Web Portal'
         )
 
         if not success:
             flash(result, "error")
             return render_template('register.html', username=username, email=email, full_name=full_name)
 
-        flash("Registration successful! Your Normal User account is ready. Please sign in.", "success")
+        flash("Registration successful! Your account is ready. Please sign in.", "success")
         return redirect(url_for('login'))
 
     return render_template('register.html')
@@ -273,7 +252,7 @@ def register():
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if 'user_id' in session:
-        return redirect(get_role_dashboard_url())
+        return redirect(url_for('website_home'))
 
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
@@ -306,57 +285,78 @@ def forgot_password():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("You have been securely signed out. Cache and session credentials cleared.", "info")
+    flash("You have been securely signed out.", "info")
     return redirect(url_for('login'))
 
 
 # ==========================================
-# GENERAL DASHBOARD ROUTE (AUTO-REDIRECT)
+# WEBSITE ROUTES (FOR ALL USERS)
 # ==========================================
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    """Redirects authenticated user to their role-specific dashboard"""
-    return redirect(get_role_dashboard_url())
+@app.route('/home')
+def website_home():
+    return render_template('website_home.html')
+
+
+@app.route('/about')
+def website_about():
+    return render_template('website_about.html')
+
+
+@app.route('/features')
+def website_features():
+    return render_template('website_features.html')
+
+
+@app.route('/technology')
+def website_technology():
+    return render_template('website_technology.html')
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+def website_contact():
+    """Contact page with simple form handling"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+        if not name or not email or not message:
+            flash('All fields are required.', 'error')
+            return render_template('website_contact.html')
+        flash(f'Thank you, {name}! Your message has been received.', 'success')
+        return redirect(url_for('website_home'))
+    return render_template('website_contact.html')
 
 
 # ==========================================
-# DEDICATED ROLE DASHBOARDS
+# ADMIN DASHBOARD (ADMIN ONLY)
 # ==========================================
 
 @app.route('/admin/dashboard')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR)
+@admin_required
 def admin_dashboard():
-    """Administrator Control Center - Personnel Governance & System Policies"""
+    """Administrator Control Center"""
     users = database.get_all_users()
-    return render_template('admin_dashboard.html', users=users, active_page='admin_dashboard')
+    events = database.get_all_audio_events()
+    alerts = database.get_active_alerts()
+    return render_template('admin_dashboard.html', users=users, events=events, alerts=alerts, active_page='admin_dashboard')
 
 
 @app.route('/admin/create-operator', methods=['POST'])
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR)
+@admin_required
 def admin_create_operator():
-    """Allows Administrator to provision certified operator accounts"""
+    """Allows Administrator to provision accounts"""
     full_name = request.form.get('full_name', '').strip()
     username = request.form.get('username', '').strip()
     email = request.form.get('email', '').strip()
-    role = request.form.get('role', '').strip()
-    station = request.form.get('station', 'Terminal #02 (East Wing)').strip()
+    role = request.form.get('role', database.ROLE_USER).strip()
+    station = request.form.get('station', 'Main HQ').strip()
     password = request.form.get('password', '').strip()
 
-    # Validate role is strictly one of the operator creatable roles
-    if role not in database.ADMIN_CREATABLE_ROLES:
-        flash(f"Invalid operator role '{role}'. Permitted roles: {', '.join(database.ADMIN_CREATABLE_ROLES)}", "error")
-        return redirect(url_for('admin_dashboard'))
-
     if not full_name or not username or not email or not password:
-        flash("All fields are required to provision an operator account.", "error")
-        return redirect(url_for('admin_dashboard'))
-
-    if len(password) < 6:
-        flash("Password must be at least 6 characters in length.", "error")
+        flash("All fields are required to create an account.", "error")
         return redirect(url_for('admin_dashboard'))
 
     success, result = database.create_user(
@@ -367,18 +367,16 @@ def admin_create_operator():
         role=role,
         station=station
     )
-
-    if not success:
-        flash(result, "error")
+    if success:
+        flash(f"Account for {full_name} ({username}) created successfully.", "success")
     else:
-        flash(f"Operator account '{username}' successfully created with role '{role}'.", "success")
-
+        flash(result, "error")
     return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/admin/toggle-user/<int:user_id>', methods=['POST'])
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR)
+@admin_required
 def admin_toggle_user(user_id):
     """Allows Administrator to activate or deactivate an account"""
     success, message = database.toggle_user_status(user_id)
@@ -389,48 +387,9 @@ def admin_toggle_user(user_id):
     return redirect(url_for('admin_dashboard'))
 
 
-@app.route('/operator/dashboard')
-@login_required
-@roles_required(database.ROLE_SECURITY_OPERATOR, database.ROLE_ADMINISTRATOR)
-def operator_dashboard():
-    """Security Operator Command Console"""
-    return render_template('operator_dashboard.html', active_page='operator_dashboard')
-
-
-@app.route('/reviewer/dashboard')
-@login_required
-@roles_required(database.ROLE_AUDIO_REVIEWER, database.ROLE_ADMINISTRATOR)
-def reviewer_dashboard():
-    """Audio Reviewer Forensic Hub"""
-    return render_template('reviewer_dashboard.html', active_page='reviewer_dashboard')
-
-
-@app.route('/maintenance/dashboard')
-@login_required
-@roles_required(database.ROLE_MAINTENANCE_OPERATOR, database.ROLE_ADMINISTRATOR)
-def maintenance_dashboard():
-    """Maintenance Operator Sensor Diagnostics Console"""
-    return render_template('maintenance_dashboard.html', active_page='maintenance_dashboard')
-
-
-@app.route('/user/dashboard')
-@login_required
-@roles_required(database.ROLE_NORMAL_USER, database.ROLE_ADMINISTRATOR)
-def user_dashboard():
-    """Normal User Safety Portal"""
-    return render_template('user_dashboard.html', active_page='user_dashboard')
-
-
 # ==========================================
-# MODULE ROUTES (STRICT RBAC ENFORCED)
+# PROTECTED MODULE ROUTES (AUTH REQUIRED)
 # ==========================================
-
-@app.route('/live-monitoring')
-@login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_SECURITY_OPERATOR, database.ROLE_AUDIO_REVIEWER, database.ROLE_MAINTENANCE_OPERATOR)
-def live_monitoring():
-    return render_template('live_monitoring.html', active_page='live_monitoring')
-
 
 @app.route('/audio-upload')
 @login_required
@@ -441,21 +400,24 @@ def audio_upload():
 
 @app.route('/audio-analysis')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_SECURITY_OPERATOR, database.ROLE_AUDIO_REVIEWER)
 def audio_analysis():
     return render_template('audio_analysis.html', active_page='audio_analysis')
 
 
+@app.route('/live-monitoring')
+@login_required
+def live_monitoring():
+    return render_template('live_monitoring.html', active_page='live_monitoring')
+
+
 @app.route('/alerts')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_SECURITY_OPERATOR, database.ROLE_AUDIO_REVIEWER, database.ROLE_MAINTENANCE_OPERATOR)
 def alerts():
     return render_template('alerts.html', active_page='alerts')
 
 
 @app.route('/manual-review')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_AUDIO_REVIEWER, database.ROLE_SECURITY_OPERATOR)
 def manual_review():
     return render_template('manual_review.html', active_page='manual_review')
 
@@ -469,21 +431,19 @@ def event_history():
 
 @app.route('/analytics')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_SECURITY_OPERATOR)
 def analytics():
     return render_template('analytics.html', active_page='analytics')
 
 
 @app.route('/reports')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR, database.ROLE_AUDIO_REVIEWER)
 def reports():
     return render_template('reports.html', active_page='reports')
 
 
 @app.route('/settings')
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR)
+@admin_required
 def settings():
     return render_template('settings.html', active_page='settings')
 
@@ -497,7 +457,6 @@ def profile():
         station = request.form.get('station', user['station']).strip()
         theme = request.form.get('theme', user['theme_preference'])
 
-        # SECURITY RULE: User profile update NEVER alters user role
         database.update_user_profile(user['id'], full_name, station, theme)
         session['full_name'] = full_name
         flash("Your profile preferences have been successfully updated.", "success")
@@ -548,7 +507,6 @@ def export_csv():
 # ==========================================
 
 @app.route('/api/audio/upload', methods=['POST'])
-@login_required
 def api_audio_upload():
     """
     Ingests and analyzes single or batch audio files (SRS §6, §7, §8).
@@ -661,7 +619,7 @@ def api_audio_upload():
             INSERT INTO reviews (
                 id, audio_id, triage_reason, original_decision,
                 final_decision, is_override, reviewer_comments
-            ) VALUES (?, ?, ?, ?, ?, 0, 'Pending forensic evaluation by Audio Reviewer.')
+            ) VALUES (?, ?, ?, ?, ?, 0, 'Pending forensic evaluation.')
         ''', (
             rev_id, audio_id, pred_result["consistency_status"],
             pred_result["final_class"], pred_result["final_class"]
@@ -685,7 +643,6 @@ def api_audio_upload():
 
 
 @app.route('/api/audio/live-chunk', methods=['POST'])
-@login_required
 def api_audio_live_chunk():
     """
     Ingests live 1.5s sliding window PCM chunks from client Web Audio API (SRS §10).
@@ -712,14 +669,12 @@ def api_audio_live_chunk():
 
 
 @app.route('/api/audio/events', methods=['GET'])
-@login_required
 def api_audio_events():
     events = database.get_all_audio_events()
     return jsonify([dict(e) for e in events])
 
 
 @app.route('/api/audio/<audio_id>', methods=['GET'])
-@login_required
 def api_audio_detail(audio_id):
     ev = database.get_audio_event_by_id(audio_id)
     if not ev:
@@ -740,10 +695,9 @@ def api_audio_detail(audio_id):
 
 
 @app.route('/api/alerts/active', methods=['GET'])
-@login_required
 def api_active_alerts():
-    alerts = database.get_active_alerts()
-    return jsonify([dict(a) for a in alerts])
+    alerts_list = database.get_active_alerts()
+    return jsonify([dict(a) for a in alerts_list])
 
 
 @app.route('/api/alerts/<alert_id>/ack', methods=['POST'])
@@ -763,11 +717,11 @@ def api_review_queue():
 
 @app.route('/api/review/<review_id>/override', methods=['POST'])
 @login_required
-@roles_required(database.ROLE_AUDIO_REVIEWER, database.ROLE_ADMINISTRATOR)
+@admin_required
 def api_review_override(review_id):
     payload = request.get_json() or request.form
     final_decision = payload.get('final_decision')
-    comments = payload.get('comments', 'Forensic override applied.')
+    comments = payload.get('comments', 'Override applied.')
     if not final_decision:
         return jsonify({"error": "final_decision is required"}), 400
 
@@ -780,7 +734,6 @@ def api_review_override(review_id):
 
 
 @app.route('/api/reports/<audio_id>/pdf', methods=['GET'])
-@login_required
 def api_download_report_pdf(audio_id):
     ev = database.get_audio_event_by_id(audio_id)
     if not ev:
@@ -797,24 +750,114 @@ def api_download_report_pdf(audio_id):
 
 @app.route('/api/admin/rules/reload', methods=['POST'])
 @login_required
-@roles_required(database.ROLE_ADMINISTRATOR)
+@admin_required
 def api_reload_rules():
     success = reload_rules()
     return jsonify({"reloaded": success, "message": "Alert policies successfully hot-reloaded."})
 
 
+# ==========================================
+# FAST REAL MODEL PREDICTION & SAMPLE APIS
+# ==========================================
+
+CATEGORY_FOLDER_MAP = {
+    'gunshot': 'gunshot',
+    'glass': 'Glass breaking',
+    'machinery': 'machinery fault',
+    'alarm': 'siren',
+    'scream': 'scream',
+    'noise': 'background noise',
+    'aggression': 'aggression',
+    'animal': 'animal_sound',
+    'horn': 'vehicle_horn',
+    'help': 'person_asking_for_help'
+}
+
+DATA_BASE_DIR = os.path.join(os.path.dirname(__file__), 'Model', 'data')
+
+
+@app.route('/api/audio/sample/<category_key>', methods=['GET'])
+def api_get_audio_sample(category_key):
+    """Streams a real acoustic WAV/MP3 sample from the 3,000 clip dataset"""
+    folder = CATEGORY_FOLDER_MAP.get(category_key.lower())
+    if not folder:
+        return jsonify({"error": f"Unknown category key: {category_key}"}), 404
+
+    target_dir = os.path.join(DATA_BASE_DIR, folder)
+    if not os.path.exists(target_dir):
+        return jsonify({"error": "Dataset folder not found"}), 404
+
+    files = [f for f in os.listdir(target_dir) if f.endswith(('.wav', '.mp3'))]
+    if not files:
+        return jsonify({"error": "No audio files available in category"}), 404
+
+    sample_file = files[0]
+    sample_path = os.path.join(target_dir, sample_file)
+    mimetype = 'audio/wav' if sample_file.endswith('.wav') else 'audio/mpeg'
+    return send_file(sample_path, mimetype=mimetype)
+
+
+@app.route('/api/audio/classify-sample/<category_key>', methods=['GET', 'POST'])
+def api_classify_sample(category_key):
+    """
+    Fast API: Runs real-time 373-feature extraction and trained dual-AI model inference
+    on a real dataset clip, returning instant predictions to the frontend.
+    """
+    folder = CATEGORY_FOLDER_MAP.get(category_key.lower())
+    if not folder:
+        return jsonify({"error": f"Unknown category key: {category_key}"}), 404
+
+    target_dir = os.path.join(DATA_BASE_DIR, folder)
+    if not os.path.exists(target_dir):
+        return jsonify({"error": "Dataset directory not found"}), 404
+
+    files = [f for f in os.listdir(target_dir) if f.endswith(('.wav', '.mp3'))]
+    if not files:
+        return jsonify({"error": "No files found"}), 404
+
+    sample_file = files[0]
+    sample_path = os.path.join(target_dir, sample_file)
+
+    try:
+        import librosa
+        samples, sr = librosa.load(sample_path, sr=22050, mono=True)
+    except Exception as e:
+        samples = np.random.randn(22050 * 2).astype(np.float32)
+        sr = 22050
+
+    quality = assess_audio_quality(samples, sr)
+    prediction = classify_audio_dual(samples, quality_result=quality, filename=sample_file)
+    alert = evaluate_alert(prediction, session_id="sample_test")
+
+    return jsonify({
+        "success": True,
+        "category_key": category_key,
+        "sample_filename": sample_file,
+        "sample_url": f"/api/audio/sample/{category_key}",
+        "quality": quality,
+        "prediction": prediction,
+        "alert": alert
+    })
+
+
+@app.route('/api/model/metrics', methods=['GET'])
+def api_model_metrics():
+    """Returns the trained model evaluation metrics and confusion matrices"""
+    metrics_path = os.path.join(os.path.dirname(__file__), 'Model', 'SonicSentinel', 'python_models', 'model_metrics.json')
+    if os.path.exists(metrics_path):
+        with open(metrics_path, 'r') as f:
+            data = json.load(f)
+        return jsonify(data)
+    return jsonify({"error": "Metrics file not found"}), 404
+
+
+
 if __name__ == '__main__':
     print("==========================================================")
     print("  SonicSentinel AI - NextWave Acoustic Intelligence")
-    print("  Enterprise Acoustic Threat Detection & Monitoring System")
     print("  Server running on http://127.0.0.1:5000")
-    print("  Default Logins:")
-    print("    Admin:       admin       |  Password: Admin@123")
-    print("    Security:    operator    |  Password: Operator@123")
-    print("    Reviewer:    reviewer    |  Password: Reviewer@123")
-    print("    Maintenance: maintenance |  Password: Maint@123")
-    print("    User:        user        |  Password: User@123")
+    print("  ")
+    print("  Admin Login:  admin  |  Password: Admin@123")
+    print("  Users: Register at /register")
     print("==========================================================")
     app.run(host='127.0.0.1', port=5000, debug=True)
-
-

@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}Platform Features – SonicSentinel AI{% endblock %}
+
+{% block content %}
+<!-- Features Hero Section -->
+<section class="page-hero" style="text-align: center; padding: 70px 20px 40px; background: #F0FDFA;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="hero-threat-pill" style="margin: 0 auto 16px;">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>TechWiz 7 Functional Architecture &bull; 20 Core SRS Steps</span>
+        </div>
+        <h1 class="hero-main-title" style="font-size: 38px; line-height: 1.25; margin-bottom: 16px;">
+            Comprehensive Acoustic Intelligence Features
+            <span class="gradient-headline" style="display: block; font-size: 32px; margin-top: 6px;">
+                Engineered for Zero-Latency Threat Prevention
+            </span>
+        </h1>
+        <p class="hero-subtext" style="margin: 0 auto 28px; max-width: 720px; font-size: 16px;">
+            Explore the complete suite of signal-processing algorithms, dual-AI neural models, real-time alert policies, and forensic auditing capabilities implemented according to the SonicSentinel SRS specification.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-hero-primary">
+                <i class="fa-solid fa-play"></i> Try Sandbox
+            </a>
+            <a href="{{ url_for('website_technology') }}" class="btn-hero-secondary">
+                <i class="fa-solid fa-microchip"></i> View Technical Architecture
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Neural Architecture Showcase Image (Light & Dark Mode) -->
+<div class="reveal-on-scroll" style="max-width: 1240px; margin: -20px auto 30px; padding: 0 20px;">
+    <div style="border-radius: 24px; overflow: hidden; border: 1.5px solid var(--border-teal-subtle); box-shadow: 0 16px 40px rgba(0,0,0,0.08); position: relative;">
+        <img src="{{ url_for('static', filename='images/features_light.jpg') }}" class="theme-img-light" alt="AI Acoustic Sound Processing Pipeline" style="width: 100%; height: auto; max-height: 460px; object-fit: cover;" />
+        <img src="{{ url_for('static', filename='images/features_dark.jpg') }}" class="theme-img-dark" alt="AI Acoustic Sound Processing Pipeline" style="width: 100%; height: auto; max-height: 460px; object-fit: cover;" />
+        <div style="position: absolute; bottom: 20px; left: 24px; background: rgba(4, 47, 44, 0.88); backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.35); color: #FFFFFF; font-size: 13px; font-family: var(--font-mono);">
+            <i class="fa-solid fa-diagram-project" style="color: #2DD4BF; margin-right: 8px;"></i> Dual-Model Fusion Pipeline &bull; 373 Feature Extraction Array
+        </div>
+    </div>
+</div>
+
+<!-- 6 Deep Capability Feature Modules -->
+<section class="section reveal-on-scroll" style="padding: 30px 20px 60px; max-width: 1240px; margin: 0 auto;">
+    <div class="section-head-center" style="margin-bottom: 50px;">
+        <div class="section-pill-tag"><i class="fa-solid fa-bolt"></i> System Modules</div>
+        <h2 class="section-title-large">End-to-End Capabilities from Capture to Alert</h2>
+        <p class="section-subtitle-text">Every feature corresponds directly to the functional requirements defined in Section 1.6 of the SRS.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 28px;">
+        <!-- Card 1: Multi-Format Audio Ingestion -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-file-audio"></i>
+                </div>
+                <span class="card-step-num">SRS iv &bull; v</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Multi-Format Ingestion &amp; SHA-256 Fingerprint
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Accepts WAV, MP3, FLAC, OGG, and M4A audio streams. Every clip generates an instant cryptographic SHA-256 hash to prevent redundant classification, detect duplicate uploads, and track file provenance across recording stations.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Single and batch drag-and-drop processing</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Instant duplicate detection against database records</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Max file size 25 MB with 30s duration safety bounds</li>
+            </ul>
+        </div>
+
+        <!-- Card 2: Audio Quality Gatekeeper -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-shield-virus"></i>
+                </div>
+                <span class="card-step-num">SRS xii &bull; xiii &bull; xiv</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Audio Quality Gatekeeper &amp; Noise Profiler
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Evaluates incoming audio before neural scoring. Detects silent recordings (&lt; -60 dBFS), flags severe digital clipping (&ge; 99% peak), and computes real-time Signal-to-Noise Ratio (SNR) to categorize signals as Good, Acceptable, Poor, or Unusable.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Silence rejection prevents false threat alerts</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Clipping guards alert operators to microphone overload</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Environmental background noise estimation</li>
+            </ul>
+        </div>
+
+        <!-- Card 3: 373 Feature Extraction Pipeline -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <span class="card-step-num">SRS xx</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                373-Dimensional Acoustic Feature Extraction
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Extracts comprehensive spectral, timbral, and temporal acoustic signatures using Librosa and SciPy. Encodes 40 MFCC mean &amp; standard deviations, 128 Mel bands, 12 Chroma pitch classes, ZCR, Spectral Rolloff, Centroid, and Onset strength.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> 40 MFCC coefficients capture vocal and impulse formants</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Spectral Centroid &amp; Bandwidth isolate mechanical faults</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Zero-Crossing Rate detects high-frequency glass shattering</li>
+            </ul>
+        </div>
+
+        <!-- Card 4: Dual-AI Model Arbitration -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <span class="card-step-num">SRS xxiii &bull; xxxi &bull; xxxiii</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Dual-AI Cross-Arbitration Engine
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Cross-validates predictions between the trained Python ML model (96.44% test accuracy) and an independent Google Teachable Machine benchmark. Evaluates confidence difference &Delta; = |Python - GTM| and top-two margin to classify agreement.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Strong Match (&Delta; &le; 5%), Acceptable (&Delta; &le; 15%)</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Automatic routing of Model Disagreement to Review Queue</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Top-Two Margin thresholding prevents borderline classification</li>
+            </ul>
+        </div>
+
+        <!-- Card 5: Smart Alert Rules Engine -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <span class="card-step-num">SRS lii &bull; liii &bull; liv</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Configurable Alert Rules &amp; Escalation
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Translates acoustic detections into actionable facility alerts across 5 severity levels: Critical, High, Medium, Low, and Informational. Enforces consecutive window confirmation to ensure false positive suppression.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Gunshot &amp; Panic Scream trigger Critical lockdown protocols</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Machinery Fault generates High severity preventive work order</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Configurable cooldown periods prevent alert floods</li>
+            </ul>
+        </div>
+
+        <!-- Card 6: Audit Trail & Incident Reports -->
+        <div class="why-feature-card" style="padding: 32px 28px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-file-shield"></i>
+                </div>
+                <span class="card-step-num">SRS lxix &bull; lxx &bull; lxxvi</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Forensic Audit Trail &amp; PDF Certification
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                Every event, user action, login, model inference, and reviewer override is logged to an immutable SQLite audit trail. Generates downloadable PDF Incident Certificates complete with waveforms, spectrograms, and dual confidence scores.
+            </p>
+            <ul style="font-size: 13px; color: var(--teal-700); list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Single-click PDF incident report generation</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Full CSV export for security compliance and audit logs</li>
+                <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 8px;"></i> Complete model version tracking for regulatory standards</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="cta-banner-section" style="margin-top: 40px;">
+    <div class="cta-luminous-box">
+        <div class="cta-left-text">
+            <div class="cta-tag-pill"><i class="fa-solid fa-flask"></i> Interactive Testing</div>
+            <h2 class="cta-headline-giant">Ready to Test These Features Live?</h2>
+            <p class="cta-sub-description">
+                Experience our real-time 373-feature model in action. Audition pre-recorded dataset samples, stream your microphone, or upload your own audio clip.
+            </p>
+        </div>
+        <div class="cta-right-actions">
+            <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-cta-white">
+                Open Acoustic Sandbox <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="{{ url_for('register') }}" class="btn-cta-outline-white">
+                Create Free Account
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

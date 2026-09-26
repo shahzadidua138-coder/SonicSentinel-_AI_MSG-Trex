@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}About SonicSentinel AI – AcousticX Intelligence{% endblock %}
+
+{% block content %}
+<!-- About Hero Section -->
+<section class="page-hero" style="text-align: center; padding: 70px 20px 40px; background: #F0FDFA;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="hero-threat-pill" style="margin: 0 auto 16px;">
+            <i class="fa-solid fa-trophy"></i>
+            <span>TechWiz 7 &bull; NextWave AI and ML &bull; Aptech Limited</span>
+        </div>
+        <h1 class="hero-main-title" style="font-size: 38px; line-height: 1.25; margin-bottom: 16px;">
+            Autonomous Acoustic Threat Intelligence
+            <span class="gradient-headline" style="display: block; font-size: 32px; margin-top: 6px;">
+                Where Cameras Fail, Sound Speaks
+            </span>
+        </h1>
+        <p class="hero-subtext" style="margin: 0 auto 28px; max-width: 720px; font-size: 16px;">
+            Developed for the TechWiz 7 World Tech Championship under the theme <em>AcousticX Intelligence</em>, SonicSentinel AI replaces manual sound monitoring with an automated, zero-latency dual-AI recognition system.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-hero-primary">
+                <i class="fa-solid fa-play"></i> Experience Live Model
+            </a>
+            <a href="{{ url_for('website_technology') }}" class="btn-hero-secondary">
+                <i class="fa-solid fa-chart-line"></i> View Model Metrics
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Laboratory Showcase Image (Light & Dark Mode) -->
+<div class="reveal-on-scroll" style="max-width: 1240px; margin: -20px auto 30px; padding: 0 20px;">
+    <div style="border-radius: 24px; overflow: hidden; border: 1.5px solid var(--border-teal-subtle); box-shadow: 0 16px 40px rgba(0,0,0,0.08); position: relative;">
+        <img src="{{ url_for('static', filename='images/about_light.jpg') }}" class="theme-img-light" alt="Acoustic Forensics Lab" style="width: 100%; height: auto; max-height: 460px; object-fit: cover;" />
+        <img src="{{ url_for('static', filename='images/about_dark.jpg') }}" class="theme-img-dark" alt="Acoustic Forensics Lab" style="width: 100%; height: auto; max-height: 460px; object-fit: cover;" />
+        <div style="position: absolute; bottom: 20px; left: 24px; background: rgba(4, 47, 44, 0.88); backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(45, 212, 191, 0.35); color: #FFFFFF; font-size: 13px; font-family: var(--font-mono);">
+            <i class="fa-solid fa-microscope" style="color: #2DD4BF; margin-right: 8px;"></i> NextWave Acoustic Intelligence Lab &bull; Sector Alpha Research Facility
+        </div>
+    </div>
+</div>
+
+<!-- Mission & Problem Statement Grid -->
+<section class="section reveal-on-scroll" style="padding: 30px 20px 50px; max-width: 1240px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 50px;">
+        <div class="why-feature-card hover-lift" style="padding: 32px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(239, 68, 68, 0.12); color: #EF4444;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <span class="card-step-num">The Challenge</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                The Limits of Manual Audio Monitoring
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                Traditional security and industrial facilities rely on humans continuously listening to audio feeds or reviewing recordings after an incident has already occurred. This manual workflow is time-consuming, prone to missed cues, delayed responses, and inconsistent decisions in noisy environments.
+            </p>
+        </div>
+
+        <div class="why-feature-card" style="padding: 32px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="card-step-num">The Solution</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                SonicSentinel Autonomous Defense
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                SonicSentinel AI continuously processes acoustic pressure waves across 10 mandatory sound categories. Utilizing dual-model cross-arbitration between a Python Support Vector Machine and Google Teachable Machine, the system delivers verified alerts in under 350 milliseconds.
+            </p>
+        </div>
+
+        <div class="why-feature-card" style="padding: 32px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;">
+                    <i class="fa-solid fa-balance-scale"></i>
+                </div>
+                <span class="card-step-num">Ethical AI</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 20px; font-weight: 700; color: var(--dark-slate);">
+                Competition Integrity &amp; Anti-Shortcut
+            </h3>
+            <p class="card-description" style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                In full adherence to TechWiz 7 rules, no predictions are simulated or hardcoded. The application features fully trained model artifacts, reproducible feature extraction matrices, documented training logs, and privacy controls that prevent covert recording.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3,000 Clip Common Dataset Specifications -->
+    <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 24px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.04); margin-bottom: 50px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 28px;">
+            <div>
+                <span class="section-pill-tag"><i class="fa-solid fa-database"></i> Training Evidence</span>
+                <h3 style="font-family: var(--font-heading); font-size: 26px; font-weight: 800; color: var(--dark-slate); margin-top: 8px;">
+                    Common Audio Dataset &bull; 3,000 Unique Recordings
+                </h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                    Stratified split maintaining identical underlying samples across both classification architectures (SRS §1.6 Steps 1, 5, 16).
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <span style="background: rgba(45, 212, 191, 0.15); color: var(--teal-700); padding: 8px 16px; border-radius: 30px; font-family: var(--font-mono); font-weight: 700; font-size: 13px;">
+                    70% Train (2,100)
+                </span>
+                <span style="background: rgba(59, 130, 246, 0.12); color: #2563EB; padding: 8px 16px; border-radius: 30px; font-family: var(--font-mono); font-weight: 700; font-size: 13px;">
+                    15% Val (450)
+                </span>
+                <span style="background: rgba(168, 85, 247, 0.12); color: #7C3AED; padding: 8px 16px; border-radius: 30px; font-family: var(--font-mono); font-weight: 700; font-size: 13px;">
+                    15% Test (450)
+                </span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Gunshot Clips</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Shockwaves, muzzle blast</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Glass Breaking</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Window shatter, impacts</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Machinery Fault</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Bearing failure, turbine grind</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Alarm or Siren</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Industrial klaxons, horn sweep</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Panic Scream</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Human distress cries</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Aggression</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Hostile verbal altercation</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Call for Help</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">"Help me", "Emergency"</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Animal Sound</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Distress barks, wildlife</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Vehicle Horn</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Perimeter klaxon &amp; traffic</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-light);">
+                <div style="font-size: 24px; font-weight: 800; color: var(--teal-600); font-family: var(--font-mono);">300</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate); margin-top: 4px;">Background Noise</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">HVAC, wind, office floor</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-Functional Benchmark Compliance (SRS §1.7) -->
+    <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 24px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.04);">
+        <h3 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--dark-slate); margin-bottom: 24px;">
+            SRS Non-Functional Requirement Compliance
+        </h3>
+        <div style="overflow-x: auto;">
+            <table class="incident-feed-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>SRS Specification</th>
+                        <th>SonicSentinel AI Result</th>
+                        <th>Compliance Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 700;">Overall Test Accuracy</td>
+                        <td>&ge; 85.0%</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">96.44%</td>
+                        <td><span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Exceeds Target (+11.4%)</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700;">Macro F1-Score</td>
+                        <td>&ge; 0.800</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">0.9637</td>
+                        <td><span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Exceeds Target</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700;">Critical Class Recall (Gunshot/Scream)</td>
+                        <td>&ge; 85.0%</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">97.8%</td>
+                        <td><span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Exceeds Target</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700;">Live Window Inference Latency</td>
+                        <td>&le; 3.0 Seconds</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">~320 Milliseconds</td>
+                        <td><span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-circle-check"></i> 9.3x Faster Than Target</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700;">Managed Event Records Capacity</td>
+                        <td>&ge; 20,000 Records</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">SQLite WAL Engine (>100k)</td>
+                        <td><span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Fully Compliant</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

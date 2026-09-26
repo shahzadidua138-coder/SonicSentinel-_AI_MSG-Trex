@@ -1,208 +1,204 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard{% endblock %} - SonicSentinel AI</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}SonicSentinel AI – Acoustic Intelligence{% endblock %}</title>
+
+    <!-- Theme Preload Script -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('sonicsentinel_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     
-    <!-- Google Fonts Plus Jakarta Sans & JetBrains Mono -->
+    <!-- Google Fonts: Plus Jakarta Sans, Outfit, JetBrains Mono, Caveat for the cursive slogan -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    {% block extra_css %}{% endblock %}
+    <!-- Website Styling -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/website.css') }}" />
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="app-sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-icon">
-                    <i class="fas fa-wave-square"></i>
-                </div>
-                <div class="brand-titles">
-                    <span class="brand-name">SonicSentinel AI</span>
-                    <span class="brand-env">AcousticX v1.0</span>
-                </div>
-            </div>
+<body class="website-body">
+    <!-- Smooth Liquid Wave Canvas for ambient background animation -->
+    <canvas id="ambientWaveCanvas" class="ambient-wave-canvas"></canvas>
 
-            <div class="sidebar-menu">
-                <div class="menu-category">Operations</div>
-                {% if current_user and current_user['role'] == 'Administrator' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="menu-link {% if active_page == 'admin_dashboard' %}active{% endif %}">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Admin Dashboard</span>
-                </a>
-                {% elif current_user and current_user['role'] == 'Security Operator' %}
-                <a href="{{ url_for('operator_dashboard') }}" class="menu-link {% if active_page == 'operator_dashboard' %}active{% endif %}">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Security Dashboard</span>
-                </a>
-                {% elif current_user and current_user['role'] == 'Audio Reviewer' %}
-                <a href="{{ url_for('reviewer_dashboard') }}" class="menu-link {% if active_page == 'reviewer_dashboard' %}active{% endif %}">
-                    <i class="fas fa-headphones"></i>
-                    <span>Reviewer Dashboard</span>
-                </a>
-                {% elif current_user and current_user['role'] == 'Maintenance Operator' %}
-                <a href="{{ url_for('maintenance_dashboard') }}" class="menu-link {% if active_page == 'maintenance_dashboard' %}active{% endif %}">
-                    <i class="fas fa-tools"></i>
-                    <span>Maintenance Dashboard</span>
-                </a>
+    <!-- Top Navigation Bar (Exact Replica of Reference Design) -->
+    <header class="site-header" id="siteHeader">
+        <div class="header-container">
+            <!-- Brand Logo -->
+            <a href="{{ url_for('website_home') }}" class="nav-brand-group">
+                <div class="brand-shield-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L3 6V11.5C3 17 7 21.5 12 22.5C17 21.5 21 17 21 11.5V6L12 2Z" fill="url(#shield_teal_grad)" stroke="#14B8A6" stroke-width="1.8"/>
+                        <!-- Acoustic Bars inside shield -->
+                        <line x1="8" y1="10" x2="8" y2="14" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="10.5" y1="8" x2="10.5" y2="16" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="13.5" y1="7" x2="13.5" y2="17" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="16" y1="9.5" x2="16" y2="14.5" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="shield_teal_grad" x1="12" y1="2" x2="12" y2="22.5" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#2DD4BF"/>
+                                <stop offset="1" stop-color="#0D9488"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text-block">
+                    <div class="brand-main-title">SonicSentinel <span class="teal-accent">AI</span></div>
+                    <div class="brand-sub-motto">LISTEN &bull; ANALYZE &bull; PROTECT</div>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="nav-pill-wrapper" id="navPillMenu">
+                <ul class="nav-pill-list">
+                    <li><a href="{{ url_for('website_home') }}" class="nav-pill-link {% if request.endpoint == 'website_home' %}active{% endif %}">Home</a></li>
+                    <li><a href="{{ url_for('website_features') }}" class="nav-pill-link {% if request.endpoint == 'website_features' %}active{% endif %}">Features</a></li>
+                    <li><a href="{{ url_for('website_about') }}" class="nav-pill-link {% if request.endpoint == 'website_about' %}active{% endif %}">About</a></li>
+                    <li><a href="{{ url_for('website_technology') }}" class="nav-pill-link {% if request.endpoint == 'website_technology' %}active{% endif %}">Technology</a></li>
+                    <li><a href="{{ url_for('website_contact') }}" class="nav-pill-link {% if request.endpoint == 'website_contact' %}active{% endif %}">Contact</a></li>
+                </ul>
+            </nav>
+
+            <!-- Right Action Controls -->
+            <div class="header-action-group">
+                <!-- Theme toggle icon (Visual match) -->
+                <button class="theme-icon-btn" id="themeToggleBtn" title="Toggle Lighting Mode" aria-label="Toggle Theme">
+                    <i class="fa-regular fa-sun"></i>
+                </button>
+
+                {% if current_user %}
+                    <div class="user-greeting-pill">
+                        <span class="user-avatar-dot">{{ current_user['full_name'][:1]|upper }}</span>
+                        <span class="user-name-text">{{ current_user['full_name'] }}</span>
+                    </div>
+                    {% if current_user['role'] == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn-get-started admin-special-btn">
+                            <i class="fa-solid fa-gauge-high"></i> Admin Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn-login-outline">Sign Out</a>
                 {% else %}
-                <a href="{{ url_for('user_dashboard') }}" class="menu-link {% if active_page == 'user_dashboard' %}active{% endif %}">
-                    <i class="fas fa-th-large"></i>
-                    <span>User Dashboard</span>
-                </a>
+                    <a href="{{ url_for('login') }}" class="btn-login-outline">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn-get-started">
+                        Get Started <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 {% endif %}
 
-                {% if not current_user or current_user['role'] != 'Normal User' %}
-                <a href="{{ url_for('live_monitoring') }}" class="menu-link {% if active_page == 'live_monitoring' %}active{% endif %}">
-                    <i class="fas fa-microphone-alt"></i>
-                    <span>Live Monitoring</span>
-                    <span class="menu-badge badge-critical font-mono">LIVE</span>
-                </a>
-                {% endif %}
-
-                <a href="{{ url_for('audio_upload') }}" class="menu-link {% if active_page == 'audio_upload' %}active{% endif %}">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Ingest & Validate</span>
-                </a>
-
-                {% if current_user and current_user['role'] in ['Administrator', 'Security Operator', 'Audio Reviewer'] %}
-                <a href="{{ url_for('audio_analysis') }}" class="menu-link {% if active_page == 'audio_analysis' %}active{% endif %}">
-                    <i class="fas fa-chart-area"></i>
-                    <span>Forensic Analysis</span>
-                </a>
-                {% endif %}
-
-                {% if not current_user or current_user['role'] != 'Normal User' %}
-                <div class="menu-category">Incident Triage</div>
-                <a href="{{ url_for('alerts') }}" class="menu-link {% if active_page == 'alerts' %}active{% endif %}">
-                    <i class="fas fa-bell"></i>
-                    <span>Hazard Alerts</span>
-                    <span class="menu-badge badge-critical">3</span>
-                </a>
-                {% endif %}
-
-                {% if current_user and current_user['role'] in ['Administrator', 'Audio Reviewer', 'Security Operator'] %}
-                <a href="{{ url_for('manual_review') }}" class="menu-link {% if active_page == 'manual_review' %}active{% endif %}">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>Review Queue</span>
-                    <span class="menu-badge badge-medium">2</span>
-                </a>
-                {% endif %}
-
-                <a href="{{ url_for('event_history') }}" class="menu-link {% if active_page == 'events' %}active{% endif %}">
-                    <i class="fas fa-history"></i>
-                    <span>Event History</span>
-                </a>
-
-                {% if current_user and current_user['role'] in ['Administrator', 'Security Operator'] %}
-                <a href="{{ url_for('analytics') }}" class="menu-link {% if active_page == 'analytics' %}active{% endif %}">
-                    <i class="fas fa-chart-pie"></i>
-                    <span>Analytics & BI</span>
-                </a>
-                {% endif %}
-
-                {% if current_user and current_user['role'] in ['Administrator', 'Audio Reviewer'] %}
-                <a href="{{ url_for('reports') }}" class="menu-link {% if active_page == 'reports' %}active{% endif %}">
-                    <i class="fas fa-file-invoice"></i>
-                    <span>Certificates</span>
-                </a>
-                {% endif %}
-
-                <div class="menu-category">Account & Control</div>
-                {% if current_user and current_user['role'] == 'Administrator' %}
-                <a href="{{ url_for('settings') }}" class="menu-link {% if active_page == 'settings' %}active{% endif %}">
-                    <i class="fas fa-cog"></i>
-                    <span>System Policies</span>
-                </a>
-                {% endif %}
-
-                <a href="{{ url_for('profile') }}" class="menu-link {% if active_page == 'profile' %}active{% endif %}">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Account Profile</span>
-                </a>
-                <a href="{{ url_for('logout') }}" class="menu-link" style="color: #ef4444;">
-                    <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
-                    <span>Sign Out</span>
-                </a>
+                <!-- Mobile Hamburger Toggle -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
+        </div>
+    </header>
 
-            <div class="sidebar-user-footer">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></div>
-                    <span style="font-size: 11px; color: var(--gold-light); font-weight: 600;" class="font-mono">SENSOR ARRAY</span>
-                </div>
-                <span style="font-size: 10px; color: var(--text-muted);" class="font-mono">99.94% OK</span>
-            </div>
-        </aside>
+    <!-- Main Dynamic Content Block -->
+    <main class="page-main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
 
-        <!-- Content Area -->
-        <div class="app-content">
-            <!-- Top Navbar -->
-            <header class="app-navbar">
-                <div class="nav-left">
-                    <div class="nav-search">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search events, audio ID, sensor tags...">
+    <!-- Comprehensive Professional Footer -->
+    <footer class="site-footer">
+        <div class="footer-inner-container">
+            <div class="footer-top-grid">
+                <!-- Col 1: Brand Info -->
+                <div class="footer-brand-col">
+                    <div class="footer-brand-header">
+                        <div class="brand-shield-icon small">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L3 6V11.5C3 17 7 21.5 12 22.5C17 21.5 21 17 21 11.5V6L12 2Z" fill="url(#shield_teal_grad2)" stroke="#2DD4BF" stroke-width="1.8"/>
+                                <line x1="8" y1="10" x2="8" y2="14" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                                <line x1="10.5" y1="8" x2="10.5" y2="16" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                                <line x1="13.5" y1="7" x2="13.5" y2="17" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                                <line x1="16" y1="9.5" x2="16" y2="14.5" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
+                                <defs>
+                                    <linearGradient id="shield_teal_grad2" x1="12" y1="2" x2="12" y2="22.5" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#2DD4BF"/>
+                                        <stop offset="1" stop-color="#0D9488"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <span class="footer-brand-title">SonicSentinel AI</span>
+                    </div>
+                    <p class="footer-brand-summary">
+                        Autonomous acoustic intelligence engineered for high-sensitivity sound event detection, anomaly classification, and critical threat early warning. Powered by Dual-AI neural arbitration.
+                    </p>
+                    <div class="footer-status-pill">
+                        <span class="status-pulse-dot"></span>
+                        <span class="status-text">System Status: <strong>Operational (99.94% Uptime)</strong></span>
+                    </div>
+                    <div class="footer-social-strip">
+                        <a href="https://github.com" target="_blank" class="social-circle-link" title="GitHub"><i class="fa-brands fa-github"></i></a>
+                        <a href="#" class="social-circle-link" title="Documentation"><i class="fa-solid fa-book"></i></a>
+                        <a href="#" class="social-circle-link" title="Research Paper"><i class="fa-solid fa-graduation-cap"></i></a>
+                        <a href="#" class="social-circle-link" title="HuggingFace"><i class="fa-solid fa-brain"></i></a>
                     </div>
                 </div>
 
-                <div class="nav-right">
-                    <!-- Theme Toggle -->
-                    <button class="btn-icon-nav" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
-                        <i class="fas fa-sun"></i>
-                    </button>
-
-                    <!-- Notifications Dropdown -->
-                    <a href="{{ url_for('alerts') }}" class="btn-icon-nav" title="Hazard Alerts">
-                        <i class="fas fa-bell"></i>
-                    </a>
-
-                    <!-- User Profile Button -->
-                    <a href="{{ url_for('profile') }}" class="user-profile-pill">
-                        <div class="user-avatar-initial">
-                            {{ current_user['full_name'][:1] if current_user else 'O' }}
-                        </div>
-                        <div class="user-pill-text">
-                            <span class="user-pill-name">{{ current_user['full_name'] if current_user else 'Operator' }}</span>
-                            <span class="user-pill-role">{{ current_user['role'] if current_user else 'Security' }}</span>
-                        </div>
-                    </a>
+                <!-- Col 2: Navigation Links -->
+                <div class="footer-links-col">
+                    <h4 class="footer-col-title">Platform</h4>
+                    <ul class="footer-link-list">
+                        <li><a href="{{ url_for('website_home') }}#heroSection"><i class="fa-solid fa-chevron-right"></i> Overview</a></li>
+                        <li><a href="{{ url_for('website_home') }}#whySonicSentinel"><i class="fa-solid fa-chevron-right"></i> Why SonicSentinel</a></li>
+                        <li><a href="{{ url_for('website_home') }}#interactiveStudio"><i class="fa-solid fa-chevron-right"></i> Live Audio Studio</a></li>
+                        <li><a href="{{ url_for('website_home') }}#tenCategories"><i class="fa-solid fa-chevron-right"></i> 10 Sound Classes</a></li>
+                        <li><a href="{{ url_for('website_home') }}#dualAiPipeline"><i class="fa-solid fa-chevron-right"></i> Dual-AI Architecture</a></li>
+                    </ul>
                 </div>
-            </header>
 
-            <!-- Page Body -->
-            <main class="page-body">
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div style="margin-bottom: 20px;">
-                            {% for category, message in messages %}
-                                <div class="flash-alert {{ category }}" style="margin-bottom: 8px; padding: 12px 16px; border-radius: 8px; background: rgba(214, 168, 79, 0.12); border: 1px solid var(--gold-border); color: var(--gold-light); display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>{{ message }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                <!-- Col 3: Technical Specifications -->
+                <div class="footer-links-col">
+                    <h4 class="footer-col-title">Acoustic Specs</h4>
+                    <ul class="footer-link-list">
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> Python 3.12 DSP Pipeline</a></li>
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> Google Teachable Machine</a></li>
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> 128-Band Mel-Spectrogram</a></li>
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> 1.5s Sliding Window Inference</a></li>
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> SHA-256 Audio Deduplication</a></li>
+                    </ul>
+                </div>
 
-                {% block content %}{% endblock %}
-            </main>
+                <!-- Col 4: Competition & Ethics -->
+                <div class="footer-links-col">
+                    <h4 class="footer-col-title">TechWiz 7 Details</h4>
+                    <div class="competition-meta-card">
+                        <div class="comp-badge"><i class="fa-solid fa-trophy"></i> TechWiz 7 Championship</div>
+                        <div class="comp-row"><span class="k">Theme:</span> <span class="v">AcousticX Intelligence</span></div>
+                        <div class="comp-row"><span class="k">Category:</span> <span class="v">NextWave AI &amp; ML</span></div>
+                        <div class="comp-row"><span class="k">Dataset:</span> <span class="v">3,000 Balanced Clips</span></div>
+                        <div class="comp-row"><span class="k">License:</span> <span class="v">100% Free / Open-Source</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Line -->
+            <div class="footer-bottom-bar">
+                <div class="footer-copyright-note">
+                    &copy; {{ now().year }} <strong>SonicSentinel AI</strong> &bull; Developed for TechWiz 7. All Rights Reserved.
+                </div>
+                <div class="footer-tech-tags">
+                    <span class="tech-tag"><i class="fa-brands fa-python"></i> Python 3.12</span>
+                    <span class="tech-tag"><i class="fa-solid fa-wave-square"></i> Web Audio API</span>
+                    <span class="tech-tag"><i class="fa-solid fa-bolt"></i> Dual-Model Fusion</span>
+                    <span class="tech-tag"><i class="fa-solid fa-shield-halved"></i> Zero-Budget Architecture</span>
+                </div>
+            </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/mock_data.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/audio_engine.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    {% block extra_js %}{% endblock %}
+    <!-- Global Interactive Script -->
+    <script src="{{ url_for('static', filename='js/website_home.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

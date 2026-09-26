@@ -1,0 +1,674 @@
+{
+  "version": "v1.0.0",
+  "best_algorithm": "svm",
+  "created_at": "2026-09-25T12:25:11.169671+00:00",
+  "metrics": {
+    "svm": {
+      "algorithm": "svm",
+      "accuracy": 0.9644,
+      "precision_macro": 0.9652,
+      "recall_macro": 0.9644,
+      "f1_macro": 0.9637,
+      "confusion_matrix": [
+        [
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          43,
+          0,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          42,
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          44,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          5,
+          2,
+          1,
+          35,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45
+        ]
+      ],
+      "classification_report": {
+        "Aggression": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Alarm or Siren": {
+          "precision": 0.9574468085106383,
+          "recall": 1.0,
+          "f1-score": 0.9782608695652174,
+          "support": 45.0
+        },
+        "Animal Sound": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Background Noise": {
+          "precision": 0.8958333333333334,
+          "recall": 0.9555555555555556,
+          "f1-score": 0.9247311827956989,
+          "support": 45.0
+        },
+        "Glass Breaking": {
+          "precision": 0.9545454545454546,
+          "recall": 0.9333333333333333,
+          "f1-score": 0.9438202247191011,
+          "support": 45.0
+        },
+        "Gunshot": {
+          "precision": 0.8979591836734694,
+          "recall": 0.9777777777777777,
+          "f1-score": 0.9361702127659575,
+          "support": 45.0
+        },
+        "Machinery Fault": {
+          "precision": 0.9459459459459459,
+          "recall": 0.7777777777777778,
+          "f1-score": 0.8536585365853658,
+          "support": 45.0
+        },
+        "Panic Scream": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Person Asking for Help": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Vehicle Horn": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "accuracy": 0.9644444444444444,
+        "macro avg": {
+          "precision": 0.9651730726008843,
+          "recall": 0.9644444444444444,
+          "f1-score": 0.9636641026431342,
+          "support": 450.0
+        },
+        "weighted avg": {
+          "precision": 0.9651730726008841,
+          "recall": 0.9644444444444444,
+          "f1-score": 0.963664102643134,
+          "support": 450.0
+        }
+      },
+      "classes": [
+        "Aggression",
+        "Alarm or Siren",
+        "Animal Sound",
+        "Background Noise",
+        "Glass Breaking",
+        "Gunshot",
+        "Machinery Fault",
+        "Panic Scream",
+        "Person Asking for Help",
+        "Vehicle Horn"
+      ]
+    },
+    "random_forest": {
+      "algorithm": "random_forest",
+      "accuracy": 0.9533,
+      "precision_macro": 0.9547,
+      "recall_macro": 0.9533,
+      "f1_macro": 0.9529,
+      "confusion_matrix": [
+        [
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          43,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          40,
+          0,
+          1,
+          4,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          42,
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          7,
+          1,
+          2,
+          34,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45
+        ]
+      ],
+      "classification_report": {
+        "Aggression": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Alarm or Siren": {
+          "precision": 0.9772727272727273,
+          "recall": 0.9555555555555556,
+          "f1-score": 0.9662921348314607,
+          "support": 45.0
+        },
+        "Animal Sound": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Background Noise": {
+          "precision": 0.8163265306122449,
+          "recall": 0.8888888888888888,
+          "f1-score": 0.851063829787234,
+          "support": 45.0
+        },
+        "Glass Breaking": {
+          "precision": 0.9767441860465116,
+          "recall": 0.9333333333333333,
+          "f1-score": 0.9545454545454546,
+          "support": 45.0
+        },
+        "Gunshot": {
+          "precision": 0.8823529411764706,
+          "recall": 1.0,
+          "f1-score": 0.9375,
+          "support": 45.0
+        },
+        "Machinery Fault": {
+          "precision": 0.8947368421052632,
+          "recall": 0.7555555555555555,
+          "f1-score": 0.8192771084337349,
+          "support": 45.0
+        },
+        "Panic Scream": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Person Asking for Help": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Vehicle Horn": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "accuracy": 0.9533333333333334,
+        "macro avg": {
+          "precision": 0.9547433227213219,
+          "recall": 0.9533333333333334,
+          "f1-score": 0.9528678527597885,
+          "support": 450.0
+        },
+        "weighted avg": {
+          "precision": 0.9547433227213218,
+          "recall": 0.9533333333333334,
+          "f1-score": 0.9528678527597884,
+          "support": 450.0
+        }
+      },
+      "classes": [
+        "Aggression",
+        "Alarm or Siren",
+        "Animal Sound",
+        "Background Noise",
+        "Glass Breaking",
+        "Gunshot",
+        "Machinery Fault",
+        "Panic Scream",
+        "Person Asking for Help",
+        "Vehicle Horn"
+      ]
+    },
+    "xgboost": {
+      "algorithm": "xgboost",
+      "accuracy": 0.9533,
+      "precision_macro": 0.9536,
+      "recall_macro": 0.9533,
+      "f1_macro": 0.9527,
+      "confusion_matrix": [
+        [
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          44,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          45,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          37,
+          0,
+          1,
+          5,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          40,
+          3,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          2,
+          2,
+          1,
+          38,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          45
+        ]
+      ],
+      "classification_report": {
+        "Aggression": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Alarm or Siren": {
+          "precision": 0.9361702127659575,
+          "recall": 0.9777777777777777,
+          "f1-score": 0.9565217391304348,
+          "support": 45.0
+        },
+        "Animal Sound": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Background Noise": {
+          "precision": 0.925,
+          "recall": 0.8222222222222222,
+          "f1-score": 0.8705882352941177,
+          "support": 45.0
+        },
+        "Glass Breaking": {
+          "precision": 0.9523809523809523,
+          "recall": 0.8888888888888888,
+          "f1-score": 0.9195402298850575,
+          "support": 45.0
+        },
+        "Gunshot": {
+          "precision": 0.9,
+          "recall": 1.0,
+          "f1-score": 0.9473684210526315,
+          "support": 45.0
+        },
+        "Machinery Fault": {
+          "precision": 0.8444444444444444,
+          "recall": 0.8444444444444444,
+          "f1-score": 0.8444444444444444,
+          "support": 45.0
+        },
+        "Panic Scream": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "Person Asking for Help": {
+          "precision": 0.9782608695652174,
+          "recall": 1.0,
+          "f1-score": 0.989010989010989,
+          "support": 45.0
+        },
+        "Vehicle Horn": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 45.0
+        },
+        "accuracy": 0.9533333333333334,
+        "macro avg": {
+          "precision": 0.9536256479156572,
+          "recall": 0.9533333333333334,
+          "f1-score": 0.9527474058817675,
+          "support": 450.0
+        },
+        "weighted avg": {
+          "precision": 0.9536256479156572,
+          "recall": 0.9533333333333334,
+          "f1-score": 0.9527474058817675,
+          "support": 450.0
+        }
+      },
+      "classes": [
+        "Aggression",
+        "Alarm or Siren",
+        "Animal Sound",
+        "Background Noise",
+        "Glass Breaking",
+        "Gunshot",
+        "Machinery Fault",
+        "Panic Scream",
+        "Person Asking for Help",
+        "Vehicle Horn"
+      ]
+    }
+  },
+  "classes": [
+    "Aggression",
+    "Alarm or Siren",
+    "Animal Sound",
+    "Background Noise",
+    "Glass Breaking",
+    "Gunshot",
+    "Machinery Fault",
+    "Panic Scream",
+    "Person Asking for Help",
+    "Vehicle Horn"
+  ],
+  "saved_paths": {
+    "scaler": "d:\\T\\SonicSentinel\\python_models\\scaler_v1.0.0.joblib",
+    "label_encoder": "d:\\T\\SonicSentinel\\python_models\\label_encoder_v1.0.0.joblib",
+    "svm": "d:\\T\\SonicSentinel\\python_models\\svm_v1.0.0.joblib",
+    "random_forest": "d:\\T\\SonicSentinel\\python_models\\random_forest_v1.0.0.joblib",
+    "xgboost": "d:\\T\\SonicSentinel\\python_models\\xgboost_v1.0.0.joblib"
+  }
+}

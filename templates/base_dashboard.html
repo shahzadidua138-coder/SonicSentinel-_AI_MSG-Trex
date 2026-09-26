@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}SonicSentinel AI – Dashboard{% endblock %}</title>
+
+    <!-- Pre-load theme to prevent flicker -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('sonicsentinel_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Application Dashboard Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+
+    <style>
+        /* Modern Dashboard UI Polish */
+        .app-sidebar {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 22px 20px;
+            border-bottom: 1px solid rgba(45, 212, 191, 0.15);
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #0D5C56;
+            border: 1.5px solid rgba(45, 212, 191, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2DD4BF;
+            font-size: 18px;
+            box-shadow: 0 4px 14px rgba(4, 36, 34, 0.35);
+        }
+
+        .brand-text h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.01em;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #2DD4BF;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 2px 0 0;
+        }
+
+        .sidebar-station-pill {
+            margin: 12px 16px 6px;
+            padding: 6px 12px;
+            background: rgba(20, 184, 166, 0.12);
+            border: 1px solid rgba(45, 212, 191, 0.25);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #99F6E4;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .sidebar-station-pill .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            display: inline-block;
+        }
+
+        .menu-category {
+            padding: 16px 20px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.45);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 20px;
+            color: rgba(255, 255, 255, 0.78);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .menu-link i {
+            font-size: 15px;
+            width: 20px;
+            text-align: center;
+            color: #5EEAD4;
+            transition: transform 0.2s ease;
+        }
+
+        .menu-link:hover {
+            color: #FFFFFF;
+            background: rgba(20, 184, 166, 0.12);
+            padding-left: 24px;
+        }
+
+        .menu-link:hover i {
+            transform: scale(1.15);
+            color: #2DD4BF;
+        }
+
+        .menu-link.active {
+            color: #FFFFFF;
+            background: #0D5C56;
+            border-left: 4px solid #2DD4BF;
+            font-weight: 700;
+            box-shadow: inset 0 0 12px rgba(45, 212, 191, 0.15);
+        }
+
+        .menu-link.active i {
+            color: #2DD4BF;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-critical { background: #DC2626; color: #FFFFFF; }
+        .badge-medium { background: #D97706; color: #FFFFFF; }
+
+        .sidebar-user-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(45, 212, 191, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Top Navbar Polish */
+        .app-navbar {
+            height: 68px;
+            background: var(--bg-surface);
+            border-bottom: 1.5px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-left-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-toggle-btn:hover {
+            border-color: #0D9488;
+            color: #0D9488;
+        }
+
+        .nav-search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-search-box i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .nav-search-input {
+            width: 300px;
+            padding: 9px 16px 9px 38px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .nav-search-input:focus {
+            border-color: #0D9488;
+            width: 360px;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+        }
+
+        .nav-right-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .theme-icon-btn, .btn-icon-nav {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .theme-icon-btn:hover, .btn-icon-nav:hover {
+            border-color: #0D9488;
+            color: #0D9488;
+            transform: translateY(-1px);
+        }
+
+        .nav-alert-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #DC2626;
+            color: #FFFFFF;
+            font-size: 9px;
+            font-weight: 800;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid var(--bg-surface);
+        }
+
+        .website-return-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .website-return-btn:hover {
+            border-color: #0D9488;
+            color: #0D9488;
+            background: var(--bg-subtle);
+        }
+
+        .user-profile-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 12px 5px 6px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border-color);
+            background: var(--bg-surface);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .user-profile-card:hover {
+            border-color: #0D9488;
+        }
+
+        .user-avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #0D5C56;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-info-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-info-role {
+            font-size: 10px;
+            color: #0D9488;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            .app-sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+            }
+            .app-sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            .nav-search-input {
+                width: 180px;
+            }
+            .nav-search-input:focus {
+                width: 220px;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Executive Dark Teal Sidebar Navigation -->
+        <aside class="app-sidebar" id="appSidebar">
+            <!-- Brand Header -->
+            <div class="sidebar-brand">
+                <a href="{{ url_for('admin_dashboard') if current_user and current_user['role'] == 'admin' else url_for('website_home') }}" class="brand-link">
+                    <div class="brand-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h2>SonicSentinel</h2>
+                        <p>AcousticX Intel</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Active Station Indicator -->
+            <div class="sidebar-station-pill">
+                <span>
+                    <i class="fas fa-microchip" style="margin-right: 4px;"></i>
+                    {{ 'ADMIN CONSOLE' if current_user and current_user['role'] == 'admin' else 'OPERATOR STATION' }}
+                </span>
+                <span class="pulse-dot" title="Sensor Array Online"></span>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="sidebar-menu">
+                <div class="menu-category">Command & Overview</div>
+                {% if current_user and current_user['role'] == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="menu-link {% if active_page == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Control Center</span>
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('live_monitoring') }}" class="menu-link {% if active_page == 'live_monitoring' %}active{% endif %}">
+                    <i class="fas fa-microphone-lines"></i>
+                    <span>Live Monitoring</span>
+                    <span class="menu-badge badge-critical font-mono">LIVE</span>
+                </a>
+
+                <a href="{{ url_for('audio_upload') }}" class="menu-link {% if active_page == 'audio_upload' %}active{% endif %}">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <span>Ingest & Validate</span>
+                </a>
+
+                <a href="{{ url_for('audio_analysis') }}" class="menu-link {% if active_page == 'audio_analysis' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Forensic Analysis</span>
+                </a>
+
+                <div class="menu-category">Incident Triage</div>
+                <a href="{{ url_for('alerts') }}" class="menu-link {% if active_page == 'alerts' %}active{% endif %}">
+                    <i class="fas fa-bell"></i>
+                    <span>Hazard Alerts</span>
+                    <span class="menu-badge badge-critical font-mono">ACTIVE</span>
+                </a>
+
+                <a href="{{ url_for('manual_review') }}" class="menu-link {% if active_page == 'manual_review' %}active{% endif %}">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Review Queue</span>
+                    <span class="menu-badge badge-medium font-mono">QUEUE</span>
+                </a>
+
+                <a href="{{ url_for('event_history') }}" class="menu-link {% if active_page == 'events' %}active{% endif %}">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>Event History</span>
+                </a>
+
+                <a href="{{ url_for('analytics') }}" class="menu-link {% if active_page == 'analytics' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics & BI</span>
+                </a>
+
+                <a href="{{ url_for('reports') }}" class="menu-link {% if active_page == 'reports' %}active{% endif %}">
+                    <i class="fas fa-file-shield"></i>
+                    <span>Audit Reports</span>
+                </a>
+
+                <div class="menu-category">Governance & Public</div>
+                {% if current_user and current_user['role'] == 'admin' %}
+                <a href="{{ url_for('settings') }}" class="menu-link {% if active_page == 'settings' %}active{% endif %}">
+                    <i class="fas fa-sliders"></i>
+                    <span>System Policies</span>
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('website_home') }}" class="menu-link" target="_blank">
+                    <i class="fas fa-globe"></i>
+                    <span>Public Website</span>
+                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px; margin-left: auto;"></i>
+                </a>
+
+                <a href="{{ url_for('profile') }}" class="menu-link {% if active_page == 'profile' %}active{% endif %}">
+                    <i class="fas fa-circle-user"></i>
+                    <span>Account Profile</span>
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="menu-link" style="color: #F87171;">
+                    <i class="fas fa-arrow-right-from-bracket" style="color: #F87171;"></i>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+
+            <!-- Footer Array Telemetry -->
+            <div class="sidebar-user-footer">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 6px #10B981;"></div>
+                    <span style="font-size: 11px; color: #5EEAD4; font-weight: 700;" class="font-mono">SENSOR GRID</span>
+                </div>
+                <span style="font-size: 10px; color: rgba(255, 255, 255, 0.6);" class="font-mono">99.94% OK</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top App Navbar -->
+            <header class="app-navbar">
+                <div class="nav-left-group">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar Navigation">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="nav-search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="nav-search-input" placeholder="Search events, sound ID, sensor nodes...">
+                    </div>
+                </div>
+
+                <div class="nav-right-group">
+                    <!-- Website Link -->
+                    <a href="{{ url_for('website_home') }}" class="website-return-btn" title="View Public Website">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Public Web</span>
+                    </a>
+
+                    <!-- Theme Toggle Button -->
+                    <button class="theme-icon-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                        <i class="fa-regular fa-sun"></i>
+                    </button>
+
+                    <!-- Notifications Dropdown Link -->
+                    <a href="{{ url_for('alerts') }}" class="btn-icon-nav" title="Hazard Alert Feed">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-alert-badge">!</span>
+                    </a>
+
+                    <!-- User Profile Dropdown Pill -->
+                    <a href="{{ url_for('profile') }}" class="user-profile-card">
+                        <div class="user-avatar-circle">
+                            {{ current_user['full_name'][:1]|upper if current_user else 'A' }}
+                        </div>
+                        <div class="user-info-text">
+                            <span class="user-info-name">{{ current_user['full_name'] if current_user else 'Administrator' }}</span>
+                            <span class="user-info-role">{{ current_user['role'] if current_user else 'ADMIN' }}</span>
+                        </div>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <main class="page-body">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div style="margin-bottom: 22px;">
+                            {% for category, message in messages %}
+                                <div class="flash-alert {{ category }}" style="margin-bottom: 10px; padding: 14px 18px; border-radius: 12px; background: rgba(13, 148, 136, 0.12); border: 1.5px solid rgba(45, 212, 191, 0.3); color: var(--text-primary); display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-circle-info" style="color: #0D9488; font-size: 16px;"></i>
+                                    <span style="font-size: 13.5px; font-weight: 600;">{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Theme & Sidebar JavaScript -->
+    <script>
+        // Theme Toggle Manager
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const currentTheme = localStorage.getItem('sonicsentinel_theme') || 'light';
+            
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('sonicsentinel_theme', theme);
+                if (themeBtn) {
+                    const icon = themeBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = (theme === 'dark') ? 'fa-solid fa-moon' : 'fa-regular fa-sun';
+                    }
+                }
+            }
+            
+            applyTheme(currentTheme);
+
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                    const newTheme = (activeTheme === 'dark') ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                });
+            }
+
+            // Mobile Sidebar Toggle
+            const sidebarBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebarBtn && sidebar) {
+                sidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('mobile-open');
+                });
+                // Close sidebar if clicking outside on mobile
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 992 && 
+                        sidebar.classList.contains('mobile-open') && 
+                        !sidebar.contains(e.target) && 
+                        !sidebarBtn.contains(e.target)) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            }
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

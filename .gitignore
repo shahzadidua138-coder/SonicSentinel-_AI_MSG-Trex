@@ -36,3 +36,6 @@ static/plots/*
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Heavy dataset audio files (local training data)
+Model/data/

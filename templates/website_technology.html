@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}Technology &amp; Architecture – SonicSentinel AI{% endblock %}
+
+{% block content %}
+<!-- Technology Hero -->
+<section class="page-hero" style="text-align: center; padding: 70px 20px 40px; background: #F0FDFA;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="hero-threat-pill" style="margin: 0 auto 16px;">
+            <i class="fa-solid fa-microchip"></i>
+            <span>373 Features &bull; Dual-AI Fusion &bull; Sub-350ms Inference</span>
+        </div>
+        <h1 class="hero-main-title" style="font-size: 38px; line-height: 1.25; margin-bottom: 16px;">
+            Dual-AI Acoustic Architecture
+            <span class="gradient-headline" style="display: block; font-size: 32px; margin-top: 6px;">
+                Mathematical Rigor &amp; Signal Processing
+            </span>
+        </h1>
+        <p class="hero-subtext" style="margin: 0 auto 28px; max-width: 720px; font-size: 16px;">
+            Discover the engineering stack powering SonicSentinel AI: from Librosa-based acoustic feature extraction to parallel Support Vector Machine and Google Teachable Machine arbitration.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('website_home') }}#interactiveStudio" class="btn-hero-primary">
+                <i class="fa-solid fa-play"></i> Test Interactive Studio
+            </a>
+            <a href="#metricsSection" class="btn-hero-secondary">
+                <i class="fa-solid fa-chart-pie"></i> View Live Model Metrics
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Deep Architectural Pipeline -->
+<section class="section reveal-on-scroll" style="padding: 50px 20px; max-width: 1240px; margin: 0 auto;">
+    <div class="section-head-center" style="margin-bottom: 45px;">
+        <div class="section-pill-tag"><i class="fa-solid fa-diagram-project"></i> Pipeline Flow</div>
+        <h2 class="section-title-large">End-to-End Signal Processing &amp; Inference</h2>
+        <p class="section-subtitle-text">Every audio buffer follows a strictly reproducible 5-stage transformation pipeline.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 50px;">
+        <!-- Stage 1 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(45, 212, 191, 0.15); color: var(--teal-600);"><i class="fa-solid fa-sliders"></i></div>
+                <span class="card-step-num">Stage 01</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                DSP Pre-Processing &amp; Normalization
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                Continuous audio or uploaded files are downmixed to single-channel mono, resampled to <strong>22,050 Hz</strong>, peak-amplitude normalized to [-1.0, 1.0], and checked against silence thresholds (&lt; -60 dBFS) and clipping boundaries (&ge; 99% full-scale).
+            </p>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;"><i class="fa-solid fa-wave-square"></i></div>
+                <span class="card-step-num">Stage 02</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                373-Acoustic Feature Vector Extraction
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                Computes 80 MFCC descriptors (40 mean + 40 std), 256 Mel-Spectrogram bands (128 mean + 128 std), 24 Chroma features (12 mean + 12 std), Spectral Centroid, Bandwidth, Rolloff, Zero-Crossing Rate, Root-Mean-Square energy, and Onset strength.
+            </p>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(168, 85, 247, 0.15); color: #8B5CF6;"><i class="fa-solid fa-brain"></i></div>
+                <span class="card-step-num">Stage 03</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                Python SVM Trained Model Scoring
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                The 373-feature vector is scaled using the saved <code>scaler.joblib</code> and evaluated by our best-performing Radial Basis Function (RBF) Support Vector Machine, outputting calibrated probability distributions across all 10 sound categories.
+            </p>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(16, 185, 129, 0.15); color: #10B981;"><i class="fa-solid fa-code-compare"></i></div>
+                <span class="card-step-num">Stage 04</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                Google Teachable Machine Arbitration
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                The audio segment is independently classified by the Google Teachable Machine neural benchmark. The arbitration engine calculates &Delta; = |Python - GTM| and top-two confidence margin to assign Strong Match, Acceptable Match, or Review Required.
+            </p>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;"><i class="fa-solid fa-bell"></i></div>
+                <span class="card-step-num">Stage 05</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                Alert Rules Policy &amp; Escalation
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                Matches detection against the active JSON alert policy rules. Enforces consecutive window confirmation for critical events (Gunshot, Scream) and triggers notifications, email alerts, and audit logs.
+            </p>
+        </div>
+
+        <!-- Stage 6 -->
+        <div class="why-feature-card" style="padding: 30px; border-radius: 20px; border: 1px solid var(--border-light); background: #FFFFFF; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.05);">
+            <div class="card-top-row">
+                <div class="card-icon-bubble" style="background: rgba(14, 165, 233, 0.15); color: #0284C7;"><i class="fa-solid fa-database"></i></div>
+                <span class="card-step-num">Stage 06</span>
+            </div>
+            <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
+                SQLite WAL Persistence &amp; PDF Export
+            </h3>
+            <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+                Write-Ahead Logging (WAL) ensures high concurrency under heavy write loads. Allows instant generation of cryptographic PDF incident certificates with embedded waveforms and audit details.
+            </p>
+        </div>
+    </div>
+
+    <!-- Live Model Metrics & Evidence Section -->
+    <div id="metricsSection" style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 24px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.04); margin-bottom: 50px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 28px;">
+            <div>
+                <span class="section-pill-tag"><i class="fa-solid fa-square-poll-vertical"></i> Live Model Evidence</span>
+                <h3 style="font-family: var(--font-heading); font-size: 26px; font-weight: 800; color: var(--dark-slate); margin-top: 8px;">
+                    Model Comparison &amp; Benchmark Evaluation
+                </h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                    Evaluated on 450 unseen test recordings (SRS Step 7 &amp; Step 11).
+                </p>
+            </div>
+            <div id="modelMetricsPill" style="background: rgba(16, 185, 129, 0.12); color: #059669; padding: 8px 18px; border-radius: 30px; font-family: var(--font-mono); font-weight: 700; font-size: 14px;">
+                <i class="fa-solid fa-circle-check"></i> SVM Model: 96.44% Test Accuracy
+            </div>
+        </div>
+
+        <!-- 3 Algorithm Comparison Table -->
+        <div style="overflow-x: auto; margin-bottom: 30px;">
+            <table class="incident-feed-table">
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Hyperparameters</th>
+                        <th>Test Accuracy</th>
+                        <th>Macro F1</th>
+                        <th>Inference Time</th>
+                        <th>Selected Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: rgba(45, 212, 191, 0.08);">
+                        <td style="font-weight: 700;"><i class="fa-solid fa-award" style="color: #F59E0B; margin-right: 6px;"></i> Support Vector Machine (SVM)</td>
+                        <td style="font-family: var(--font-mono); font-size: 12px;">C=10.0, kernel='rbf', gamma='scale'</td>
+                        <td style="font-family: var(--font-mono); font-weight: 800; color: #10B981;">96.44%</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: #10B981;">0.9637</td>
+                        <td style="font-family: var(--font-mono);">12.4 ms</td>
+                        <td><span class="badge-sev critical" style="background: #10B981; color: white;">Selected Best Model</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">Random Forest Classifier</td>
+                        <td style="font-family: var(--font-mono); font-size: 12px;">n_estimators=300, max_depth=25</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">94.89%</td>
+                        <td style="font-family: var(--font-mono);">0.9481</td>
+                        <td style="font-family: var(--font-mono);">18.2 ms</td>
+                        <td><span style="color: var(--text-muted); font-size: 13px;">Benchmark Alternative</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">XGBoost Gradient Boosting</td>
+                        <td style="font-family: var(--font-mono); font-size: 12px;">n_estimators=200, lr=0.1</td>
+                        <td style="font-family: var(--font-mono); font-weight: 700;">93.11%</td>
+                        <td style="font-family: var(--font-mono);">0.9298</td>
+                        <td style="font-family: var(--font-mono);">24.6 ms</td>
+                        <td><span style="color: var(--text-muted); font-size: 13px;">Benchmark Alternative</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mathematical Arbitration Box -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px;">
+            <h4 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--dark-slate); margin-bottom: 12px;">
+                <i class="fa-solid fa-calculator" style="color: var(--teal-600); margin-right: 8px;"></i>
+                Dual-Model Arbitration Formula (SRS Step 11)
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; font-size: 13px; color: var(--text-dark);">
+                <div style="background: #FFFFFF; padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+                    <div style="font-weight: 700; color: var(--teal-700); margin-bottom: 4px;">Confidence Delta (&Delta;):</div>
+                    <code>&Delta; = |Python_Conf - GTM_Conf|</code>
+                    <p style="margin-top: 6px; color: var(--text-muted); font-size: 12px;">
+                        &Delta; &le; 0.05 &rarr; Strong Match<br>
+                        0.05 &lt; &Delta; &le; 0.15 &rarr; Acceptable Match<br>
+                        &Delta; &gt; 0.15 &rarr; Weak Match
+                    </p>
+                </div>
+                <div style="background: #FFFFFF; padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
+                    <div style="font-weight: 700; color: var(--teal-700); margin-bottom: 4px;">Top-Two Margin Threshold:</div>
+                    <code>Margin = Top1_Conf - Top2_Conf</code>
+                    <p style="margin-top: 6px; color: var(--text-muted); font-size: 12px;">
+                        Margin &ge; 0.10 &rarr; Unambiguous Prediction<br>
+                        Margin &lt; 0.10 &rarr; Marked Uncertain &bull; Sent to Review Queue
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

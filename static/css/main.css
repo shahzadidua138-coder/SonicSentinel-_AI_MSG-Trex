@@ -193,7 +193,7 @@ input:focus, select:focus, textarea:focus {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #0D5C56, #042422);
+    background: #0D5C56;
     border: 1px solid rgba(45, 212, 191, 0.35);
     display: flex;
     align-items: center;
@@ -280,7 +280,7 @@ input:focus, select:focus, textarea:focus {
 
 .menu-link.active {
     color: #FFFFFF;
-    background: linear-gradient(90deg, rgba(20, 184, 166, 0.22), rgba(20, 184, 166, 0.08));
+    background: rgba(20, 184, 166, 0.16);
     border-left: 3.5px solid var(--teal-mint);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-weight: 700;
@@ -420,7 +420,7 @@ input:focus, select:focus, textarea:focus {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: linear-gradient(135deg, #0D5C56, #062F2C);
+    background: #0D5C56;
     color: #FFFFFF;
     display: flex;
     align-items: center;
@@ -582,12 +582,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #0D5C56 0%, #0F766E 60%, #115E59 100%);
+    background: #0D5C56;
     color: #FFFFFF;
     box-shadow: 0 4px 14px rgba(13, 92, 88, 0.28);
 }
 .btn-primary:hover {
-    background: linear-gradient(135deg, #062F2C, #0D5C56);
+    background: #09403C;
     box-shadow: 0 6px 20px rgba(13, 92, 88, 0.4);
     text-decoration: none;
     color: #FFFFFF;
@@ -610,12 +610,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #DC2626, #B91C1C);
+    background: #DC2626;
     color: #FFFFFF;
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
 }
 .btn-danger:hover {
-    background: #EF4444;
+    background: #B91C1C;
     color: #FFFFFF;
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
@@ -717,7 +717,7 @@ input:focus, select:focus, textarea:focus {
 }
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #0D9488, #14B8A6);
+    background: #0D9488;
     border-radius: 4px;
     transition: width 0.4s ease;
 }

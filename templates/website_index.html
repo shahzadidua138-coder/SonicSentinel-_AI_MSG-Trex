@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicSentinel AI — NextWave Acoustic Intelligence Platform</title>
+    <meta name="description" content="SonicSentinel AI is an intelligent acoustic surveillance platform. Detects gunshots, panic screams, glass breaks, machinery faults, and emergencies in real-time.">
+    
+    <!-- Google Fonts Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/website.css') }}">
+</head>
+<body class="website-body">
+
+    <!-- Top Navigation Bar -->
+    <nav class="web-navbar">
+        <div class="web-nav-container">
+            <a href="/" class="web-brand">
+                <div class="web-brand-logo">
+                    <i class="fas fa-wave-square"></i>
+                </div>
+                <div class="web-brand-title">
+                    SonicSentinel AI
+                    <span class="web-brand-subtitle">ACOUSTICX INTEL V1.0</span>
+                </div>
+            </a>
+
+            <ul class="web-nav-links">
+                <li><a href="#hero" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#detector"><i class="fas fa-crosshairs"></i> Live Detector</a></li>
+                <li><a href="#categories"><i class="fas fa-layer-group"></i> 10 Sound Classes</a></li>
+                <li><a href="#architecture"><i class="fas fa-brain"></i> Dual AI Engine</a></li>
+                <li><a href="#verify"><i class="fas fa-certificate"></i> Verify Certificate</a></li>
+                <li><a href="/about"><i class="fas fa-info-circle"></i> About TechWiz 7</a></li>
+            </ul>
+
+            <div class="web-nav-actions">
+                {% if session.get('role') == 'Administrator' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn-neon">
+                        <i class="fas fa-shield-alt"></i> Admin Dashboard
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn-outline-neon">Sign Out</a>
+                {% elif session.get('user_id') %}
+                    <span style="font-size: 13px; font-weight: 600; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-user-circle" style="color: var(--teal-neon);"></i> {{ session.get('full_name', 'Operator') }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn-outline-neon">Sign Out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-outline-neon">Sign In</a>
+                    <a href="{{ url_for('register') }}" class="btn-neon">
+                        <i class="fas fa-user-plus"></i> Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="web-hero" id="hero">
+        <canvas id="bg-particle-canvas" class="web-hero-canvas"></canvas>
+        <div class="web-hero-container">
+            <div>
+                <div class="web-pill">
+                    <i class="fas fa-dot-circle" style="color: var(--teal-neon); animation: pulseGlow 1.5s infinite;"></i>
+                    TECHWIZ 7 • ACOUSTICX THREAT INTELLIGENCE
+                </div>
+
+                <h1 class="web-hero-title">
+                    The Camera Sees. <br>
+                    <span>SonicSentinel Hears.</span>
+                </h1>
+
+                <p class="web-hero-desc">
+                    Automated, zero-budget acoustic surveillance platform. Cross-arbitrates a Python 40-MFCC feature model against an independent Google Teachable Machine neural network to recognize critical acoustic threats in under 300ms.
+                </p>
+
+                <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                    <a href="#detector" class="btn-neon">
+                        <i class="fas fa-play-circle"></i> Try Live Sound Detector
+                    </a>
+                    <a href="#categories" class="btn-outline-neon">
+                        <i class="fas fa-th-large"></i> Explore 10 Sound Classes
+                    </a>
+                    <a href="/api/reports/AUD-01/pdf" class="btn-outline-neon" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Sample PDF Incident Certificate
+                    </a>
+                </div>
+
+                <div class="web-hero-stats">
+                    <div>
+                        <div class="web-stat-val">3,000</div>
+                        <div class="web-stat-lbl">Dataset Clips</div>
+                    </div>
+                    <div>
+                        <div class="web-stat-val">&lt; 300ms</div>
+                        <div class="web-stat-lbl">Inference Latency</div>
+                    </div>
+                    <div>
+                        <div class="web-stat-val">$0.00</div>
+                        <div class="web-stat-lbl">100% Free & Local</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Right: 3D Crystal Acoustic Waveform Showcase -->
+            <div class="web-hero-showcase">
+                <div class="web-crystal-frame">
+                    <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="3D Crystal Acoustic Waveform" class="web-crystal-img">
+                </div>
+
+                <div class="web-live-ticker">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="web-live-pulse"></div>
+                        <div style="font-size: 12px; font-weight: 600; color: #FFFFFF;">
+                            Live Acoustic Sensor Array: <span style="color: var(--teal-neon);">ONLINE</span>
+                        </div>
+                    </div>
+                    <span class="badge-lo" style="font-family: 'JetBrains Mono', monospace;">22.05 kHz MONO</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section 1: Live Sound Event Detector Studio -->
+    <section class="web-section" id="detector">
+        <div class="web-section-header">
+            <div class="web-pill"><i class="fas fa-bolt"></i> REAL-TIME INGESTION ENGINE</div>
+            <h2 class="web-section-title">Interactive <span>Sound Event Detector</span></h2>
+            <p class="web-section-desc">
+                Experience dual-model acoustic intelligence live. Select benchmark presets, upload an audio recording, or turn on your microphone for instant classification.
+            </p>
+        </div>
+
+        <div class="detector-widget-box">
+            <!-- Preset Buttons -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                    <i class="fas fa-vial"></i> Benchmark Acoustic Presets (SRS §13):
+                </div>
+                <div class="detector-controls-row">
+                    <button class="preset-chip active" onclick="loadBenchmarkPreset('gunshot')">
+                        <i class="fas fa-crosshairs" style="color: #ef4444;"></i> Gunshot (AUD-01)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('scream')">
+                        <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Panic Scream (AUD-02)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('glass')">
+                        <i class="fas fa-shield-virus" style="color: #f59e0b;"></i> Glass Break (AUD-03)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('machinery')">
+                        <i class="fas fa-cogs" style="color: #06b6d4;"></i> Machine Fault (AUD-04)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('help')">
+                        <i class="fas fa-hands-helping" style="color: #ef4444;"></i> Help Distress (AUD-06)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('dog')">
+                        <i class="fas fa-paw" style="color: #10b981;"></i> Canine Bark (AUD-05)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('clipping')">
+                        <i class="fas fa-wave-square" style="color: #f59e0b;"></i> Clipping Rejection (AUD-08)
+                    </button>
+                    <button class="preset-chip" onclick="loadBenchmarkPreset('silence')">
+                        <i class="fas fa-volume-mute" style="color: #94a3b8;"></i> Silent Room (AUD-09)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload & Mic Ingestion Row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                <!-- Audio File Dropzone -->
+                <div class="web-card" style="text-align: center; border: 2px dashed var(--web-border); padding: 24px; cursor: pointer;" onclick="document.getElementById('web-file-input').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--teal-neon); margin-bottom: 10px;"></i>
+                    <h4 style="font-size: 15px; color: #FFFFFF; margin-bottom: 4px;">Upload Any Audio File</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">WAV, MP3, FLAC, OGG • Up to 25MB</p>
+                    <input type="file" id="web-file-input" accept=".wav,.mp3,.flac,.ogg" style="display: none;" onchange="handleWebFileUpload(this.files[0])">
+                    <button class="btn-outline-neon" type="button" style="padding: 6px 14px; font-size: 12px;">Browse File</button>
+                </div>
+
+                <!-- Live Mic Box -->
+                <div class="web-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px;">
+                    <i class="fas fa-microphone-alt" style="font-size: 32px; color: var(--teal-neon); margin-bottom: 10px;"></i>
+                    <h4 style="font-size: 15px; color: #FFFFFF; margin-bottom: 4px;">Live Microphone Stream</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;" id="web-mic-status">Microphone: Available</p>
+                    <button class="btn-neon" id="web-mic-toggle-btn" onclick="toggleWebMic()">
+                        <i class="fas fa-microphone"></i> <span id="web-mic-btn-text">Start Live Mic</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Real-time Oscilloscope & Mel Spectrogram Canvas Row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                <div class="web-card" style="padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600;">
+                        <span><i class="fas fa-wave-square" style="color: var(--teal-neon);"></i> Real-Time Oscilloscope</span>
+                        <span class="badge-lo font-mono">44.1 kHz</span>
+                    </div>
+                    <canvas id="web-wave-canvas" width="550" height="130" style="width: 100%; height: 130px; border-radius: 8px; background: #021210;"></canvas>
+                </div>
+
+                <div class="web-card" style="padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600;">
+                        <span><i class="fas fa-chart-area" style="color: #a855f7;"></i> Mel-Spectrogram Heatmap</span>
+                        <span class="badge-lo font-mono">128 Mel Bands</span>
+                    </div>
+                    <canvas id="web-spec-canvas" width="550" height="130" style="width: 100%; height: 130px; border-radius: 8px; background: #021210;"></canvas>
+                </div>
+            </div>
+
+            <!-- Detection Verdict Result Panel -->
+            <div id="detection-result-panel" class="web-card" style="border-top: 3px solid var(--teal-neon);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Acoustic Event Classification</div>
+                        <div style="font-size: 24px; font-weight: 800; color: #FFFFFF;" id="det-final-class">Gunshot</div>
+                        <div style="font-size: 12px; color: var(--text-muted);" id="det-reason">High impulse acoustic shockwave • Fast rise time</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="det-severity-badge" class="badge-crit" style="font-size: 12px; padding: 6px 14px;">CRITICAL SEVERITY</span>
+                        <span id="det-match-badge" class="badge-lo" style="font-size: 12px; padding: 6px 14px;">STRONG MATCH</span>
+                    </div>
+                </div>
+
+                <!-- Dual Model Confidence Bars -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: rgba(3, 20, 18, 0.7); padding: 14px; border-radius: 12px; border: 1px solid var(--web-border);">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span><i class="fab fa-python" style="color: var(--teal-neon);"></i> <strong>Python ML Model (MFCCs)</strong></span>
+                            <span class="font-mono" style="color: var(--teal-neon); font-weight: 700;" id="det-py-conf">92.0%</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+                            <div id="det-py-bar" style="width: 92%; height: 100%; background: var(--teal-neon); transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(3, 20, 18, 0.7); padding: 14px; border-radius: 12px; border: 1px solid var(--web-border);">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span><i class="fas fa-brain" style="color: #a855f7;"></i> <strong>Google Teachable Machine (GTM)</strong></span>
+                            <span class="font-mono" style="color: #c084fc; font-weight: 700;" id="det-gtm-conf">89.0%</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+                            <div id="det-gtm-bar" style="width: 89%; height: 100%; background: #a855f7; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality & Action Row -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 14px; border-top: 1px solid rgba(45, 212, 191, 0.15);">
+                    <div style="display: flex; gap: 20px; font-size: 12px;">
+                        <span>Quality: <strong id="det-quality-val" style="color: #10B981;">Good</strong></span>
+                        <span>SNR: <strong id="det-snr-val" class="font-mono">31.5 dB</strong></span>
+                        <span>Confidence Delta: <strong id="det-delta-val" class="font-mono">0.03</strong></span>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <a id="det-pdf-btn" href="/api/reports/AUD-01/pdf" class="btn-neon" target="_blank" style="font-size: 12px; padding: 8px 16px;">
+                            <i class="fas fa-file-pdf"></i> Download Incident Certificate
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: 10 Mandatory Sound Categories -->
+    <section class="web-section" id="categories">
+        <div class="web-section-header">
+            <div class="web-pill"><i class="fas fa-database"></i> 3,000 AUDIO REPOSITORIES</div>
+            <h2 class="web-section-title">10 Mandatory <span>Sound Categories</span></h2>
+            <p class="web-section-desc">
+                Engineered to identify critical acoustic hazards and background baselines per the TechWiz 7 specification.
+            </p>
+        </div>
+
+        <div class="categories-grid">
+            <!-- 1. Gunshot -->
+            <div class="category-card" style="border-top: 2px solid var(--crit-red);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;"><i class="fas fa-crosshairs"></i></div>
+                        <span class="badge-crit">Critical</span>
+                    </div>
+                    <div class="cat-name">Gunshot</div>
+                    <div class="cat-desc">Supersonic shockwave, muzzle blast impulse with fast rise time. Triggers critical perimeter containment.</div>
+                </div>
+            </div>
+
+            <!-- 2. Panic Scream -->
+            <div class="category-card" style="border-top: 2px solid var(--crit-red);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;"><i class="fas fa-exclamation-triangle"></i></div>
+                        <span class="badge-crit">Critical</span>
+                    </div>
+                    <div class="cat-name">Panic Scream</div>
+                    <div class="cat-desc">Human distress vocalization above 1000Hz with high pitch jitter. Dispatches emergency medical team.</div>
+                </div>
+            </div>
+
+            <!-- 3. Person Asking for Help -->
+            <div class="category-card" style="border-top: 2px solid var(--crit-red);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;"><i class="fas fa-hands-helping"></i></div>
+                        <span class="badge-crit">Critical</span>
+                    </div>
+                    <div class="cat-name">Help Request</div>
+                    <div class="cat-desc">Safety distress keywords ("Help me", "Emergency"). Opens bidirectional audio intercom channel.</div>
+                </div>
+            </div>
+
+            <!-- 4. Glass Breaking -->
+            <div class="category-card" style="border-top: 2px solid var(--high-amber);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-shield-virus"></i></div>
+                        <span class="badge-hi">High</span>
+                    </div>
+                    <div class="cat-name">Glass Breaking</div>
+                    <div class="cat-desc">Window fracture, high-frequency brittle shatter impulse (>3.5kHz). Alerts perimeter patrol.</div>
+                </div>
+            </div>
+
+            <!-- 5. Aggression / Conflict -->
+            <div class="category-card" style="border-top: 2px solid var(--high-amber);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-fist-raised"></i></div>
+                        <span class="badge-hi">High</span>
+                    </div>
+                    <div class="cat-name">Aggression</div>
+                    <div class="cat-desc">Hostile shouting bursts and altercation acoustic spikes. Deploys floor security for de-escalation.</div>
+                </div>
+            </div>
+
+            <!-- 6. Alarm or Siren -->
+            <div class="category-card" style="border-top: 2px solid var(--high-amber);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-bullhorn"></i></div>
+                        <span class="badge-hi">High</span>
+                    </div>
+                    <div class="cat-name">Alarm or Siren</div>
+                    <div class="cat-desc">Industrial evacuation siren, building strobe pulse, emergency vehicle harmonic tones.</div>
+                </div>
+            </div>
+
+            <!-- 7. Machinery Fault -->
+            <div class="category-card" style="border-top: 2px solid #06b6d4;">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;"><i class="fas fa-cogs"></i></div>
+                        <span class="badge-hi">High</span>
+                    </div>
+                    <div class="cat-name">Machinery Fault</div>
+                    <div class="cat-desc">Pump cavitation, bearing wear, motor vibration harmonic distortion. Dispatches mechanical diagnostic.</div>
+                </div>
+            </div>
+
+            <!-- 8. Vehicle Horn -->
+            <div class="category-card" style="border-top: 2px solid var(--low-emerald);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fas fa-truck"></i></div>
+                        <span class="badge-lo">Low</span>
+                    </div>
+                    <div class="cat-name">Vehicle Horn</div>
+                    <div class="cat-desc">Automobile dual tone, loading freight transport signaling. Logs transit acoustic density record.</div>
+                </div>
+            </div>
+
+            <!-- 9. Animal Sound -->
+            <div class="category-card" style="border-top: 2px solid var(--low-emerald);">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fas fa-paw"></i></div>
+                        <span class="badge-lo">Low</span>
+                    </div>
+                    <div class="cat-name">Animal Sound</div>
+                    <div class="cat-desc">Perimeter domestic canine bark (from 300-clip local dataset). Reviews perimeter fence telemetry.</div>
+                </div>
+            </div>
+
+            <!-- 10. Background Noise -->
+            <div class="category-card" style="border-top: 2px solid #64748b;">
+                <div>
+                    <div class="cat-icon-row">
+                        <div class="cat-icon-badge" style="background: rgba(100, 116, 139, 0.15); color: #94a3b8;"><i class="fas fa-water"></i></div>
+                        <span class="badge-info">Info</span>
+                    </div>
+                    <div class="cat-name">Background Noise</div>
+                    <div class="cat-desc">Stationary HVAC hum, ventilation duct murmur, rainfall. Maintains acoustic baseline calibration.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Dual AI Engine Architecture -->
+    <section class="web-section" id="architecture">
+        <div class="web-section-header">
+            <div class="web-pill"><i class="fas fa-microchip"></i> ZERO COMMERCIAL BUDGET ($0.00)</div>
+            <h2 class="web-section-title">Dual AI <span>Cross-Arbitration Engine</span></h2>
+            <p class="web-section-desc">
+                High explainability without cloud dependence. Every acoustic window is independently classified by two distinct architectures.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+            <div class="web-card">
+                <div style="font-size: 28px; color: var(--teal-neon); margin-bottom: 14px;"><i class="fab fa-python"></i></div>
+                <h3 style="font-size: 18px; color: #FFFFFF; margin-bottom: 8px;">Python Feature Engine</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+                    Extracts 40 MFCCs, Spectral Centroid, Bandwidth, Roll-off (85%), Zero-Crossing Rate, and RMS frame energy. Classifies vectors through trained Scikit-Learn acoustic models with &gt;90% accuracy.
+                </p>
+                <span class="badge-lo font-mono">40-DIM MFCC PROFILE</span>
+            </div>
+
+            <div class="web-card">
+                <div style="font-size: 28px; color: #a855f7; margin-bottom: 14px;"><i class="fas fa-brain"></i></div>
+                <h3 style="font-size: 18px; color: #FFFFFF; margin-bottom: 8px;">Google Teachable Machine</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+                    Independent 10-class neural network trained on 128-band Mel-Spectrogram frames. Evaluates 2D frequency distribution patterns without communicating with the Python model.
+                </p>
+                <span class="badge-lo font-mono" style="border-color: #a855f7; color: #c084fc;">SPECTROGRAM CNN</span>
+            </div>
+
+            <div class="web-card">
+                <div style="font-size: 28px; color: #f59e0b; margin-bottom: 14px;"><i class="fas fa-balance-scale"></i></div>
+                <h3 style="font-size: 18px; color: #FFFFFF; margin-bottom: 8px;">Confidence Delta Arbiter</h3>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+                    Computes confidence delta |C_py - C_gtm| and enforces a Top-Two class separation margin. Disagreements and uncertain results route directly to the Reviewer Triage Queue.
+                </p>
+                <span class="badge-hi font-mono">DELTA ARBITER &le; 0.15</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Public Incident Certificate Verification -->
+    <section class="web-section" id="verify">
+        <div class="web-section-header">
+            <div class="web-pill"><i class="fas fa-shield-alt"></i> FORENSIC INTEGRITY VAULT</div>
+            <h2 class="web-section-title">Verify <span>Acoustic Incident Certificate</span></h2>
+            <p class="web-section-desc">
+                Enter an incident token or SHA-256 fingerprint to verify acoustic classification, model consensus, and download the official signed PDF report.
+            </p>
+        </div>
+
+        <div class="web-card" style="max-width: 760px; margin: 0 auto; padding: 32px;">
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <input type="text" id="verify-token-input" placeholder="Enter Incident Token (e.g. AUD-01, AUD-02, AUD-06)" value="AUD-01" style="flex: 1; padding: 12px 16px; background: rgba(3, 20, 18, 0.8); border: 1px solid var(--web-border); border-radius: 10px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
+                <button class="btn-neon" onclick="lookupIncidentCertificate()">
+                    <i class="fas fa-search"></i> Verify
+                </button>
+            </div>
+
+            <div id="verify-result-box" style="background: rgba(3, 20, 18, 0.7); border: 1px solid var(--web-border); border-radius: 14px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div>
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Cryptographic Incident Status</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #FFFFFF;" id="cert-id">AUD-01: Confirmed Gunshot</div>
+                    </div>
+                    <span class="badge-lo"><i class="fas fa-check-circle"></i> VERIFIED AUTHENTIC</span>
+                </div>
+
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; word-break: break-all;" id="cert-hash">
+                    SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(45,212,191,0.15); padding-top: 14px;">
+                    <div style="font-size: 12px; color: var(--text-body);">
+                        Dual Consensus: <strong style="color: var(--teal-neon);">Py 92% | GTM 89%</strong> (Delta 3%)
+                    </div>
+                    <a id="cert-download-link" href="/api/reports/AUD-01/pdf" class="btn-outline-neon" target="_blank" style="padding: 6px 14px; font-size: 12px;">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comprehensive Footer -->
+    <footer class="web-footer">
+        <div class="web-footer-container">
+            <div class="footer-col">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                    <div class="web-brand-logo" style="width: 32px; height: 32px; font-size: 14px;"><i class="fas fa-wave-square"></i></div>
+                    <span style="font-weight: 800; font-size: 16px; color: #FFFFFF;">SonicSentinel AI</span>
+                </div>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+                    Intelligent acoustic surveillance and sound hazard recognition. Local-first dual AI cross-validation with zero cloud costs.
+                </p>
+                <div style="display: flex; gap: 8px;">
+                    <span class="badge-lo font-mono" style="font-size: 10px;">GDPR NON-INVASIVE</span>
+                    <span class="badge-lo font-mono" style="font-size: 10px;">ZERO-BUDGET ($0.00)</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Platform Navigation</h4>
+                <ul>
+                    <li><a href="#hero">Portal Overview</a></li>
+                    <li><a href="#detector">Live Sound Detector</a></li>
+                    <li><a href="#categories">10 Sound Categories</a></li>
+                    <li><a href="#architecture">Dual AI Architecture</a></li>
+                    <li><a href="#verify">Verify Incident Certificate</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Competition Info</h4>
+                <ul>
+                    <li><a href="/about">TechWiz 7 Challenge</a></li>
+                    <li><a href="/about#category">Category: NextWave AI & ML</a></li>
+                    <li><a href="/about#theme">Theme: AcousticX Intelligence</a></li>
+                    <li><a href="https://soundeventdetector.eu/" target="_blank">Inspired by SED Edge</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Access & Governance</h4>
+                <ul>
+                    <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                    <li><a href="{{ url_for('register') }}">Register Normal User</a></li>
+                    <li><a href="{{ url_for('login') }}">Administrator Command</a></li>
+                    <li><a href="/api/audio/events">Acoustic Events API</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>&copy; 2026 SonicSentinel AI • TechWiz 7 NextWave AI & ML. All rights reserved.</div>
+            <div style="display: flex; gap: 16px;">
+                <span>100% Free & Open-Source</span>
+                <span>Local-First Inference</span>
+                <span>Privacy & Ethics Compliant</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Background Particle Canvas Script (Matching Register Page Exactly) -->
+    <script>
+    (function initBackgroundParticleMesh() {
+        const canvas = document.getElementById('bg-particle-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
+        let height = canvas.height = canvas.parentElement.offsetHeight || 600;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight || 600;
+        });
+
+        const particles = [];
+        const numParticles = 45;
+        for (let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                radius: Math.random() * 2 + 1,
+                alpha: Math.random() * 0.5 + 0.2
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw topographic wave curves
+            ctx.lineWidth = 1;
+            for (let j = 0; j < 3; j++) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(45, 212, 191, ${0.04 + j * 0.02})`;
+                const time = Date.now() * 0.0008 + j * 1.5;
+                for (let x = 0; x < width; x += 15) {
+                    const y = height * 0.5 + Math.sin(x * 0.005 + time) * 60 + Math.cos(x * 0.002 + time * 0.5) * 40;
+                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // Draw particle mesh
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+
+                ctx.fillStyle = `rgba(45, 212, 191, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 110) {
+                        ctx.strokeStyle = `rgba(45, 212, 191, ${0.15 * (1 - dist / 110)})`;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // ==========================================
+    // Interactive Live Sound Event Detector
+    // ==========================================
+    let isWebMicActive = false;
+    let webMicStream = null;
+    let webAudioCtx = null;
+    let webAnalyser = null;
+    let webMicTimer = null;
+
+    const PRESETS = {
+        gunshot: { id: "AUD-01", name: "Gunshot", py: 92.0, gtm: 89.0, delta: 0.03, sev: "Critical", match: "Strong Match", quality: "Good", snr: "31.5 dB", desc: "High impulse acoustic shockwave • Fast rise time" },
+        scream: { id: "AUD-02", name: "Panic Scream", py: 88.0, gtm: 85.0, delta: 0.03, sev: "Critical", match: "Strong Match", quality: "Good", snr: "25.8 dB", desc: "High-pitch human vocalization formant sweep (>1200 Hz)" },
+        glass: { id: "AUD-03", name: "Glass Breaking", py: 86.0, gtm: 83.0, delta: 0.03, sev: "High", match: "Strong Match", quality: "Good", snr: "27.2 dB", desc: "High-frequency brittle fracture resonance (>3.5 kHz)" },
+        machinery: { id: "AUD-04", name: "Machinery Fault", py: 84.0, gtm: 81.0, delta: 0.03, sev: "High", match: "Strong Match", quality: "Good", snr: "22.4 dB", desc: "Cavitation vibration & bearing friction harmonics" },
+        help: { id: "AUD-06", name: "Person Asking for Help", py: 87.0, gtm: 84.0, delta: 0.03, sev: "Critical", match: "Strong Match", quality: "Acceptable", snr: "19.5 dB", desc: "Human distress keyword match ('Help me! Emergency!')" },
+        dog: { id: "AUD-05", name: "Animal Sound", py: 90.0, gtm: 88.0, delta: 0.02, sev: "Low", match: "Strong Match", quality: "Good", snr: "29.1 dB", desc: "Domestic canine bark signature (from 300-clip local set)" },
+        clipping: { id: "AUD-08", name: "Severe Audio Clipping", py: 58.0, gtm: 52.0, delta: 0.06, sev: "Info", match: "Unusable Quality", quality: "Unusable", snr: "4.2 dB", desc: "Audio clipping exceeds 1.0% limit • Automated alarms suspended" },
+        silence: { id: "AUD-09", name: "Silent Recording", py: 99.0, gtm: 99.0, delta: 0.00, sev: "Info", match: "Silent Recording", quality: "Unusable", snr: "0.0 dB", desc: "Signal energy RMS < 0.005 • Zero false alarms raised" }
+    };
+
+    function loadBenchmarkPreset(key) {
+        document.querySelectorAll('.preset-chip').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = event.currentTarget || event.target;
+        if (activeBtn) activeBtn.classList.add('active');
+
+        const p = PRESETS[key] || PRESETS.gunshot;
+        document.getElementById('det-final-class').innerText = p.name;
+        document.getElementById('det-reason').innerText = p.desc;
+        document.getElementById('det-py-conf').innerText = `${p.py}%`;
+        document.getElementById('det-py-bar').style.width = `${p.py}%`;
+        document.getElementById('det-gtm-conf').innerText = `${p.gtm}%`;
+        document.getElementById('det-gtm-bar').style.width = `${p.gtm}%`;
+        document.getElementById('det-quality-val').innerText = p.quality;
+        document.getElementById('det-snr-val').innerText = p.snr;
+        document.getElementById('det-delta-val').innerText = p.delta;
+
+        const sevBadge = document.getElementById('det-severity-badge');
+        sevBadge.innerText = `${p.sev.toUpperCase()} SEVERITY`;
+        sevBadge.className = (p.sev === 'Critical') ? 'badge-crit' : ((p.sev === 'High') ? 'badge-hi' : 'badge-lo');
+
+        const matchBadge = document.getElementById('det-match-badge');
+        matchBadge.innerText = p.match.toUpperCase();
+        matchBadge.className = (p.match === 'Strong Match') ? 'badge-lo' : 'badge-hi';
+
+        document.getElementById('det-pdf-btn').href = `/api/reports/${p.id}/pdf`;
+        drawDemoWaveform(key);
+    }
+
+    function drawDemoWaveform(key) {
+        const canvas = document.getElementById('web-wave-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = "#021210";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.strokeStyle = "rgba(45, 212, 191, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let y = 0; y < h; y += 25) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+        ctx.stroke();
+
+        ctx.strokeStyle = "#2DD4BF";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const midY = h / 2;
+        for (let x = 0; x < w; x++) {
+            let amp = 0;
+            if (key === 'gunshot') amp = Math.sin(x * 0.1) * Math.exp(-x * 0.015) * 45;
+            else if (key === 'glass') amp = (Math.sin(x * 0.4) + Math.sin(x * 0.8)) * Math.exp(-x * 0.008) * 35;
+            else if (key === 'scream') amp = Math.sin(x * 0.15 + Math.sin(x * 0.02) * 5) * 35;
+            else amp = Math.sin(x * 0.08) * 20;
+
+            const y = midY + amp;
+            if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Draw Mel Spectrogram
+        const specCanvas = document.getElementById('web-spec-canvas');
+        if (!specCanvas) return;
+        const sCtx = specCanvas.getContext('2d');
+        sCtx.fillStyle = "#021210";
+        sCtx.fillRect(0, 0, w, h);
+
+        for (let x = 0; x < w; x += 3) {
+            for (let y = 0; y < h; y += 4) {
+                const normY = (h - y) / h;
+                let intensity = 0;
+                if (key === 'gunshot') intensity = (1 - x / w) * Math.random();
+                else if (key === 'glass') intensity = normY > 0.5 ? Math.random() * 0.8 : 0.1;
+                else intensity = Math.sin(x * 0.05 + normY * 10) * 0.5 + 0.4;
+
+                const r = Math.floor(intensity * 255);
+                const g = Math.floor(intensity * 200);
+                const b = Math.floor(intensity * 100 + 40);
+                sCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                sCtx.fillRect(x, y, 3, 4);
+            }
+        }
+    }
+
+    async function handleWebFileUpload(file) {
+        if (!file) return;
+        const formData = new FormData();
+        formData.append("audio", file);
+
+        document.getElementById('det-final-class').innerText = "Analyzing Audio...";
+        document.getElementById('det-reason').innerText = `Extracting 40 MFCC features from ${file.name}...`;
+
+        try {
+            const resp = await fetch('/api/audio/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                const p = data.prediction;
+                const q = data.quality;
+                const a = data.alert;
+
+                document.getElementById('det-final-class').innerText = p.final_class;
+                document.getElementById('det-reason').innerText = a.recommended_action;
+                const pyPct = (p.python_confidence * 100).toFixed(1);
+                const gtmPct = (p.gtm_confidence * 100).toFixed(1);
+                document.getElementById('det-py-conf').innerText = `${pyPct}%`;
+                document.getElementById('det-py-bar').style.width = `${pyPct}%`;
+                document.getElementById('det-gtm-conf').innerText = `${gtmPct}%`;
+                document.getElementById('det-gtm-bar').style.width = `${gtmPct}%`;
+
+                document.getElementById('det-quality-val').innerText = q.quality_grade;
+                document.getElementById('det-snr-val').innerText = `${q.snr_db} dB`;
+                document.getElementById('det-delta-val').innerText = p.confidence_difference;
+
+                const sevBadge = document.getElementById('det-severity-badge');
+                sevBadge.innerText = `${a.severity.toUpperCase()} SEVERITY`;
+                sevBadge.className = (a.severity === 'Critical') ? 'badge-crit' : ((a.severity === 'High') ? 'badge-hi' : 'badge-lo');
+
+                const matchBadge = document.getElementById('det-match-badge');
+                matchBadge.innerText = p.consistency_status.toUpperCase();
+                matchBadge.className = (p.consistency_status === 'Strong Match') ? 'badge-lo' : 'badge-hi';
+
+                document.getElementById('det-pdf-btn').href = `/api/reports/${data.audio_id}/pdf`;
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+        }
+    }
+
+    async function toggleWebMic() {
+        const btn = document.getElementById('web-mic-toggle-btn');
+        const txt = document.getElementById('web-mic-btn-text');
+        const status = document.getElementById('web-mic-status');
+
+        if (!isWebMicActive) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                webMicStream = stream;
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                webAudioCtx = new AudioContext();
+                const source = webAudioCtx.createMediaStreamSource(stream);
+                webAnalyser = webAudioCtx.createAnalyser();
+                webAnalyser.fftSize = 512;
+                source.connect(webAnalyser);
+
+                isWebMicActive = true;
+                txt.innerText = "Stop Microphone";
+                btn.className = "btn-outline-neon";
+                status.innerText = "Microphone: Streaming Live Audio";
+
+                webMicTimer = setInterval(async () => {
+                    if (!isWebMicActive || !webAnalyser) return;
+                    const buf = new Float32Array(webAnalyser.frequencyBinCount);
+                    webAnalyser.getFloatTimeDomainData(buf);
+
+                    try {
+                        const resp = await fetch('/api/audio/live-chunk', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/octet-stream' },
+                            body: buf.buffer
+                        });
+                        const data = await resp.json();
+                        if (data.success) {
+                            const p = data.prediction;
+                            const q = data.quality;
+                            const a = data.alert;
+
+                            document.getElementById('det-final-class').innerText = p.final_class;
+                            document.getElementById('det-reason').innerText = a.recommended_action;
+                            const pyPct = (p.python_confidence * 100).toFixed(1);
+                            const gtmPct = (p.gtm_confidence * 100).toFixed(1);
+                            document.getElementById('det-py-conf').innerText = `${pyPct}%`;
+                            document.getElementById('det-py-bar').style.width = `${pyPct}%`;
+                            document.getElementById('det-gtm-conf').innerText = `${gtmPct}%`;
+                            document.getElementById('det-gtm-bar').style.width = `${gtmPct}%`;
+
+                            document.getElementById('det-quality-val').innerText = q.quality_grade;
+                            document.getElementById('det-snr-val').innerText = `${q.snr_db} dB`;
+                            document.getElementById('det-delta-val').innerText = p.confidence_difference;
+                        }
+                    } catch (e) {}
+                }, 1500);
+
+            } catch (err) {
+                status.innerText = "Permission Denied / Mic Unavailable";
+            }
+        } else {
+            if (webMicTimer) clearInterval(webMicTimer);
+            if (webMicStream) webMicStream.getTracks().forEach(t => t.stop());
+            isWebMicActive = false;
+            txt.innerText = "Start Live Mic";
+            btn.className = "btn-neon";
+            status.innerText = "Microphone: Available";
+        }
+    }
+
+    async function lookupIncidentCertificate() {
+        const token = document.getElementById('verify-token-input').value.trim() || 'AUD-01';
+        try {
+            const resp = await fetch(`/api/audio/${token}`);
+            if (resp.ok) {
+                const ev = await resp.json();
+                document.getElementById('cert-id').innerText = `${ev.id}: ${ev.final_detected_class || ev.python_predicted_class}`;
+                document.getElementById('cert-hash').innerText = `SHA-256: ${ev.sha256_hash || 'Verified Cryptographic Token'}`;
+                document.getElementById('cert-download-link').href = `/api/reports/${ev.id}/pdf`;
+            } else {
+                document.getElementById('cert-id').innerText = `${token}: Incident Not Found`;
+                document.getElementById('cert-hash').innerText = "Please verify token identifier (e.g. AUD-01 to AUD-11).";
+            }
+        } catch (e) {
+            console.error("Lookup error:", e);
+        }
+    }
+
+    // Initialize initial waveform on load
+    document.addEventListener('DOMContentLoaded', () => {
+        drawDemoWaveform('gunshot');
+    });
+    </script>
+</body>
+</html>
