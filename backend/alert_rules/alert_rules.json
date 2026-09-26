@@ -1,0 +1,132 @@
+{
+  "alert_rules": [
+    {
+      "sound_category": "gunshot",
+      "severity": "critical",
+      "min_confidence": 0.70,
+      "top_two_margin": 0.20,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Immediately contact law enforcement and evacuate the area.",
+      "manual_review_condition": "confidence < 0.80 or models_disagree",
+      "escalation_condition": "confidence >= 0.90 and consecutive >= 2"
+    },
+    {
+      "sound_category": "panic_scream",
+      "severity": "critical",
+      "min_confidence": 0.65,
+      "top_two_margin": 0.15,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Dispatch security personnel and check for emergency situation.",
+      "manual_review_condition": "confidence < 0.75 or models_disagree",
+      "escalation_condition": "confidence >= 0.85 and consecutive >= 2"
+    },
+    {
+      "sound_category": "person_asking_for_help",
+      "severity": "critical",
+      "min_confidence": 0.65,
+      "top_two_margin": 0.15,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Dispatch emergency response team to source location.",
+      "manual_review_condition": "confidence < 0.75",
+      "escalation_condition": "confidence >= 0.85"
+    },
+    {
+      "sound_category": "glass_breaking",
+      "severity": "high",
+      "min_confidence": 0.65,
+      "top_two_margin": 0.15,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Alert security team to investigate possible break-in.",
+      "manual_review_condition": "confidence < 0.70 or models_disagree",
+      "escalation_condition": "consecutive >= 2"
+    },
+    {
+      "sound_category": "alarm_siren",
+      "severity": "high",
+      "min_confidence": 0.65,
+      "top_two_margin": 0.15,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Identify alarm source and notify relevant personnel.",
+      "manual_review_condition": "confidence < 0.70",
+      "escalation_condition": "consecutive >= 3"
+    },
+    {
+      "sound_category": "aggression",
+      "severity": "high",
+      "min_confidence": 0.65,
+      "top_two_margin": 0.15,
+      "required_consecutive_detections": 2,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Send security personnel to investigate potential conflict.",
+      "manual_review_condition": "confidence < 0.75 or models_disagree",
+      "escalation_condition": "confidence >= 0.85 and consecutive >= 3"
+    },
+    {
+      "sound_category": "machinery_fault",
+      "severity": "high",
+      "min_confidence": 0.60,
+      "top_two_margin": 0.10,
+      "required_consecutive_detections": 2,
+      "model_agreement_required": false,
+      "audio_quality_required": "acceptable",
+      "recommended_action": "Alert maintenance team for immediate inspection.",
+      "manual_review_condition": "confidence < 0.65",
+      "escalation_condition": "consecutive >= 4"
+    },
+    {
+      "sound_category": "vehicle_horn",
+      "severity": "low",
+      "min_confidence": 0.60,
+      "top_two_margin": 0.10,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "poor",
+      "recommended_action": "Log as traffic or environmental event.",
+      "manual_review_condition": "confidence < 0.50",
+      "escalation_condition": "consecutive >= 5"
+    },
+    {
+      "sound_category": "animal_sound",
+      "severity": "low",
+      "min_confidence": 0.55,
+      "top_two_margin": 0.10,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "poor",
+      "recommended_action": "Record as non-critical environmental sound.",
+      "manual_review_condition": "confidence < 0.50",
+      "escalation_condition": "never"
+    },
+    {
+      "sound_category": "background_noise",
+      "severity": "informational",
+      "min_confidence": 0.50,
+      "top_two_margin": 0.05,
+      "required_consecutive_detections": 1,
+      "model_agreement_required": false,
+      "audio_quality_required": "poor",
+      "recommended_action": "Log as background ambient noise.",
+      "manual_review_condition": "noise_level > 0.85",
+      "escalation_condition": "never"
+    }
+  ],
+  "global_settings": {
+    "default_min_confidence": 0.60,
+    "default_top_two_margin": 0.15,
+    "uncertain_confidence_threshold": 0.55,
+    "overlap_detection_threshold": 0.30,
+    "audio_quality_required_for_critical": "acceptable",
+    "max_alert_history_days": 90
+  }
+}

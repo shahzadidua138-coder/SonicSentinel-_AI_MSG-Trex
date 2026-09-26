@@ -1,0 +1,25 @@
+{
+  "model_name": "RandomForestClassifier",
+  "sample_count": 300,
+  "feature_dim": 345,
+  "classes": [
+    "aggression",
+    "alarm_siren",
+    "animal_sound",
+    "background_noise",
+    "glass_breaking",
+    "gunshot",
+    "machinery_fault",
+    "panic_scream",
+    "person_asking_for_help",
+    "vehicle_horn"
+  ],
+  "cv_accuracy": 0.7416666666666667,
+  "test_accuracy": 0.75,
+  "test_macro_f1": 0.7363880563880564,
+  "trained_at": "2026-09-26 12:17:18 UTC",
+  "regularization": {
+    "anti_overfitting": "Stratified 5-Fold Cross Validation + Min Leaf Regularization / Soft Margin",
+    "feature_standardization": "StandardScaler"
+  }
+}
