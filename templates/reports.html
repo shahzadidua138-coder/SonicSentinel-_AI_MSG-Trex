@@ -1,99 +1,38 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Forensic Incident Report{% endblock %}
+{% block title %}Analysis Reports{% endblock %}
 
 {% block content %}
 <div class="page-header-row">
     <div>
-        <h1 class="page-title">Forensic Incident Analysis Certificate</h1>
-        <p class="page-subtitle">Standardized downloadable and printable audit report compliant with SRS Step 19 & 20.</p>
+        <h1 class="page-title">Acoustic Analysis Reports</h1>
+        <p class="page-subtitle">Review saved recording metadata and download an incident certificate generated from each stored analysis.</p>
     </div>
     <div class="page-actions-row">
-        <button class="btn btn-primary btn-sm" onclick="window.print()">
-            <i class="fas fa-print"></i> Print / Save as PDF
-        </button>
+        {% if current_user and current_user['role'] == 'Administrator' %}<a href="{{ url_for('export_csv') }}" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Export CSV</a>{% endif %}
     </div>
 </div>
 
-<!-- Report Document Card -->
-<div class="card-panel" style="max-width: 900px; margin: 0 auto; background: var(--bg-surface); padding: 32px;">
-    <!-- Document Header -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
-        <div>
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-accent); letter-spacing: 1px;" class="font-mono">SONICSENTINEL AI • FORENSIC INCIDENT REPORT</div>
-            <h2 style="font-size: 18px; font-weight: 700; margin-top: 4px;">Acoustic Hazard Detection Certificate</h2>
-            <div style="font-size: 11px; color: var(--text-muted);">Inspection Protocol: AcousticX Intelligence v1.0</div>
-        </div>
-        <div style="text-align: right;">
-            <span class="badge badge-critical" style="font-size: 12px; padding: 4px 10px;">CRITICAL HAZARD</span>
-            <div class="font-mono" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">ID: AUD-2026-8801</div>
-        </div>
-    </div>
-
-    <!-- Section 1: Ingested Audio Profile -->
-    <div style="margin-bottom: 24px;">
-        <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">1. Ingested Acoustic Profile</h3>
+<div class="card-panel">
+    <div class="table-wrap">
         <table class="data-table">
+            <thead><tr><th>Audio ID</th><th>Filename</th><th>Detected Category</th><th>Severity</th><th>Quality</th><th>Created</th><th>Report</th></tr></thead>
             <tbody>
+                {% for event in events %}
                 <tr>
-                    <td style="width: 200px; color: var(--text-muted);">File Name</td>
-                    <td class="font-mono" style="font-weight: 600;">facility_east_wing_gunshot_01.wav</td>
+                    <td class="font-mono"><a href="{{ url_for('audio_analysis') }}?event={{ event['id'] }}">{{ event['id'] }}</a></td>
+                    <td>{{ event['original_filename'] or 'Recording' }}</td>
+                    <td>{{ event['final_detected_class'] or event['python_predicted_class'] or 'Unknown' }}</td>
+                    <td>{{ event['severity'] or 'Informational' }}</td>
+                    <td>{{ event['quality_grade'] or 'Unknown' }}</td>
+                    <td>{{ event['created_at'] }}</td>
+                    <td><a class="btn btn-primary btn-sm" href="{{ url_for('api_download_report_pdf', audio_id=event['id']) }}"><i class="fas fa-file-pdf"></i> PDF</a></td>
                 </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Sensor Node Location</td>
-                    <td>East Wing Perimeter (Sensor Node #12)</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Format / Sample Rate / Depth</td>
-                    <td>WAV (Linear PCM) • 44.1 kHz • 24-bit Mono</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Audio Signal Quality</td>
-                    <td><span class="badge badge-success">Good (SNR: 28.4 dB, Zero Clipping)</span></td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">SHA-256 Binary Hash</td>
-                    <td class="font-mono" style="font-size: 10px; color: var(--text-muted);">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</td>
-                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px">No saved audio analyses are available for this account.</td></tr>
+                {% endfor %}
             </tbody>
         </table>
-    </div>
-
-    <!-- Section 2: Dual Model Inference Comparison -->
-    <div style="margin-bottom: 24px;">
-        <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">2. Dual Model Classification & Agreement</h3>
-        <table class="data-table">
-            <tbody>
-                <tr>
-                    <td style="width: 200px; color: var(--text-muted);">Python CNN Prediction</td>
-                    <td class="font-mono" style="font-weight: 700; color: var(--text-accent);">Gunshot (Confidence: 96.4%)</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Google Teachable Machine</td>
-                    <td class="font-mono" style="font-weight: 700; color: #c084fc;">Gunshot (Confidence: 94.8%)</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Confidence Delta |Py - GTM|</td>
-                    <td class="font-mono">1.6%</td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Model Consistency Status</td>
-                    <td><span class="badge badge-success">Acceptable Match (Concordance Verified)</span></td>
-                </tr>
-                <tr>
-                    <td style="color: var(--text-muted);">Triggered Safety Rule</td>
-                    <td class="font-mono">RULE-01 (Gunshot Min Conf &gt;= 80.0%, 1 Window)</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Section 3: Recommended Action -->
-    <div>
-        <h3 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">3. Recommended Operational Protocol</h3>
-        <div style="background: var(--bg-subtle); padding: 14px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; line-height: 1.6;">
-            <strong>IMMEDIATE CRITICAL LOCKDOWN:</strong> Supersonic impulse and reverberant shockwave profile confirms ballistic discharge. Alert municipal emergency services (911/112), trigger Sector B facility lockdown protocol, point PTZ cameras to East Perimeter.
-        </div>
     </div>
 </div>
 {% endblock %}

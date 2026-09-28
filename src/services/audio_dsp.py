@@ -33,16 +33,27 @@ def load_audio_file(file_path: str, target_sr: int = SAMPLE_RATE) -> tuple[np.nd
             data = np.interp(indices, np.arange(len(data)), data)
             sr = target_sr
         norm_data = data.astype(np.float32)
-        max_amp = np.max(np.abs(norm_data))
-        if max_amp > 0:
-            norm_data = norm_data / max_amp
+        if not np.all(np.isfinite(norm_data)):
+            raise ValueError("Audio contains invalid numeric samples")
         duration = len(norm_data) / float(sr)
         return norm_data, sr, duration
     except Exception:
         pass
 
-    # Try standard wave module for .wav
-    if ext == '.wav' or True:
+    # librosa/audioread fallback supports compressed user uploads when the
+    # installed libsndfile build cannot decode their container.
+    try:
+        import librosa
+        data, sr = librosa.load(file_path, sr=target_sr, mono=True)
+        if len(data) == 0 or not np.all(np.isfinite(data)):
+            raise ValueError("Audio is empty or contains invalid samples")
+        data = np.asarray(data, dtype=np.float32)
+        return data, sr, len(data) / float(sr)
+    except Exception as exc:
+        decode_error = exc
+
+    # WAV fallback when soundfile is unavailable.
+    if ext == '.wav':
         try:
             with wave.open(file_path, 'rb') as wf:
                 n_channels = wf.getnchannels()
@@ -56,8 +67,15 @@ def load_audio_file(file_path: str, target_sr: int = SAMPLE_RATE) -> tuple[np.nd
                     unpacked = np.array(struct.unpack(fmt, raw_bytes), dtype=np.float32) / 32768.0
                 elif sampwidth == 1:
                     unpacked = (np.frombuffer(raw_bytes, dtype=np.uint8).astype(np.float32) - 128.0) / 128.0
+                elif sampwidth == 3:
+                    raw_24 = np.frombuffer(raw_bytes, dtype=np.uint8).reshape(-1, 3).astype(np.int32)
+                    values = raw_24[:, 0] | (raw_24[:, 1] << 8) | (raw_24[:, 2] << 16)
+                    values = np.where(values & 0x800000, values - 0x1000000, values)
+                    unpacked = values.astype(np.float32) / 8388608.0
+                elif sampwidth == 4:
+                    unpacked = np.frombuffer(raw_bytes, dtype='<i4').astype(np.float32) / 2147483648.0
                 else:
-                    unpacked = np.frombuffer(raw_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+                    raise ValueError(f"Unsupported WAV sample width: {sampwidth} bytes")
 
                 if n_channels > 1:
                     unpacked = unpacked.reshape(-1, n_channels).mean(axis=1)
@@ -68,17 +86,14 @@ def load_audio_file(file_path: str, target_sr: int = SAMPLE_RATE) -> tuple[np.nd
                     unpacked = np.interp(indices, np.arange(len(unpacked)), unpacked)
                     sr = target_sr
 
+                if not np.all(np.isfinite(unpacked)):
+                    raise ValueError("Audio contains invalid numeric samples")
                 duration = len(unpacked) / float(sr)
                 return unpacked, sr, duration
-        except Exception:
-            pass
+        except Exception as exc:
+            raise ValueError(f"Unable to decode WAV audio: {exc}") from exc
 
-    # Fallback synthetic / raw buffer representation
-    sr = target_sr
-    duration = 2.0
-    t = np.linspace(0, duration, int(sr * duration), endpoint=False)
-    synthetic = 0.3 * np.sin(2 * np.pi * 440 * t)
-    return synthetic.astype(np.float32), sr, duration
+    raise ValueError(f"Unable to decode {ext or 'unknown'} audio format: {decode_error}")
 
 
 def parse_pcm_buffer(pcm_bytes: bytes, target_sr: int = SAMPLE_RATE) -> np.ndarray:

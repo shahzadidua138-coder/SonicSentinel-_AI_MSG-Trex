@@ -17,6 +17,11 @@ class SonicAudioEngine {
         this.bufferLength = 256;
         this.freqArray = null;
         this.timeArray = null;
+        this.captureProcessor = null;
+        this.captureMute = null;
+        this.capturePending = [];
+        this.capturePendingLength = 0;
+        this.audioWindowQueue = [];
     }
 
     init() {
@@ -198,6 +203,40 @@ class SonicAudioEngine {
             this.micStream = stream;
             this.micSource = this.audioCtx.createMediaStreamSource(stream);
             this.micSource.connect(this.analyser);
+            this.captureProcessor = this.audioCtx.createScriptProcessor(4096, 1, 1);
+            this.captureMute = this.audioCtx.createGain();
+            this.captureMute.gain.value = 0;
+            this.captureProcessor.onaudioprocess = event => {
+                if (!this.isMicActive) return;
+                const input = event.inputBuffer.getChannelData(0);
+                const copy = new Float32Array(input);
+                this.capturePending.push(copy);
+                this.capturePendingLength += copy.length;
+                const wanted = Math.floor(this.audioCtx.sampleRate * 1.5);
+                while (this.capturePendingLength >= wanted) {
+                    const joined = new Float32Array(this.capturePendingLength);
+                    let offset = 0;
+                    for (const part of this.capturePending) { joined.set(part, offset); offset += part.length; }
+                    const window = joined.slice(0, wanted);
+                    const tail = joined.slice(wanted);
+                    this.capturePending = tail.length ? [tail] : [];
+                    this.capturePendingLength = tail.length;
+                    const outputLength = Math.floor(window.length * 22050 / this.audioCtx.sampleRate);
+                    const resampled = new Float32Array(outputLength);
+                    for (let i = 0; i < outputLength; i++) {
+                        const sourcePosition = i * this.audioCtx.sampleRate / 22050;
+                        const left = Math.floor(sourcePosition);
+                        const right = Math.min(left + 1, window.length - 1);
+                        const fraction = sourcePosition - left;
+                        resampled[i] = window[left] * (1 - fraction) + window[right] * fraction;
+                    }
+                    this.audioWindowQueue.push(resampled);
+                    if (this.audioWindowQueue.length > 4) this.audioWindowQueue.shift();
+                }
+            };
+            this.micSource.connect(this.captureProcessor);
+            this.captureProcessor.connect(this.captureMute);
+            this.captureMute.connect(this.audioCtx.destination);
             this.isMicActive = true;
             this.micStatus = "Active";
             if (onStatus) onStatus("Active");
@@ -219,6 +258,18 @@ class SonicAudioEngine {
             this.micSource.disconnect();
             this.micSource = null;
         }
+        if (this.captureProcessor) {
+            this.captureProcessor.onaudioprocess = null;
+            this.captureProcessor.disconnect();
+            this.captureProcessor = null;
+        }
+        if (this.captureMute) {
+            this.captureMute.disconnect();
+            this.captureMute = null;
+        }
+        this.capturePending = [];
+        this.capturePendingLength = 0;
+        this.audioWindowQueue = [];
         this.isMicActive = false;
         this.micStatus = "Available";
         if (onStatus) onStatus("Available");

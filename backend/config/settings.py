@@ -3,11 +3,13 @@ SonicSentinel AI - Application Configuration Settings
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # ─────────────────────────────────────────────
 # Base Paths
 # ─────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR.parent / '.env')
 AUDIO_DATA_DIR = BASE_DIR.parent / "audio data"
 STATIC_DIR = BASE_DIR / "static"
 UPLOADS_DIR = STATIC_DIR / "uploads"
@@ -35,8 +37,9 @@ PORT = int(os.environ.get("PORT", 5000))
 # ─────────────────────────────────────────────
 # Database
 # ─────────────────────────────────────────────
-_default_db_path = (DATABASE_DIR / "sonicsentinel.db").resolve().as_posix()
-DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{_default_db_path}")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is required. Configure the Neon PostgreSQL connection in the project .env file.")
 
 # ─────────────────────────────────────────────
 # JWT Configuration

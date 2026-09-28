@@ -6,7 +6,7 @@
 <div class="page-header-row">
     <div>
         <h1 class="page-title">Forensic Audio Analysis & Model Studio</h1>
-        <p class="page-subtitle">Deep dive acoustic inspection comparing Python CNN and Google Teachable Machine (GTM) predictions.</p>
+        <p class="page-subtitle">Deep dive acoustic inspection comparing the trained SVM and independent Random Forest predictions.</p>
     </div>
     <div class="page-actions-row">
         <select id="analysis-event-select" style="min-width: 240px;" onchange="loadEventDetails(this.value)">
@@ -41,7 +41,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 6px;">
             <i class="fas fa-volume-up text-muted"></i>
-            <input type="range" min="0" max="1" step="0.05" value="0.7" style="width: 70px;" onchange="sonicAudio.setVolume(this.value)">
+            <input type="range" min="0" max="1" step="0.05" value="0.7" style="width: 70px;" onchange="analysisAudio.volume=Number(this.value)">
         </div>
     </div>
 </div>
@@ -76,11 +76,11 @@
     <!-- Python Model -->
     <div class="card-panel" style="border-top: 3px solid var(--text-accent);">
         <div class="card-panel-header">
-            <span class="panel-heading"><i class="fab fa-python" style="color: var(--text-accent);"></i> Python CNN Model</span>
+            <span class="panel-heading"><i class="fab fa-python" style="color: var(--text-accent);"></i> Support Vector Machine</span>
             <span class="badge badge-success">Target: &gt; 85% Recall</span>
         </div>
         <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px;" class="font-mono" id="an-py-top">
-            Gunshot (96.4%)
+            Select a saved event
         </div>
         <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Top-3 Predictions (SRS Step 11)</div>
         <div style="display: flex; flex-direction: column; gap: 8px;" id="an-py-top3">
@@ -88,14 +88,14 @@
         </div>
     </div>
 
-    <!-- GTM Model -->
+    <!-- Independent comparison model -->
     <div class="card-panel" style="border-top: 3px solid #a855f7;">
         <div class="card-panel-header">
-            <span class="panel-heading"><i class="fas fa-brain" style="color: #a855f7;"></i> Google Teachable Machine</span>
+                <span class="panel-heading"><i class="fas fa-brain" style="color: #a855f7;"></i> Independent Random Forest</span>
             <span class="badge badge-info">Independent Validation</span>
         </div>
         <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #c084fc;" class="font-mono" id="an-gtm-top">
-            Gunshot (94.8%)
+            Select a saved event
         </div>
         <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Top-3 Predictions (SRS Step 11)</div>
         <div style="display: flex; flex-direction: column; gap: 8px;" id="an-gtm-top3">
@@ -108,7 +108,7 @@
 <div class="card-panel">
     <div class="card-panel-header">
         <span class="panel-heading"><i class="fas fa-chart-bar"></i> Full 10-Category Confidence Distribution</span>
-        <span class="badge badge-info">Python (Blue) vs GTM (Purple)</span>
+        <span class="badge badge-info">SVM (Blue) vs Random Forest (Purple)</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: 10px;" id="full-10-bars">
         <!-- Populated via JS -->
@@ -120,6 +120,7 @@
 <script>
 let currentEvent = null;
 let allEvents = [];
+let analysisAudio = new Audio();
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchEventsList();
@@ -156,13 +157,13 @@ async function loadEventDetails(audioId) {
         const ev = await resp.json();
         currentEvent = ev;
 
-        const pyConf = ev.python_top_confidence ? (ev.python_top_confidence * 100).toFixed(1) : 92.0;
-        const gtmConf = ev.gtm_top_confidence ? (ev.gtm_top_confidence * 100).toFixed(1) : 89.0;
-        const delta = ev.confidence_difference ? (ev.confidence_difference * 100).toFixed(1) : Math.abs(pyConf - gtmConf).toFixed(1);
-        const sev = ev.severity || 'Critical';
-        const st = ev.alert_status || 'Active';
+        const pyConf = (Number(ev.python_top_confidence) * 100).toFixed(1);
+        const gtmConf = (Number(ev.gtm_top_confidence) * 100).toFixed(1);
+        const delta = (Number(ev.confidence_difference) * 100).toFixed(1);
+        const sev = ev.severity || 'Informational';
+        const st = ev.alert_status || 'Classified';
         const quality = ev.quality_grade || 'Good';
-        const snr = ev.snr_db ? `${ev.snr_db} dB` : '28.4 dB';
+        const snr = ev.snr_db != null ? `${ev.snr_db} dB` : 'Unavailable';
 
         // Update Report Link
         const reportBtn = document.querySelector("a[href*='reports']");
@@ -182,13 +183,14 @@ async function loadEventDetails(audioId) {
                 </div>
                 <div>
                     <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Format & Quality</div>
-                    <div style="font-size: 12px; font-weight: 600;">22.05 kHz Mono (${ev.duration_seconds || 1.5}s)</div>
+                    <div style="font-size: 12px; font-weight: 600;">${ev.audio_format || 'Unknown'} · ${ev.sample_rate || 'Unknown'} Hz · ${ev.channels || 'Unknown'} ch · ${ev.duration_seconds || 'Unknown'} s</div>
+                    <div style="font-size: 11px;color:var(--text-muted)">${ev.bit_depth ? `${ev.bit_depth}-bit` : 'Bit depth unavailable'} · ${ev.file_size_bytes != null ? `${(ev.file_size_bytes / 1024).toFixed(1)} KB` : 'Size unavailable'}</div>
                     <div><span class="badge badge-success">${quality} (SNR ${snr})</span></div>
                 </div>
                 <div>
                     <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Consistency & Delta</div>
                     <div><span class="badge badge-success">${ev.consistency_status || 'Strong Match'}</span></div>
-                    <div class="font-mono" style="font-size: 11px; color: var(--text-muted);">|Py - GTM| = ${delta}%</div>
+                    <div class="font-mono" style="font-size: 11px; color: var(--text-muted);">|SVM - RF| = ${delta}%</div>
                 </div>
                 <div>
                     <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Severity & Status</div>
@@ -199,8 +201,10 @@ async function loadEventDetails(audioId) {
         }
 
         document.getElementById('play-file-name').innerText = ev.original_filename || ev.id;
-        document.getElementById('an-py-top').innerText = `${ev.python_predicted_class} (${pyConf}%)`;
-        document.getElementById('an-gtm-top').innerText = `${ev.gtm_predicted_class} (${gtmConf}%)`;
+        analysisAudio.pause();
+        analysisAudio.removeAttribute('src');
+        document.getElementById('an-py-top').innerText = `${ev.python_predicted_class || 'Unavailable'} (${pyConf}%)`;
+        document.getElementById('an-gtm-top').innerText = `${ev.gtm_predicted_class || 'Unavailable'} (${gtmConf}%)`;
 
         // Top 3 Python
         const pyProbs = ev.python_probabilities || {};
@@ -215,7 +219,7 @@ async function loadEventDetails(audioId) {
             </div>
         `).join('');
 
-        // Top 3 GTM
+        // Top 3 Random Forest
         const gtmProbs = ev.gtm_probabilities || {};
         const gtmSorted = Object.entries(gtmProbs).sort((a, b) => b[1] - a[1]).slice(0, 3);
         document.getElementById('an-gtm-top3').innerHTML = gtmSorted.map(([cat, conf]) => `
@@ -236,8 +240,8 @@ async function loadEventDetails(audioId) {
         ];
 
         document.getElementById('full-10-bars').innerHTML = categories.map(cat => {
-            const pyVal = pyProbs[cat] !== undefined ? (pyProbs[cat] * 100).toFixed(1) : (cat === ev.python_predicted_class ? pyConf : 0.5);
-            const gtmVal = gtmProbs[cat] !== undefined ? (gtmProbs[cat] * 100).toFixed(1) : (cat === ev.gtm_predicted_class ? gtmConf : 0.4);
+            const pyVal = pyProbs[cat] !== undefined ? (pyProbs[cat] * 100).toFixed(1) : '0.0';
+            const gtmVal = gtmProbs[cat] !== undefined ? (gtmProbs[cat] * 100).toFixed(1) : '0.0';
 
             return `
                 <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
@@ -261,48 +265,41 @@ function drawStaticCanvases(ev) {
     const specCanvas = document.getElementById('analysis-spec-canvas');
     if (!waveCanvas || !specCanvas) return;
 
-    const wCtx = waveCanvas.getContext('2d');
-    wCtx.fillStyle = "#07090e";
-    wCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
-
-    const bars = 100;
-    const bW = waveCanvas.width / bars;
-    wCtx.fillStyle = (ev.severity === 'Critical') ? "#ef4444" : "#3b82f6";
-    for (let i = 0; i < bars; i++) {
-        const r = i / bars;
-        let amp = (r < 0.2) ? 0.9 * Math.exp(-r * 8) : 0.1 + Math.random() * 0.1;
-        const bH = amp * (waveCanvas.height * 0.8);
-        wCtx.fillRect(i * bW, (waveCanvas.height - bH) / 2, bW - 1, bH);
-    }
-
-    const sCtx = specCanvas.getContext('2d');
-    sCtx.fillStyle = "#07090e";
-    sCtx.fillRect(0, 0, specCanvas.width, specCanvas.height);
-    const cols = 60; const rows = 30;
-    const cW = specCanvas.width / cols; const rH = specCanvas.height / rows;
-    for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) {
-            const intensity = Math.random() * 0.8;
-            sCtx.fillStyle = `rgb(${Math.floor(intensity * 240)}, ${Math.floor(intensity * 140)}, ${Math.floor(intensity * 80)})`;
-            sCtx.fillRect(c * cW, r * rH, cW, rH);
-        }
-    }
+    [[waveCanvas, ev.waveform_image_path], [specCanvas, ev.spectrogram_image_path]].forEach(([canvas, url]) => {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#07090e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (!url) return;
+        const image = new Image();
+        image.onload = () => ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        image.src = url;
+    });
 }
 
 function togglePlayback() {
     if (!currentEvent) return;
     const icon = document.getElementById('analysis-play-icon');
-    if (sonicAudio.isPlaying) {
-        sonicAudio.stopAll();
+    if (!analysisAudio.src || !analysisAudio.src.endsWith(encodeURIComponent(currentEvent.id) + '/file')) {
+        analysisAudio.src = `/api/audio/${encodeURIComponent(currentEvent.id)}/file`;
+    }
+    if (!analysisAudio.paused) {
+        analysisAudio.pause();
         icon.className = "fas fa-play";
     } else {
         icon.className = "fas fa-pause";
-        const map = { "Gunshot": "gunshot", "Glass Breaking": "glass", "Alarm or Siren": "siren", "Machinery Fault": "machinery", "Panic Scream": "scream", "Person Asking for Help": "help" };
-        const sType = map[currentEvent.actualClass] || "background";
-        sonicAudio.playSynth(sType, currentEvent.duration || 3.0, () => {
-            icon.className = "fas fa-play";
-        });
+        analysisAudio.play().catch(() => showToast('Stored recording could not be played.', 'error'));
     }
 }
+
+analysisAudio.addEventListener('ended', () => document.getElementById('analysis-play-icon').className = 'fas fa-play');
+analysisAudio.addEventListener('timeupdate', () => {
+    const slider = document.getElementById('play-scrubber');
+    if (slider && analysisAudio.duration) slider.value = String(analysisAudio.currentTime / analysisAudio.duration * 100);
+    const current = document.getElementById('play-time-curr');
+    if (current) current.textContent = `0:${String(Math.floor(analysisAudio.currentTime)).padStart(2, '0')}`;
+});
+document.getElementById('play-scrubber').addEventListener('input', event => {
+    if (analysisAudio.duration) analysisAudio.currentTime = Number(event.target.value) / 100 * analysisAudio.duration;
+});
 </script>
 {% endblock %}

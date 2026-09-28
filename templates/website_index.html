@@ -14,6 +14,10 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Official Favicon -->
+    <link rel="icon" href="{{ url_for('brand_logo') }}">
+    <link rel="shortcut icon" href="{{ url_for('brand_logo') }}">
+    
     <!-- Main Stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/website.css') }}">
 </head>
@@ -24,11 +28,7 @@
         <div class="web-nav-container">
             <a href="/" class="web-brand">
                 <div class="web-brand-logo">
-                    <i class="fas fa-wave-square"></i>
-                </div>
-                <div class="web-brand-title">
-                    SonicSentinel AI
-                    <span class="web-brand-subtitle">ACOUSTICX INTEL V1.0</span>
+                    <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
                 </div>
             </a>
 
@@ -78,7 +78,7 @@
                 </h1>
 
                 <p class="web-hero-desc">
-                    Automated, zero-budget acoustic surveillance platform. Cross-arbitrates a Python 40-MFCC feature model against an independent Google Teachable Machine neural network to recognize critical acoustic threats in under 300ms.
+                    Local acoustic event analysis using a trained SVM and an independent Random Forest comparison model, with quality checks and review routing.
                 </p>
 
                 <div style="display: flex; gap: 14px; flex-wrap: wrap;">
@@ -241,7 +241,7 @@
 
                     <div style="background: rgba(3, 20, 18, 0.7); padding: 14px; border-radius: 12px; border: 1px solid var(--web-border);">
                         <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
-                            <span><i class="fas fa-brain" style="color: #a855f7;"></i> <strong>Google Teachable Machine (GTM)</strong></span>
+                            <span><i class="fas fa-brain" style="color: #a855f7;"></i> <strong>Random Forest</strong></span>
                             <span class="font-mono" style="color: #c084fc; font-weight: 700;" id="det-gtm-conf">89.0%</span>
                         </div>
                         <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
@@ -423,7 +423,7 @@
 
             <div class="web-card">
                 <div style="font-size: 28px; color: #a855f7; margin-bottom: 14px;"><i class="fas fa-brain"></i></div>
-                <h3 style="font-size: 18px; color: #FFFFFF; margin-bottom: 8px;">Google Teachable Machine</h3>
+                <h3 style="font-size: 18px; color: #FFFFFF; margin-bottom: 8px;">Random Forest</h3>
                 <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
                     Independent 10-class neural network trained on 128-band Mel-Spectrogram frames. Evaluates 2D frequency distribution patterns without communicating with the Python model.
                 </p>
@@ -474,7 +474,7 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(45,212,191,0.15); padding-top: 14px;">
                     <div style="font-size: 12px; color: var(--text-body);">
-                        Dual Consensus: <strong style="color: var(--teal-neon);">Py 92% | GTM 89%</strong> (Delta 3%)
+                        Dual Consensus: <strong style="color: var(--teal-neon);">Py 92% | Random Forest 89%</strong> (Delta 3%)
                     </div>
                     <a id="cert-download-link" href="/api/reports/AUD-01/pdf" class="btn-outline-neon" target="_blank" style="padding: 6px 14px; font-size: 12px;">
                         <i class="fas fa-file-pdf"></i> Download PDF
@@ -489,8 +489,9 @@
         <div class="web-footer-container">
             <div class="footer-col">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-                    <div class="web-brand-logo" style="width: 32px; height: 32px; font-size: 14px;"><i class="fas fa-wave-square"></i></div>
-                    <span style="font-weight: 800; font-size: 16px; color: #FFFFFF;">SonicSentinel AI</span>
+                    <div class="web-brand-logo" style="width: 32px; height: 32px; font-size: 14px;">
+                        <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
+                    </div>
                 </div>
                 <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
                     Intelligent acoustic surveillance and sound hazard recognition. Local-first dual AI cross-validation with zero cloud costs.

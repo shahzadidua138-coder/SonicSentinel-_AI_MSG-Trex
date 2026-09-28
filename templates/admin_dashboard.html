@@ -1,39 +1,43 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Administrator Dashboard - SonicSentinel AI{% endblock %}
+{% block title %}Administrator Control Center - SonicSentinel AI{% endblock %}
 
 {% block content %}
 <!-- Admin Hero Banner -->
-<div class="card-panel" style="background: #063C35; border: 1.5px solid rgba(45, 212, 191, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(6, 60, 53, 0.15); color: #FFFFFF;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+<div class="card-panel" style="background: linear-gradient(135deg, #042422 0%, #063C35 50%, #0B4F46 100%); border: 1.5px solid rgba(45, 212, 191, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(4, 36, 34, 0.25); color: #FFFFFF; position: relative; overflow: hidden;">
+    <div style="position: absolute; right: -20px; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(45, 212, 191, 0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
         <div>
-            <div class="badge" style="background: rgba(45, 212, 191, 0.15); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.35); margin-bottom: 10px;">
-                <i class="fas fa-user-shield"></i> System Governance & Command • Root Authority
+            <div class="badge" style="background: rgba(45, 212, 191, 0.18); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.4); margin-bottom: 12px; font-weight: 700;">
+                <i class="fas fa-user-shield"></i> ROOT GOVERNANCE &bull; ACCESS CONTROL MATRIX
             </div>
-            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
-                Administrator Control Center
+            <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.02em;">
+                Administrator Command Center
             </h1>
-            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 0; line-height: 1.6; max-width: 620px;">
-                Manage authorized personnel credentials, provision certified operator access, audit security sessions, and configure enterprise acoustic threat detection policies.
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 0; line-height: 1.6; max-width: 650px;">
+                Centrally administer personnel roles across all 5 SRS tiers, provision duty stations, execute full CRUD account governance, and audit acoustic threat detection distribution.
             </p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="#create-operator-card" class="btn btn-primary" style="font-size: 13px;">
-                <i class="fas fa-user-plus"></i> Provision New Operator
-            </a>
-            <a href="{{ url_for('settings') }}" class="btn btn-secondary" style="font-size: 13px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button onclick="openCreateUserModal()" class="btn btn-primary" style="font-size: 13px; font-weight: 700; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);">
+                <i class="fas fa-user-plus"></i> Provision Account
+            </button>
+            <a href="{{ url_for('settings') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
                 <i class="fas fa-sliders-h"></i> System Policies
+            </a>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-download"></i> Export Audit Log
             </a>
         </div>
     </div>
 </div>
 
-<!-- Metrics Row -->
+<!-- Metrics Overview Row -->
 <div class="metrics-row" style="margin-bottom: 24px;">
-    <div class="metric-box">
-        <span class="metric-box-title">Total Registered Accounts</span>
-        <span class="metric-box-value font-mono" style="color: var(--gold-light);">{{ users|length }}</span>
-        <span class="metric-box-sub">Across All 5 SRS Roles</span>
+    <div class="metric-box" style="border-left: 3.5px solid #2DD4BF;">
+        <span class="metric-box-title">Total Personnel Accounts</span>
+        <span class="metric-box-value font-mono" id="stat-total-users" style="color: #0D9488;">{{ users|length }}</span>
+        <span class="metric-box-sub">Across All 5 Canonical Roles</span>
     </div>
     <div class="metric-box">
         <span class="metric-box-title">Security Operators</span>
@@ -54,7 +58,7 @@
         <span class="metric-box-value font-mono" style="color: #F59E0B;">
             {{ users|selectattr('role', 'equalto', 'Maintenance Operator')|list|length }}
         </span>
-        <span class="metric-box-sub">Hardware & Sensor Array</span>
+        <span class="metric-box-sub">Hardware &amp; Sensor Array</span>
     </div>
     <div class="metric-box">
         <span class="metric-box-title">Normal Users</span>
@@ -65,187 +69,146 @@
     </div>
 </div>
 
-<div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-    <!-- Create Operator Form Card -->
-    <div class="card-panel" id="create-operator-card" style="border-radius: 14px; padding: 24px;">
-        <div class="card-panel-header" style="margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(13, 148, 136, 0.12); color: #0D9488; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">Provision Operator Account</h3>
-                    <p style="font-size: 12px; color: #64748B; margin: 2px 0 0;">Create verified access credentials for operational personnel.</p>
-                </div>
-            </div>
-            <span class="badge" style="background: rgba(13, 148, 136, 0.1); color: #0D9488; font-size: 10.5px;">ADMIN ONLY</span>
+<!-- Main Governance Section: User Directory & Full CRUD Controls -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px;">
+    <!-- Directory Header with Search & Filter Tabs -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-users-cog" style="color: #0D9488;"></i> User &amp; Personnel Directory (Full CRUD)
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Live search, update roles (4 operational tiers), edit credentials, toggle suspension, or permanently purge users.
+            </p>
         </div>
-
-        <form action="{{ url_for('admin_create_operator') }}" method="POST">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Full Name</label>
-                    <input type="text" name="full_name" placeholder="e.g. Lt. Daniel Hayes" required class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Username</label>
-                    <input type="text" name="username" placeholder="d.hayes" required class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-                </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <!-- Live Search Bar -->
+            <div style="position: relative; display: flex; align-items: center;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; color: var(--text-muted); font-size: 12.5px;"></i>
+                <input type="text" id="userDirectorySearch" placeholder="Search name, @user, email, station..." 
+                       style="padding: 8px 14px 8px 34px; font-size: 12.5px; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); width: 260px; outline: none; transition: all 0.2s;"
+                       onkeyup="filterUserDirectory()">
             </div>
-
-            <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Official Work Email</label>
-                <input type="email" name="email" placeholder="daniel.hayes@sonicsentinel.ai" required class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Assigned Operator Role</label>
-                    <select name="role" required class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-                        <option value="Security Operator">Security Operator</option>
-                        <option value="Audio Reviewer">Audio Reviewer</option>
-                        <option value="Maintenance Operator">Maintenance Operator</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Assigned Station</label>
-                    <input type="text" name="station" placeholder="Station #02 (East Wing)" value="Station #02 (East Wing)" class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-                </div>
-            </div>
-
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Temporary Password</label>
-                <input type="password" name="password" placeholder="Minimum 6 characters" required class="auth-text-input" style="height: 40px; font-size: 13px; padding: 0 12px;">
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 42px; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fas fa-check-circle"></i> Create Operator Account
+            <button onclick="openCreateUserModal()" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-plus"></i> Add User
             </button>
-        </form>
-    </div>
-
-    <!-- Security & RBAC Governance Overview -->
-    <div class="card-panel" style="border-radius: 14px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div class="card-panel-header" style="margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(6, 182, 212, 0.12); color: #06B6D4; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div>
-                        <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">RBAC Permission Matrix</h3>
-                        <p style="font-size: 12px; color: #64748B; margin: 2px 0 0;">SRS Section 1.6 Role Hierarchy</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="font-size: 12.5px; color: #475569; display: flex; flex-direction: column; gap: 10px;">
-                <div style="padding: 10px 12px; border-radius: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #0F172A;">Administrator:</strong>
-                        <span style="display: block; font-size: 11px; color: #64748B;">User governance, policy control, operator provisioning.</span>
-                    </div>
-                    <span class="badge" style="background: rgba(13, 148, 136, 0.1); color: #0D9488;">Root Level</span>
-                </div>
-                <div style="padding: 10px 12px; border-radius: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #0F172A;">Security Operator:</strong>
-                        <span style="display: block; font-size: 11px; color: #64748B;">Live sensor monitoring, emergency dispatch, siren trigger.</span>
-                    </div>
-                    <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">Command</span>
-                </div>
-                <div style="padding: 10px 12px; border-radius: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #0F172A;">Audio Reviewer:</strong>
-                        <span style="display: block; font-size: 11px; color: #64748B;">Manual classification, CNN vs GTM discrepancy review.</span>
-                    </div>
-                    <span class="badge" style="background: rgba(6, 182, 212, 0.1); color: #06B6D4;">Forensics</span>
-                </div>
-                <div style="padding: 10px 12px; border-radius: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #0F172A;">Maintenance Operator:</strong>
-                        <span style="display: block; font-size: 11px; color: #64748B;">Hardware health, node calibration, signal latency diagnostic.</span>
-                    </div>
-                    <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">Diagnostics</span>
-                </div>
-                <div style="padding: 10px 12px; border-radius: 8px; background: #F8FAFC; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #0F172A;">Normal User:</strong>
-                        <span style="display: block; font-size: 11px; color: #64748B;">Public incident reporting, personal audio upload.</span>
-                    </div>
-                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">Standard</span>
-                </div>
-            </div>
-        </div>
-
-        <div style="margin-top: 14px; font-size: 11.5px; color: #64748B; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 10px 14px;">
-            <i class="fas fa-check-double" style="color: #16A34A;"></i> Server-side authentication and role decorators are actively enforced on all routes.
         </div>
     </div>
-</div>
 
-<!-- Operator & User Directory Table -->
-<div class="card-panel" style="border-radius: 14px; padding: 24px;">
-    <div class="card-panel-header" style="margin-bottom: 18px;">
-        <div>
-            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">Personnel & Operator Directory</h3>
-            <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0;">Manage access status, audit login activity, and deactivate credentials.</p>
+    <!-- Filter Pills Row -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color);">
+        <!-- Role Filters -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="roleFilterButtons">
+            <button class="role-filter-pill active" onclick="setRoleFilter('ALL', this)">All Roles ({{ users|length }})</button>
+            <button class="role-filter-pill" onclick="setRoleFilter('Normal User', this)">Normal Users</button>
+            <button class="role-filter-pill" onclick="setRoleFilter('Security Operator', this)">Security Ops</button>
+            <button class="role-filter-pill" onclick="setRoleFilter('Audio Reviewer', this)">Audio Reviewers</button>
+            <button class="role-filter-pill" onclick="setRoleFilter('Maintenance Operator', this)">Maintenance</button>
+            <button class="role-filter-pill" onclick="setRoleFilter('Administrator', this)">Admins</button>
         </div>
-        <span class="badge badge-gold font-mono">{{ users|length }} Total Accounts</span>
+
+        <!-- Status Filter -->
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status:</span>
+            <select id="statusFilterSelect" onchange="filterUserDirectory()" 
+                    style="padding: 5px 10px; font-size: 12px; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); cursor: pointer;">
+                <option value="ALL">All Statuses</option>
+                <option value="1">Active Only</option>
+                <option value="0">Suspended Only</option>
+            </select>
+        </div>
     </div>
 
+    <!-- Users Table -->
     <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <table class="data-table" id="usersTable" style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <thead>
-                <tr style="border-bottom: 2px solid #E2E8F0; text-align: left; color: #475569; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
-                    <th style="padding: 12px 14px;">User</th>
-                    <th style="padding: 12px 14px;">Role</th>
-                    <th style="padding: 12px 14px;">Station / Assignment</th>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th style="padding: 12px 14px;">User / Identity</th>
+                    <th style="padding: 12px 14px;">Current Role</th>
+                    <th style="padding: 12px 14px;">Quick Role Reassignment</th>
+                    <th style="padding: 12px 14px;">Assigned Station</th>
                     <th style="padding: 12px 14px;">Status</th>
                     <th style="padding: 12px 14px;">Last Login</th>
-                    <th style="padding: 12px 14px; text-align: right;">Action</th>
+                    <th style="padding: 12px 14px; text-align: right;">CRUD Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="userTableBody">
                 {% for u in users %}
-                <tr style="border-bottom: 1px solid #F1F5F9;">
+                <tr class="user-row" 
+                    data-user-id="{{ u['id'] }}"
+                    data-role="{{ u['role'] }}"
+                    data-status="{{ u['is_active'] }}"
+                    data-search="{{ u['full_name']|lower }} {{ u['username']|lower }} {{ u['email']|lower }} {{ (u['station'] or '')|lower }}"
+                    style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;">
+                    
+                    <!-- Identity Cell -->
                     <td style="padding: 14px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #EEF2F6; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0D9488;">
-                                {{ u['full_name'][:1] }}
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: {% if u['role'] == 'Administrator' %}linear-gradient(135deg, #0D9488, #0F766E){% elif u['role'] == 'Security Operator' %}linear-gradient(135deg, #10B981, #059669){% elif u['role'] == 'Audio Reviewer' %}linear-gradient(135deg, #06B6D4, #0891B2){% elif u['role'] == 'Maintenance Operator' %}linear-gradient(135deg, #F59E0B, #D97706){% else %}linear-gradient(135deg, #8B5CF6, #7C3AED){% endif %}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                {{ u['full_name'][:1]|upper if u['full_name'] else 'U' }}
                             </div>
                             <div>
-                                <div style="font-weight: 700; color: #0F172A;">{{ u['full_name'] }}</div>
-                                <div style="font-size: 11.5px; color: #64748B; font-family: 'JetBrains Mono', monospace;">@{{ u['username'] }} &bull; {{ u['email'] }}</div>
+                                <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;" class="user-name-cell">
+                                    {{ u['full_name'] }}
+                                    {% if u['id'] == session.get('user_id') %}
+                                        <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: rgba(13, 148, 136, 0.15); color: #0D9488; margin-left: 4px;">YOU</span>
+                                    {% endif %}
+                                </div>
+                                <div style="font-size: 11.5px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                                    @{{ u['username'] }} &bull; {{ u['email'] }}
+                                </div>
                             </div>
                         </div>
                     </td>
+
+                    <!-- Role Badge Cell -->
                     <td style="padding: 14px;">
                         {% if u['role'] == 'Administrator' %}
-                            <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0D9488; font-weight: 600;">
+                            <span class="badge" style="background: rgba(13, 148, 136, 0.15); color: #0D9488; font-weight: 700; border: 1px solid rgba(13, 148, 136, 0.3);">
                                 <i class="fas fa-user-shield"></i> Administrator
                             </span>
                         {% elif u['role'] == 'Security Operator' %}
-                            <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; font-weight: 600;">
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.3);">
                                 <i class="fas fa-shield-alt"></i> Security Operator
                             </span>
                         {% elif u['role'] == 'Audio Reviewer' %}
-                            <span class="badge" style="background: rgba(6, 182, 212, 0.12); color: #06B6D4; font-weight: 600;">
+                            <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4; font-weight: 700; border: 1px solid rgba(6, 182, 212, 0.3);">
                                 <i class="fas fa-headphones"></i> Audio Reviewer
                             </span>
                         {% elif u['role'] == 'Maintenance Operator' %}
-                            <span class="badge" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B; font-weight: 600;">
+                            <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-weight: 700; border: 1px solid rgba(245, 158, 11, 0.3);">
                                 <i class="fas fa-tools"></i> Maintenance Operator
                             </span>
                         {% else %}
-                            <span class="badge" style="background: rgba(139, 92, 246, 0.12); color: #8B5CF6; font-weight: 600;">
+                            <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6; font-weight: 700; border: 1px solid rgba(139, 92, 246, 0.3);">
                                 <i class="fas fa-user"></i> Normal User
                             </span>
                         {% endif %}
                     </td>
-                    <td style="padding: 14px; color: #475569;">
-                        {{ u['station'] or 'Unassigned' }}
+
+                    <!-- Quick Role Reassignment Dropdown (4 Assignable Roles - SRS Rule: Admin cannot be assigned via UI) -->
+                    <td style="padding: 14px;">
+                        {% if u['role'] != 'Administrator' %}
+                            <select onchange="changeUserRoleDirectly({{ u['id'] }}, this.value, '{{ u['username'] }}')" 
+                                    style="padding: 6px 10px; font-size: 12px; font-weight: 600; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); cursor: pointer; outline: none; transition: border-color 0.2s;">
+                                {% for r in assignable_roles %}
+                                    <option value="{{ r }}" {% if u['role'] == r %}selected{% endif %}>{{ r }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <span style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-style: italic;">
+                                <i class="fas fa-lock" style="font-size: 10px; margin-right: 3px;"></i> Root Database Only
+                            </span>
+                        {% endif %}
                     </td>
+
+                    <!-- Station Assignment -->
+                    <td style="padding: 14px; color: var(--text-secondary); font-size: 12.5px;">
+                        <span class="user-station-cell">{{ u['station'] or 'Unassigned' }}</span>
+                    </td>
+
+                    <!-- Status Pill (Active / Suspended) -->
                     <td style="padding: 14px;">
                         {% if u['is_active'] == 1 %}
                             <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #DCFCE7; color: #166534;">
@@ -253,29 +216,60 @@
                             </span>
                         {% else %}
                             <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #FEE2E2; color: #991B1B;">
-                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #DC2626;"></span> Deactivated
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #DC2626;"></span> Suspended
                             </span>
                         {% endif %}
                     </td>
-                    <td style="padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #64748B;">
-                        {{ u['last_login'][:19] if u['last_login'] else 'Never' }}
+
+                    <!-- Last Login -->
+                    <td style="padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);">
+                        {{ u['last_login'].strftime('%Y-%m-%d %H:%M:%S') if u['last_login'] else 'Never' }}
                     </td>
+
+                    <!-- Full CRUD Action Buttons -->
                     <td style="padding: 14px; text-align: right;">
-                        {% if u['role'] != 'Administrator' %}
-                            <form action="{{ url_for('admin_toggle_user', user_id=u['id']) }}" method="POST" style="display: inline;">
-                                {% if u['is_active'] == 1 %}
-                                    <button type="submit" class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: rgba(220, 38, 38, 0.3); font-size: 11.5px;" onclick="return confirm('Deactivate account for {{ u.username }}? They will not be able to log in.');">
-                                        <i class="fas fa-user-slash"></i> Deactivate
-                                    </button>
-                                {% else %}
-                                    <button type="submit" class="btn btn-primary btn-sm" style="background: #10B981; font-size: 11.5px;">
-                                        <i class="fas fa-user-check"></i> Activate
-                                    </button>
-                                {% endif %}
-                            </form>
-                        {% else %}
-                            <span style="font-size: 11px; color: #94A3B8; font-style: italic;">Protected</span>
-                        {% endif %}
+                        <div style="display: inline-flex; gap: 6px; align-items: center;">
+                            <!-- Edit Button -->
+                            <button type="button" 
+                                    class="btn-action-icon"
+                                    title="Edit User Details"
+                                    onclick="openEditUserModal({{ u['id'] }}, '{{ u['full_name']|replace("'", "\\'") }}', '{{ u['username'] }}', '{{ u['email'] }}', '{{ u['role'] }}', '{{ (u['station'] or '')|replace("'", "\\'") }}', '{{ (u['organization'] or '')|replace("'", "\\'") }}')">
+                                <i class="fas fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- Suspend / Activate Toggle -->
+                            {% if u['role'] != 'Administrator' and u['id'] != session.get('user_id') %}
+                                <form action="{{ url_for('admin_toggle_user', user_id=u['id']) }}" method="POST" style="display: inline;">
+                                    {% if u['is_active'] == 1 %}
+                                        <button type="submit" 
+                                                class="btn-action-icon btn-action-warning" 
+                                                title="Suspend Account (Block Login)"
+                                                onclick="return confirm('Suspend account for @{{ u.username }}? They will be locked out immediately.');">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" 
+                                                class="btn-action-icon btn-action-success" 
+                                                title="Activate Account"
+                                                onclick="return confirm('Re-activate account for @{{ u.username }}?');">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+
+                                <!-- Delete Button -->
+                                <button type="button" 
+                                        class="btn-action-icon btn-action-danger" 
+                                        title="Delete User Permanently"
+                                        onclick="confirmDeleteUser({{ u['id'] }}, '{{ u['username'] }}', '{{ u['full_name']|replace("'", "\\'") }}')">
+                                    <i class="fas fa-trash-can"></i>
+                                </button>
+                            {% else %}
+                                <span style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 0 4px;" title="Root Administrator Account is protected from deletion or suspension">
+                                    <i class="fas fa-shield"></i> Protected
+                                </span>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -283,4 +277,463 @@
         </table>
     </div>
 </div>
+
+<!-- Bottom Intelligence Grid: Category Distribution & RBAC Matrix -->
+<div class="grid-2" style="grid-template-columns: 1.2fr 0.8fr; gap: 24px;">
+    <!-- 10 Mandatory Sound Categories Distribution -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px;">
+        <div class="card-panel-header" style="margin-bottom: 18px;">
+            <div>
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                    <i class="fas fa-chart-pie" style="color: #0D9488; margin-right: 6px;"></i> Acoustic Threat Category Distribution
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">10 Mandatory Sound Hazard Categories (SRS Section 7 &amp; 8)</p>
+            </div>
+            <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0D9488; font-weight: 700;">10 CLASSES</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for cat in cat_dist %}
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 700; font-size: 13px; color: var(--text-primary);">{{ cat.name }}</span>
+                        {% if cat.severity == 'Critical' %}
+                            <span class="badge" style="background: #FEE2E2; color: #DC2626; font-size: 9.5px; padding: 1px 6px;">CRITICAL</span>
+                        {% elif cat.severity == 'High' %}
+                            <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 9.5px; padding: 1px 6px;">HIGH</span>
+                        {% elif cat.severity == 'Warning' %}
+                            <span class="badge" style="background: #FFFBEB; color: #B45309; font-size: 9.5px; padding: 1px 6px;">WARNING</span>
+                        {% elif cat.severity == 'Medium' %}
+                            <span class="badge" style="background: #E0E7FF; color: #4338CA; font-size: 9.5px; padding: 1px 6px;">MEDIUM</span>
+                        {% else %}
+                            <span class="badge" style="background: #DCFCE7; color: #16A34A; font-size: 9.5px; padding: 1px 6px;">INFORMATIONAL</span>
+                        {% endif %}
+                    </div>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                        {{ cat.count }} detections
+                    </span>
+                </div>
+                <!-- Progress Bar -->
+                <div style="width: 100%; height: 6px; background: var(--bg-subtle); border-radius: 3px; overflow: hidden;">
+                    {% set pct = (cat.count * 100 / (events|length or 1))|round(1) %}
+                    <div style="width: {{ pct }}%; height: 100%; background: {% if cat.severity == 'Critical' %}#DC2626{% elif cat.severity == 'High' %}#D97706{% elif cat.severity == 'Warning' %}#F59E0B{% elif cat.severity == 'Medium' %}#6366F1{% else %}#10B981{% endif %}; border-radius: 3px;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Governance & Security Matrix Card -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="card-panel-header" style="margin-bottom: 18px;">
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                        <i class="fas fa-shield-halved" style="color: #06B6D4; margin-right: 6px;"></i> RBAC Governance Matrix
+                    </h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">SRS §1.6 Canonical Role Hierarchy</p>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #0D9488;"><i class="fas fa-user-shield"></i> Administrator (Root):</strong>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Full governance, policy reload, user CRUD, audit logs. Created directly in database.</div>
+                    </div>
+                    <span class="badge" style="background: rgba(13, 148, 136, 0.15); color: #0D9488;">Tier 1</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #10B981;"><i class="fas fa-shield-alt"></i> Security Operator:</strong>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Live monitoring, siren trigger, alert triage, incident escalation.</div>
+                    </div>
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">Tier 2</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #06B6D4;"><i class="fas fa-headphones"></i> Audio Reviewer:</strong>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Dual model discrepancy arbitration, spectrogram inspection, forensic overrides.</div>
+                    </div>
+                    <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">Tier 3</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #F59E0B;"><i class="fas fa-tools"></i> Maintenance Operator:</strong>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">12 sensor node health, sweep calibration, latency diagnostics, PoE telemetry.</div>
+                    </div>
+                    <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">Tier 4</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #8B5CF6;"><i class="fas fa-user"></i> Normal User:</strong>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Incident reporting, community noise meter, audio scanning, personal history.</div>
+                    </div>
+                    <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;">Tier 5</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 18px; padding: 12px 16px; border-radius: 10px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); font-size: 12px; color: #10B981; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-shield-check" style="font-size: 18px;"></i>
+            <span>Role-Based Access Control (RBAC) enforced server-side via Python decorators and anti-cache headers.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODALS: CREATE USER / EDIT USER / DELETE   -->
+<!-- ========================================== -->
+
+<!-- Modal 1: Provision / Create New User -->
+<div class="sonic-modal-backdrop" id="createUserModal" style="display: none;">
+    <div class="sonic-modal-dialog" style="max-width: 520px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(13, 148, 136, 0.15); color: #0D9488; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Provision User Account</h3>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0;">Create verified access credentials for operational personnel.</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeCreateUserModal()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form action="{{ url_for('admin_create_operator') }}" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Full Name *</label>
+                    <input type="text" name="full_name" placeholder="e.g. Lt. Daniel Hayes" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Username *</label>
+                    <input type="text" name="username" placeholder="d.hayes" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Official Work Email *</label>
+                <input type="email" name="email" placeholder="daniel.hayes@sonicsentinel.ai" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Assigned Role *</label>
+                    <select name="role" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                        {% for r in assignable_roles %}
+                            <option value="{{ r }}">{{ r }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Duty Station</label>
+                    <input type="text" name="station" placeholder="Station #02 (East Wing)" value="Station #02 (East Wing)" class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Temporary Password *</label>
+                <input type="password" name="password" placeholder="Minimum 6 characters" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeCreateUserModal()" class="btn btn-secondary btn-sm" style="padding: 10px 18px;">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="padding: 10px 22px; font-weight: 700;">
+                    <i class="fas fa-check-circle"></i> Provision Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 2: Edit User Modal -->
+<div class="sonic-modal-backdrop" id="editUserModal" style="display: none;">
+    <div class="sonic-modal-dialog" style="max-width: 520px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(6, 182, 212, 0.15); color: #06B6D4; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fas fa-user-pen"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Edit User Account</h3>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0;" id="editUserSubtitle">Updating account details</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditUserModal()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="editUserForm" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Full Name *</label>
+                    <input type="text" id="edit_full_name" name="full_name" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Username (Read-Only)</label>
+                    <input type="text" id="edit_username" readonly class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px; opacity: 0.65; cursor: not-allowed;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Work Email Address *</label>
+                <input type="email" id="edit_email" name="email" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Assigned Role</label>
+                    <select id="edit_role" name="role" class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                        {% for r in assignable_roles %}
+                            <option value="{{ r }}">{{ r }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Duty Station</label>
+                    <input type="text" id="edit_station" name="station" class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Reset Password (Leave blank to keep unchanged)</label>
+                <input type="password" id="edit_password" name="password" placeholder="Enter new password if updating" class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeEditUserModal()" class="btn btn-secondary btn-sm" style="padding: 10px 18px;">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="padding: 10px 22px; font-weight: 700;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 3: Delete Confirmation Modal -->
+<div class="sonic-modal-backdrop" id="deleteUserModal" style="display: none;">
+    <div class="sonic-modal-dialog" style="max-width: 440px;">
+        <div style="text-align: center; margin-bottom: 18px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px;">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px;">Permanently Delete Account?</h3>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;" id="deleteUserDescription">
+                Are you sure you want to permanently delete this user? This action is irreversible.
+            </p>
+        </div>
+
+        <form id="deleteUserForm" method="POST">
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 22px;">
+                <button type="button" onclick="closeDeleteUserModal()" class="btn btn-secondary btn-sm" style="padding: 10px 20px;">Cancel</button>
+                <button type="submit" class="btn btn-sm" style="background: #DC2626; color: #FFFFFF; border: none; padding: 10px 24px; font-weight: 700;">
+                    <i class="fas fa-trash-can"></i> Confirm Deletion
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Dashboard Directory Specific Styles */
+.role-filter-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-filter-pill:hover {
+    border-color: #0D9488;
+    color: #0D9488;
+}
+
+.role-filter-pill.active {
+    background: #0D9488;
+    border-color: #0D9488;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+}
+
+.btn-action-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.18s ease;
+}
+
+.btn-action-icon:hover {
+    border-color: #0D9488;
+    color: #0D9488;
+    background: var(--bg-subtle);
+    transform: translateY(-1px);
+}
+
+.btn-action-warning:hover {
+    border-color: #D97706;
+    color: #D97706;
+    background: #FFFBEB;
+}
+
+.btn-action-success:hover {
+    border-color: #10B981;
+    color: #10B981;
+    background: #ECFDF5;
+}
+
+.btn-action-danger:hover {
+    border-color: #DC2626;
+    color: #DC2626;
+    background: #FEF2F2;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Role Filter State
+    let currentRoleFilter = 'ALL';
+
+    function setRoleFilter(role, btnElement) {
+        currentRoleFilter = role;
+        document.querySelectorAll('#roleFilterButtons .role-filter-pill').forEach(b => b.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+        filterUserDirectory();
+    }
+
+    // 2. Filter User Directory (Search, Role, Status)
+    function filterUserDirectory() {
+        const query = (document.getElementById('userDirectorySearch').value || '').trim().toLowerCase();
+        const statusFilter = document.getElementById('statusFilterSelect').value;
+        const rows = document.querySelectorAll('#userTableBody .user-row');
+
+        rows.forEach(row => {
+            const rowRole = row.getAttribute('data-role');
+            const rowStatus = row.getAttribute('data-status');
+            const rowSearch = row.getAttribute('data-search') || '';
+
+            const matchesQuery = !query || rowSearch.includes(query);
+            const matchesRole = (currentRoleFilter === 'ALL') || (rowRole === currentRoleFilter);
+            const matchesStatus = (statusFilter === 'ALL') || (rowStatus === statusFilter);
+
+            if (matchesQuery && matchesRole && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // 3. Quick Role Change Directly via AJAX
+    function changeUserRoleDirectly(userId, targetRole, username) {
+        if (!confirm(`Are you sure you want to change @${username}'s role to "${targetRole}"?`)) {
+            // Revert select back by reloading or re-fetching
+            window.location.reload();
+            return;
+        }
+
+        fetch(`/admin/users/${userId}/change-role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ role: targetRole })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showDashboardToast(data.message || `Role updated to ${targetRole}`, 'success');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showDashboardToast(data.error || 'Failed to update role', 'error');
+                setTimeout(() => window.location.reload(), 1500);
+            }
+        })
+        .catch(err => {
+            showDashboardToast('Network error updating role: ' + err, 'error');
+        });
+    }
+
+    // 4. Create User Modal Controls
+    function openCreateUserModal() {
+        document.getElementById('createUserModal').style.display = 'flex';
+    }
+
+    function closeCreateUserModal() {
+        document.getElementById('createUserModal').style.display = 'none';
+    }
+
+    // 5. Edit User Modal Controls
+    function openEditUserModal(userId, fullName, username, email, role, station, organization) {
+        document.getElementById('editUserForm').action = `/admin/users/${userId}/edit`;
+        document.getElementById('editUserSubtitle').textContent = `Editing @${username} (ID: ${userId})`;
+        document.getElementById('edit_full_name').value = fullName;
+        document.getElementById('edit_username').value = username;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_station').value = station || '';
+        document.getElementById('edit_password').value = '';
+
+        const roleSelect = document.getElementById('edit_role');
+        if (roleSelect) {
+            for (let i = 0; i < roleSelect.options.length; i++) {
+                if (roleSelect.options[i].value === role) {
+                    roleSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        document.getElementById('editUserModal').style.display = 'flex';
+    }
+
+    function closeEditUserModal() {
+        document.getElementById('editUserModal').style.display = 'none';
+    }
+
+    // 6. Delete User Modal Controls
+    function confirmDeleteUser(userId, username, fullName) {
+        document.getElementById('deleteUserForm').action = `/admin/users/${userId}/delete`;
+        document.getElementById('deleteUserDescription').innerHTML = 
+            `Permanently delete account for <strong>${fullName}</strong> (@${username})? All associated session tokens and assignments will be invalidated.`;
+        document.getElementById('deleteUserModal').style.display = 'flex';
+    }
+
+    function closeDeleteUserModal() {
+        document.getElementById('deleteUserModal').style.display = 'none';
+    }
+
+    // Close modals on outside backdrop click
+    window.addEventListener('click', function(e) {
+        ['createUserModal', 'editUserModal', 'deleteUserModal'].forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal && e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+</script>
 {% endblock %}

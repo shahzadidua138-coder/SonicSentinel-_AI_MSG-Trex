@@ -62,9 +62,9 @@ class PredictionService:
                 self._scaler = pickle.load(f)
             with open(LABEL_ENCODER_PATH, "rb") as f:
                 self._label_encoder = pickle.load(f)
-            print("✓ Python model loaded")
+            print("Python model loaded")
         except FileNotFoundError as e:
-            print(f"⚠ Python model not found: {e}. Run training first.")
+            print(f"Python model not found: {e}. Run training first.")
 
         # Try loading CNN
         try:
@@ -72,11 +72,13 @@ class PredictionService:
             cnn_path = str(CNN_MODEL_PATH)
             if Path(cnn_path).exists():
                 self._cnn_model = tf.keras.models.load_model(cnn_path)
-                print("✓ CNN model loaded")
+                print("CNN model loaded")
         except Exception as e:
-            print(f"⚠ CNN model not loaded: {e}")
+            print(f"CNN model not loaded: {e}")
 
-        self._models_loaded = True
+        self._models_loaded = all((self._best_model is not None, self._scaler is not None, self._label_encoder is not None))
+        if not self._models_loaded:
+            print("Python classification artifacts are incomplete; inference is unavailable.")
 
     def _load_alert_rules(self) -> Dict[str, Any]:
         """Load alert rules from JSON file."""

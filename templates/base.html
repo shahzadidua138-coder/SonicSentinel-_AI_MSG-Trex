@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}SonicSentinel AI – Acoustic Intelligence{% endblock %}</title>
 
-    <!-- Theme Preload Script -->
+    <!-- Theme Preload Script: Fixed Light Acoustic Theme -->
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('sonicsentinel_theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            try {
+                localStorage.removeItem('sonicsentinel_theme');
+                localStorage.removeItem('sonic_theme');
+            } catch(e) {}
+            document.documentElement.setAttribute('data-theme', 'light');
         })();
     </script>
     
@@ -21,6 +24,10 @@
     
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <!-- Official Favicon -->
+    <link rel="icon" href="{{ url_for('brand_logo') }}" />
+    <link rel="shortcut icon" href="{{ url_for('brand_logo') }}" />
     
     <!-- Website Styling -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/website.css') }}" />
@@ -55,24 +62,7 @@
             <!-- Brand Logo -->
             <a href="{{ url_for('website_home') }}" class="nav-brand-group">
                 <div class="brand-shield-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L3 6V11.5C3 17 7 21.5 12 22.5C17 21.5 21 17 21 11.5V6L12 2Z" fill="url(#shield_teal_grad)" stroke="#14B8A6" stroke-width="1.8"/>
-                        <!-- Acoustic Bars inside shield -->
-                        <line x1="8" y1="10" x2="8" y2="14" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                        <line x1="10.5" y1="8" x2="10.5" y2="16" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                        <line x1="13.5" y1="7" x2="13.5" y2="17" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                        <line x1="16" y1="9.5" x2="16" y2="14.5" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                        <defs>
-                            <linearGradient id="shield_teal_grad" x1="12" y1="2" x2="12" y2="22.5" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#2DD4BF"/>
-                                <stop offset="1" stop-color="#0D9488"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <div class="brand-text-block">
-                    <div class="brand-main-title">SonicSentinel <span class="teal-accent">AI</span></div>
-                    <div class="brand-sub-motto">LISTEN &bull; ANALYZE &bull; PROTECT</div>
+                    <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
                 </div>
             </a>
 
@@ -89,35 +79,84 @@
 
             <!-- Right Action Controls -->
             <div class="header-action-group">
-                <!-- Theme toggle icon (Visual match) -->
-                <button class="theme-icon-btn" id="themeToggleBtn" title="Toggle Lighting Mode" aria-label="Toggle Theme">
-                    <i class="fa-regular fa-sun"></i>
-                </button>
-
-                {% if current_user %}
-                    <div class="user-greeting-pill">
-                        <span class="user-avatar-dot">{{ current_user['full_name'][:1]|upper }}</span>
-                        <span class="user-name-text">{{ current_user['full_name'] }}</span>
-                    </div>
-                    {% if current_user['role'] == 'admin' %}
-                        <a href="{{ url_for('admin_dashboard') }}" class="btn-get-started admin-special-btn">
-                            <i class="fa-solid fa-gauge-high"></i> Admin Dashboard
+                <div class="desktop-auth-actions">
+                    {% if current_user %}
+                        <div class="user-greeting-pill">
+                            <span class="user-avatar-dot">{{ current_user['full_name'][:1]|upper }}</span>
+                            <span class="user-name-text">{{ current_user['full_name'] }}</span>
+                            <span class="badge" style="background: rgba(45, 212, 191, 0.2); color: #2DD4BF; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 700; margin-left: 6px;">{{ current_user['role'] }}</span>
+                        </div>
+                        {% if current_user['role'] in ['Administrator', 'Security Operator', 'Audio Reviewer', 'Maintenance Operator', 'Security_Operator', 'Audio_Reviewer', 'Maintenance_Operator'] %}
+                        <a href="{{ url_for('dashboard') }}" class="btn-get-started admin-special-btn" title="Open Your Role Dashboard">
+                            <i class="fa-solid fa-gauge-high"></i> Dashboard
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn-login-outline">Sign Out</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-login-outline">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn-get-started">
+                            Get Started <i class="fa-solid fa-arrow-right"></i>
                         </a>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}" class="btn-login-outline">Sign Out</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn-login-outline">Login</a>
-                    <a href="{{ url_for('register') }}" class="btn-get-started">
-                        Get Started <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                {% endif %}
+                </div>
 
-                <!-- Mobile Hamburger Toggle -->
-                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
-                    <i class="fa-solid fa-bars"></i>
+                <!-- Mobile Hamburger Toggle Button -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation Menu">
+                    <i class="fa-solid fa-bars" id="mobileMenuIcon"></i>
                 </button>
             </div>
         </div>
+
+        <!-- Dedicated Mobile Navigation Drawer (100% Responsive) -->
+        <div class="mobile-nav-drawer" id="mobileNavDrawer">
+            <div class="mobile-nav-inner">
+                <div class="mobile-drawer-brand-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(45, 212, 191, 0.2);">
+                    <div class="brand-shield-icon small">
+                        <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
+                    </div>
+                </div>
+
+                <ul class="mobile-nav-list">
+                    <li><a href="{{ url_for('website_home') }}" class="mobile-nav-link {% if request.endpoint == 'website_home' %}active{% endif %}"><i class="fa-solid fa-house"></i> Home</a></li>
+                    <li><a href="{{ url_for('website_features') }}" class="mobile-nav-link {% if request.endpoint == 'website_features' %}active{% endif %}"><i class="fa-solid fa-layer-group"></i> Features</a></li>
+                    <li><a href="{{ url_for('website_about') }}" class="mobile-nav-link {% if request.endpoint == 'website_about' %}active{% endif %}"><i class="fa-solid fa-circle-info"></i> About</a></li>
+                    <li><a href="{{ url_for('website_technology') }}" class="mobile-nav-link {% if request.endpoint == 'website_technology' %}active{% endif %}"><i class="fa-solid fa-microchip"></i> Technology</a></li>
+                    <li><a href="{{ url_for('website_contact') }}" class="mobile-nav-link {% if request.endpoint == 'website_contact' %}active{% endif %}"><i class="fa-solid fa-envelope"></i> Contact</a></li>
+                </ul>
+
+                <div class="mobile-nav-divider"></div>
+
+                <div class="mobile-nav-auth-area">
+                    {% if current_user %}
+                        <div class="mobile-user-card">
+                            <span class="user-avatar-dot">{{ current_user['full_name'][:1]|upper }}</span>
+                            <div class="mobile-user-info">
+                                <span class="mobile-user-name">{{ current_user['full_name'] }}</span>
+                                <span class="badge" style="background: rgba(45, 212, 191, 0.2); color: #2DD4BF; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 700; width: fit-content;">{{ current_user['role'] }}</span>
+                            </div>
+                        </div>
+                        {% if current_user['role'] in ['Administrator', 'Security Operator', 'Audio Reviewer', 'Maintenance Operator', 'Security_Operator', 'Audio_Reviewer', 'Maintenance_Operator'] %}
+                        <a href="{{ url_for('dashboard') }}" class="btn-get-started mobile-action-btn admin-special-btn">
+                            <i class="fa-solid fa-gauge-high"></i> Open Role Dashboard
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn-login-outline mobile-action-btn">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-login-outline mobile-action-btn">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn-get-started mobile-action-btn">
+                            Get Started Free <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Backdrop -->
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
     </header>
 
     <!-- Main Dynamic Content Block -->
@@ -133,21 +172,8 @@
                 <div class="footer-brand-col">
                     <div class="footer-brand-header">
                         <div class="brand-shield-icon small">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L3 6V11.5C3 17 7 21.5 12 22.5C17 21.5 21 17 21 11.5V6L12 2Z" fill="url(#shield_teal_grad2)" stroke="#2DD4BF" stroke-width="1.8"/>
-                                <line x1="8" y1="10" x2="8" y2="14" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                                <line x1="10.5" y1="8" x2="10.5" y2="16" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                                <line x1="13.5" y1="7" x2="13.5" y2="17" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                                <line x1="16" y1="9.5" x2="16" y2="14.5" stroke="#042F2C" stroke-width="1.8" stroke-linecap="round"/>
-                                <defs>
-                                    <linearGradient id="shield_teal_grad2" x1="12" y1="2" x2="12" y2="22.5" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#2DD4BF"/>
-                                        <stop offset="1" stop-color="#0D9488"/>
-                                    </linearGradient>
-                                </defs>
-                            </svg>
+                            <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
                         </div>
-                        <span class="footer-brand-title">SonicSentinel AI</span>
                     </div>
                     <p class="footer-brand-summary">
                         Autonomous acoustic intelligence engineered for high-sensitivity sound event detection, anomaly classification, and critical threat early warning. Powered by Dual-AI neural arbitration.
@@ -181,7 +207,7 @@
                     <h4 class="footer-col-title">Acoustic Specs</h4>
                     <ul class="footer-link-list">
                         <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> Python 3.12 DSP Pipeline</a></li>
-                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> Google Teachable Machine</a></li>
+                        <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> Random Forest</a></li>
                         <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> 128-Band Mel-Spectrogram</a></li>
                         <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> 1.5s Sliding Window Inference</a></li>
                         <li><a href="{{ url_for('website_technology') }}"><i class="fa-solid fa-chevron-right"></i> SHA-256 Audio Deduplication</a></li>

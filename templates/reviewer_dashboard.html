@@ -1,109 +1,423 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Audio Reviewer Dashboard - SonicSentinel AI{% endblock %}
+{% block title %}Acoustic Forensics Laboratory - SonicSentinel AI{% endblock %}
 
 {% block content %}
 <!-- Audio Reviewer Hero Banner -->
-<div class="card-panel" style="background: #083344; border: 1.5px solid rgba(6, 182, 212, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(8, 51, 68, 0.15); color: #FFFFFF;">
-    <div class="grid-2" style="align-items: center;">
+<div class="card-panel" style="background: linear-gradient(135deg, #042f2e 0%, #083344 50%, #0e3b43 100%); border: 1.5px solid rgba(6, 182, 212, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(4, 47, 46, 0.25); color: #FFFFFF; position: relative; overflow: hidden;">
+    <div style="position: absolute; right: -20px; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
         <div>
-            <div class="badge" style="background: rgba(6, 182, 212, 0.2); color: #67E8F9; border: 1px solid rgba(6, 182, 212, 0.4); margin-bottom: 12px;">
-                <i class="fas fa-headphones"></i> Acoustic Forensics Lab • Forensic Analysis Hub
+            <div class="badge" style="background: rgba(6, 182, 212, 0.2); color: #67E8F9; border: 1px solid rgba(103, 232, 249, 0.45); margin-bottom: 12px; font-weight: 700;">
+                <i class="fas fa-microscope"></i> ACOUSTIC FORENSICS LAB &bull; ARBITRATION HUB
             </div>
-            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
-                Welcome, {{ current_user['full_name'] if current_user else 'Audio Reviewer' }}
+            <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.02em;">
+                Forensic Arbitration Laboratory
             </h1>
-            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
-                Review flagged audio classifications, resolve model discrepancies between Python CNN & Google Teachable Machine, and inspect Mel-spectrogram frequency characteristics.
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.88); margin-bottom: 0; line-height: 1.6; max-width: 650px;">
+                Welcome, {{ user['full_name'] if user else 'Audio Reviewer' }}. Investigate flagged acoustic events, resolve confidence discrepancies between Support Vector Machine &amp; Random Forest, and record certified forensic overrides.
             </p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="background: #06B6D4; border-color: #06B6D4;">
-                    <i class="fas fa-clipboard-check"></i> Open Review Queue (2 Flagged)
-                </a>
-                <a href="{{ url_for('audio_analysis') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-wave-square"></i> Mel-Spectrogram Analyzer
-                </a>
-                <a href="{{ url_for('audio_upload') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-upload"></i> Forensic Ingest
-                </a>
-            </div>
         </div>
-
-        <div>
-            <div class="canvas-panel" style="height: 130px; border-color: rgba(6, 182, 212, 0.35); background: #021714; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px;">
-                <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Forensics Waveform" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{{ url_for('manual_review') }}" class="btn btn-primary" style="font-size: 13px; font-weight: 700; background: #06B6D4; border-color: #06B6D4; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);">
+                <i class="fas fa-clipboard-check"></i> Manual Review Center
+            </a>
+            <a href="{{ url_for('audio_analysis') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-wave-square"></i> Mel-Spectrogram Analyzer
+            </a>
+            <a href="{{ url_for('audio_upload') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-cloud-arrow-up"></i> Forensic Ingest
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Forensics Metrics -->
+<!-- Forensics Telemetry Metrics Row -->
 <div class="metrics-row" style="margin-bottom: 24px;">
-    <div class="metric-box" style="border-left: 3px solid #06B6D4;">
-        <span class="metric-box-title">Pending Manual Review</span>
-        <span class="metric-box-value font-mono" style="color: #06B6D4;">2 Clips</span>
-        <span class="metric-box-sub" style="color: #06B6D4;">Model Discrepancies</span>
+    <div class="metric-box" style="border-left: 3.5px solid #06B6D4;">
+        <span class="metric-box-title">Pending Discrepancy Queue</span>
+        <span class="metric-box-value font-mono" id="pendingQueueCount" style="color: #06B6D4;">{{ queue|length }}</span>
+        <span class="metric-box-sub" style="color: #06B6D4;">Model Delta &gt; Tolerance</span>
     </div>
-    <div class="metric-box">
+    <div class="metric-box" style="border-left: 3.5px solid #2DD4BF;">
         <span class="metric-box-title">Average Confidence Delta</span>
-        <span class="metric-box-value font-mono" style="color: var(--gold-light);">4.8%</span>
-        <span class="metric-box-sub">Python CNN vs GTM</span>
+        <span class="metric-box-value font-mono" style="color: #0D9488;">4.8%</span>
+        <span class="metric-box-sub">Support Vector Machine vs Google TM</span>
     </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Reviewed Today</span>
-        <span class="metric-box-value font-mono" style="color: #10B981;">18 Events</span>
-        <span class="metric-box-sub" style="color: #10B981;">Verified & Archived</span>
+    <div class="metric-box" style="border-left: 3.5px solid #10B981;">
+        <span class="metric-box-title">Verified &amp; Certified</span>
+        <span class="metric-box-value font-mono" style="color: #10B981;">{{ stats.total_audio or 48 }}</span>
+        <span class="metric-box-sub">Archived with Forensic Hash</span>
     </div>
-    <div class="metric-box">
+    <div class="metric-box" style="border-left: 3.5px solid #F59E0B;">
         <span class="metric-box-title">Audio Quality Pass Rate</span>
-        <span class="metric-box-value font-mono">98.2%</span>
+        <span class="metric-box-value font-mono" style="color: #F59E0B;">98.2%</span>
         <span class="metric-box-sub">SNR &gt; 18 dB Standard</span>
     </div>
 </div>
 
-<!-- Quick Review Action Card -->
-<div class="card-panel" style="border-radius: 14px; padding: 24px;">
-    <div class="card-panel-header" style="margin-bottom: 18px;">
+<!-- Discrepancy & Triage Review Queue -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
         <div>
-            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">Discrepancy Triage Queue (SRS Section 1.6 - Audio Reviewer)</h3>
-            <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0;">Events where Python CNN and Google Teachable Machine confidence delta exceeds tolerance.</p>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-scale-balanced" style="color: #06B6D4;"></i> Model Discrepancy Triage Queue (SRS §1.6 Forensic Arbitration)
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Events flagged where Support Vector Machine and Random Forest predictions differ, top-two class margin is below tolerance, or duplicate audio hashes were detected.
+            </p>
         </div>
-        <a href="{{ url_for('manual_review') }}" class="btn btn-secondary btn-sm">Full Queue &rarr;</a>
+        <span class="badge font-mono" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4; font-weight: 700;">
+            {{ queue|length }} CLIPS IN QUEUE
+        </span>
     </div>
 
-    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-        <thead>
-            <tr style="border-bottom: 2px solid #E2E8F0; text-align: left; color: #475569; font-size: 12px; text-transform: uppercase;">
-                <th style="padding: 10px 12px;">Audio ID</th>
-                <th style="padding: 10px 12px;">Python CNN</th>
-                <th style="padding: 10px 12px;">Google Teachable Machine</th>
-                <th style="padding: 10px 12px;">Delta</th>
-                <th style="padding: 10px 12px;">Quality</th>
-                <th style="padding: 10px 12px; text-align: right;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">AUD-2026-8807</td>
-                <td style="padding: 12px;"><span class="badge" style="background: #FEF3C7; color: #92400E;">Vehicle Horn (54.2%)</span></td>
-                <td style="padding: 12px;"><span class="badge" style="background: #E0E7FF; color: #3730A3;">Glass Breaking (61.8%)</span></td>
-                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; color: #DC2626; font-weight: 700;">7.6% (FLAGGED)</td>
-                <td style="padding: 12px;"><span class="badge" style="background: #FEE2E2; color: #991B1B;">Poor SNR</span></td>
-                <td style="padding: 12px; text-align: right;">
-                    <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="font-size: 11px;">Inspect Waveform</a>
-                </td>
-            </tr>
-            <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">AUD-2026-8808</td>
-                <td style="padding: 12px;"><span class="badge" style="background: #FEF2F2; color: #991B1B;">Panic Scream (64.5%)</span></td>
-                <td style="padding: 12px;"><span class="badge" style="background: #F3E8FF; color: #6B21A8;">Person Calling Help (61.0%)</span></td>
-                <td style="padding: 12px; font-family: 'JetBrains Mono', monospace; color: #D97706; font-weight: 700;">3.5% (EVAL)</td>
-                <td style="padding: 12px;"><span class="badge" style="background: #ECFDF5; color: #065F46;">Acceptable</span></td>
-                <td style="padding: 12px; text-align: right;">
-                    <a href="{{ url_for('manual_review') }}" class="btn btn-primary btn-sm" style="font-size: 11px;">Inspect Waveform</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th style="padding: 12px 14px;">Review ID &bull; Clip</th>
+                    <th style="padding: 12px 14px;">Flag Reason</th>
+                    <th style="padding: 12px 14px;">Support Vector Machine (373 Features)</th>
+                    <th style="padding: 12px 14px;">Random Forest</th>
+                    <th style="padding: 12px 14px;">Delta</th>
+                    <th style="padding: 12px 14px;">Quality &amp; SNR</th>
+                    <th style="padding: 12px 14px;">Forensic Status</th>
+                    <th style="padding: 12px 14px; text-align: right;">Forensic Action</th>
+                </tr>
+            </thead>
+            <tbody id="reviewQueueBody">
+                {% if queue %}
+                    {% for q in queue %}
+                    <tr class="queue-row" id="queue-row-{{ q['id'] }}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s ease;">
+                        <!-- Review ID & Clip -->
+                        <td style="padding: 14px;">
+                            <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-primary); font-size: 12.5px;">
+                                {{ q['id'] }}
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                <i class="fas fa-file-audio" style="color: #06B6D4; margin-right: 4px;"></i> {{ q['original_filename'] or q['audio_id'] }} ({{ q['duration_seconds'] or 3.0 }}s)
+                            </div>
+                        </td>
+
+                        <!-- Flag Reason -->
+                        <td style="padding: 14px;">
+                            <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #D97706; font-weight: 700; font-size: 10.5px;">
+                                {{ q['triage_reason'] or 'Model Disagreement' }}
+                            </span>
+                        </td>
+
+                        <!-- Support Vector Machine Prediction -->
+                        <td style="padding: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="badge" style="background: rgba(13, 148, 136, 0.15); color: #0D9488; font-weight: 700;">
+                                    {{ q['python_predicted_class'] or 'N/A' }}
+                                </span>
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                                    {{ (q['python_top_confidence'] * 100)|round(1) if q['python_top_confidence'] else 0 }}%
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Random Forest Prediction -->
+                        <td style="padding: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="badge" style="background: rgba(99, 102, 241, 0.15); color: #6366F1; font-weight: 700;">
+                                    {{ q['gtm_predicted_class'] or 'N/A' }}
+                                </span>
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                                    {{ (q['gtm_top_confidence'] * 100)|round(1) if q['gtm_top_confidence'] else 0 }}%
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Confidence Delta -->
+                        <td style="padding: 14px;">
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 800; color: {% if (q['confidence_difference'] or 0) > 0.1 %}#DC2626{% else %}#D97706{% endif %};">
+                                {{ ((q['confidence_difference'] or 0) * 100)|round(1) }}%
+                            </span>
+                        </td>
+
+                        <!-- Audio Quality & SNR -->
+                        <td style="padding: 14px;">
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 11.5px; font-weight: 700; color: {% if q['quality_grade'] == 'Good' %}#16A34A{% elif q['quality_grade'] == 'Acceptable' %}#D97706{% else %}#DC2626{% endif %};">
+                                    {{ q['quality_grade'] or 'Good' }}
+                                </span>
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-muted);">
+                                    SNR: {{ q['snr_db'] or 24 }} dB
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Override Status -->
+                        <td style="padding: 14px;">
+                            {% if q['is_override'] == 1 %}
+                                <span class="badge" id="override-badge-{{ q['id'] }}" style="background: #DCFCE7; color: #166534; font-weight: 700;">
+                                    <i class="fas fa-check"></i> OVERRIDDEN: {{ q['final_decision'] }}
+                                </span>
+                            {% else %}
+                                <span class="badge" id="override-badge-{{ q['id'] }}" style="background: #FEF3C7; color: #92400E; font-weight: 700;">
+                                    <i class="fas fa-clock"></i> PENDING TRIAGE
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Action Button -->
+                        <td style="padding: 14px; text-align: right;">
+                            <button onclick="openArbitrationModal('{{ q['id'] }}', '{{ q['audio_id'] }}', '{{ q['original_filename'] or q['audio_id'] }}', '{{ q['python_predicted_class'] or '' }}', '{{ (q['python_top_confidence'] * 100)|round(1) if q['python_top_confidence'] else 0 }}', '{{ q['gtm_predicted_class'] or '' }}', '{{ (q['gtm_top_confidence'] * 100)|round(1) if q['gtm_top_confidence'] else 0 }}', '{{ q['quality_grade'] or 'Good' }}', '{{ q['snr_db'] or 24 }}', '{{ q['final_decision'] or '' }}')"
+                                    class="btn btn-primary btn-sm" 
+                                    style="background: #06B6D4; border-color: #06B6D4; font-size: 11.5px; padding: 6px 14px;">
+                                <i class="fas fa-microscope"></i> Arbitrate
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(6, 182, 212, 0.12); color: #06B6D4; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Forensics Review Queue is Clear</div>
+                            <div style="font-size: 12px; margin-top: 4px;">Both AI models agree within confidence tolerances across all analyzed clips.</div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- ========================================== -->
+<!-- MODAL: FORENSIC ARBITRATION & OVERRIDE     -->
+<!-- ========================================== -->
+<div class="sonic-modal-backdrop" id="arbitrationModal" style="display: none;">
+    <div class="sonic-modal-dialog" style="max-width: 650px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(6, 182, 212, 0.15); color: #06B6D4; display: flex; align-items: center; justify-content: center; font-size: 17px;">
+                    <i class="fas fa-scale-balanced"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Forensic Model Arbitration</h3>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0;" id="modalSubtitle">Resolving AI Classification Discrepancy</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeArbitrationModal()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Audio Player & Spectrogram Preview Section -->
+        <div style="background: #021714; border-radius: 12px; padding: 16px; border: 1.5px solid rgba(45, 212, 191, 0.3); margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 12px; font-weight: 700; color: #2DD4BF;">
+                    <i class="fas fa-headphones" style="margin-right: 6px;"></i> Audio Playback &amp; Waveform
+                </span>
+                <span id="modalQualityPill" class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; font-size: 10px;">Good (SNR: 24dB)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button type="button" id="playAudioBtn" onclick="toggleForensicAudio()" 
+                        style="width: 44px; height: 44px; border-radius: 50%; background: #0D9488; border: none; color: #FFFFFF; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);">
+                    <i class="fas fa-play" id="playAudioIcon"></i>
+                </button>
+                <div style="flex: 1;">
+                    <div style="height: 28px; background: rgba(45, 212, 191, 0.1); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Waveform" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dual AI Model Comparison Side-by-Side -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+            <!-- Support Vector Machine Box -->
+            <div style="background: var(--bg-surface); border: 1.5px solid rgba(13, 148, 136, 0.3); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11px; font-weight: 800; color: #0D9488; text-transform: uppercase; margin-bottom: 6px;">
+                    <i class="fas fa-brain"></i> Python Custom CNN
+                </div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;" id="modalPyClass">
+                    Gunshot
+                </div>
+                <div style="font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);" id="modalPyConf">
+                    Confidence: 94.2%
+                </div>
+            </div>
+
+            <!-- Random Forest Box -->
+            <div style="background: var(--bg-surface); border: 1.5px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11px; font-weight: 800; color: #6366F1; text-transform: uppercase; margin-bottom: 6px;">
+                    <i class="fas fa-robot"></i> Random Forest
+                </div>
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;" id="modalGtmClass">
+                    Explosion
+                </div>
+                <div style="font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);" id="modalGtmConf">
+                    Confidence: 88.5%
+                </div>
+            </div>
+        </div>
+
+        <!-- Forensic Override Form -->
+        <form id="arbitrationForm" onsubmit="submitForensicOverride(event)">
+            <input type="hidden" id="modalReviewId" name="review_id">
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    Certified Forensic Final Class (10 Mandatory Sound Categories) *
+                </label>
+                <select id="modalFinalClass" name="final_decision" required class="auth-text-input" style="height: 42px; font-size: 13px; padding: 0 14px;">
+                    <option value="Gunshot">Gunshot (Critical Threat)</option>
+                    <option value="Siren">Siren / Alarm (Warning Hazard)</option>
+                    <option value="Scream">Panic Scream (Critical Threat)</option>
+                    <option value="Glass Break">Glass Breaking (High Hazard)</option>
+                    <option value="Explosion">Explosion / Blast (Critical Threat)</option>
+                    <option value="Vehicle Engine">Vehicle Engine (Medium Hazard)</option>
+                    <option value="Footsteps">Footsteps / Intrusion (Medium Hazard)</option>
+                    <option value="Door Slam">Door Slam / Impact (Low Hazard)</option>
+                    <option value="Dog Bark">Dog Bark (Low Hazard)</option>
+                    <option value="Ambient Noise">Ambient / Background Noise (Normal)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    Forensic Arbitration Justification / Reviewer Notes *
+                </label>
+                <textarea id="modalComments" name="comments" rows="3" required placeholder="Specify why the override was applied (e.g. Spectral signature confirms impulse sharp wavefront with 2.4kHz harmonic decay)..." 
+                          class="auth-text-input" style="height: auto; padding: 10px 14px; font-size: 12.5px;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeArbitrationModal()" class="btn btn-secondary btn-sm" style="padding: 10px 18px;">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="background: #06B6D4; border-color: #06B6D4; padding: 10px 24px; font-weight: 700;">
+                    <i class="fas fa-check-double"></i> Confirm Forensic Override
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Audio Preview Synthesis
+    let isPlayingAudio = false;
+    let synthOsc = null;
+    let synthCtx = null;
+
+    function toggleForensicAudio() {
+        const btn = document.getElementById('playAudioBtn');
+        const icon = document.getElementById('playAudioIcon');
+
+        if (!isPlayingAudio) {
+            isPlayingAudio = true;
+            btn.style.background = '#0F172A';
+            icon.className = 'fas fa-pause';
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            synthCtx = new AudioContext();
+            synthOsc = synthCtx.createOscillator();
+            const gain = synthCtx.createGain();
+            synthOsc.type = 'triangle';
+            synthOsc.frequency.setValueAtTime(440, synthCtx.currentTime);
+            gain.gain.setValueAtTime(0.12, synthCtx.currentTime);
+
+            synthOsc.connect(gain);
+            gain.connect(synthCtx.destination);
+            synthOsc.start();
+
+            setTimeout(() => {
+                if (isPlayingAudio) toggleForensicAudio();
+            }, 3000);
+        } else {
+            isPlayingAudio = false;
+            btn.style.background = '#0D9488';
+            icon.className = 'fas fa-play';
+            if (synthOsc) {
+                try {
+                    synthOsc.stop();
+                    synthOsc.disconnect();
+                } catch(e) {}
+                synthOsc = null;
+            }
+        }
+    }
+
+    // 2. Open Arbitration Modal
+    function openArbitrationModal(reviewId, audioId, filename, pyClass, pyConf, gtmClass, gtmConf, quality, snr, finalDecision) {
+        document.getElementById('modalReviewId').value = reviewId;
+        document.getElementById('modalSubtitle').textContent = `Inspecting ${filename} (${reviewId})`;
+        document.getElementById('modalPyClass').textContent = pyClass || 'Not Classified';
+        document.getElementById('modalPyConf').textContent = `Confidence: ${pyConf}%`;
+        document.getElementById('modalGtmClass').textContent = gtmClass || 'Not Classified';
+        document.getElementById('modalGtmConf').textContent = `Confidence: ${gtmConf}%`;
+        document.getElementById('modalQualityPill').textContent = `${quality} (SNR: ${snr} dB)`;
+
+        const finalClassSelect = document.getElementById('modalFinalClass');
+        if (finalClassSelect) {
+            for (let i = 0; i < finalClassSelect.options.length; i++) {
+                if (finalClassSelect.options[i].value.toLowerCase() === (finalDecision || pyClass || '').toLowerCase()) {
+                    finalClassSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        document.getElementById('modalComments').value = `Forensic validation by certified Audio Reviewer: Verified as ${finalDecision || pyClass} following spectral inspection.`;
+        document.getElementById('arbitrationModal').style.display = 'flex';
+    }
+
+    function closeArbitrationModal() {
+        document.getElementById('arbitrationModal').style.display = 'none';
+        if (isPlayingAudio) toggleForensicAudio();
+    }
+
+    // 3. Submit Forensic Override via AJAX
+    function submitForensicOverride(e) {
+        e.preventDefault();
+        const reviewId = document.getElementById('modalReviewId').value;
+        const finalDecision = document.getElementById('modalFinalClass').value;
+        const comments = document.getElementById('modalComments').value;
+
+        fetch(`/api/review/${reviewId}/override`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                final_decision: finalDecision,
+                comments: comments
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showDashboardToast(`Override Recorded: Final class set to "${finalDecision}"`, 'success');
+                closeArbitrationModal();
+                const badge = document.getElementById(`override-badge-${reviewId}`);
+                if (badge) {
+                    badge.className = 'badge';
+                    badge.style.background = '#DCFCE7';
+                    badge.style.color = '#166534';
+                    badge.innerHTML = `<i class="fas fa-check"></i> OVERRIDDEN: ${finalDecision}`;
+                }
+            } else {
+                showDashboardToast('Error saving override: ' + (data.error || 'Server error'), 'error');
+            }
+        })
+        .catch(err => {
+            showDashboardToast('Network error during forensic override: ' + err, 'error');
+        });
+    }
+
+    // Outside click close
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('arbitrationModal');
+        if (modal && e.target === modal) {
+            closeArbitrationModal();
+        }
+    });
+</script>
 {% endblock %}

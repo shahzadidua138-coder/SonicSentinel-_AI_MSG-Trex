@@ -16,7 +16,7 @@ def generate_incident_pdf(event_data: dict) -> bytes:
     """
     try:
         from reportlab.lib.pagesizes import letter
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib import colors
 
@@ -69,16 +69,16 @@ def generate_incident_pdf(event_data: dict) -> bytes:
         audio_id = event_data.get('id', 'AUD-UNKNOWN')
         filename = event_data.get('original_filename', 'audio_sample.wav')
         category = event_data.get('final_detected_class', event_data.get('threat_category', 'Unknown'))
-        severity = event_data.get('severity', 'High')
-        quality = event_data.get('quality_grade', 'Good')
-        snr = f"{event_data.get('snr_db', 24.0)} dB"
+        severity = event_data.get('severity', 'Unknown')
+        quality = event_data.get('quality_grade', 'Unknown')
+        snr = f"{event_data.get('snr_db', 'Unavailable')} dB"
         py_class = event_data.get('python_predicted_class', 'N/A')
-        py_conf = f"{float(event_data.get('python_top_confidence', 0.90))*100:.1f}%"
+        py_conf = f"{float(event_data.get('python_top_confidence', 0.0))*100:.1f}%"
         gtm_class = event_data.get('gtm_predicted_class', 'N/A')
-        gtm_conf = f"{float(event_data.get('gtm_top_confidence', 0.88))*100:.1f}%"
-        delta = f"{float(event_data.get('confidence_difference', 0.02))*100:.1f}%"
-        status = event_data.get('consistency_status', 'Strong Match')
-        sha = event_data.get('sha256_hash', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        gtm_conf = f"{float(event_data.get('gtm_top_confidence', 0.0))*100:.1f}%"
+        delta = f"{float(event_data.get('confidence_difference', 0.0))*100:.1f}%"
+        status = event_data.get('consistency_status', 'Unavailable')
+        sha = event_data.get('sha256_hash', 'Unavailable')
 
         meta_data = [
             [Paragraph("<b>Incident Token:</b>", body_style), Paragraph(audio_id, mono_style),
@@ -102,14 +102,14 @@ def generate_incident_pdf(event_data: dict) -> bytes:
         story.append(Spacer(1, 14))
 
         # Dual AI Model Breakdown
-        story.append(Paragraph("<b>DUAL AI/ML CROSS-ARBITRATION AUDIT MATRIX</b>", subtitle_style))
+        story.append(Paragraph("<b>INDEPENDENT MODEL COMPARISON</b>", subtitle_style))
         story.append(Spacer(1, 6))
 
         ai_data = [
             [Paragraph("<b>Inference Engine</b>", body_style), Paragraph("<b>Primary Detection</b>", body_style), Paragraph("<b>Confidence</b>", body_style), Paragraph("<b>Operational Role</b>", body_style)],
-            [Paragraph("<b>Python ML (Librosa + 40 MFCCs)</b>", body_style), Paragraph(py_class, body_style), Paragraph(py_conf, mono_style), Paragraph("Feature-Level Spectral Classifier", body_style)],
-            [Paragraph("<b>Google Teachable Machine (Audio)</b>", body_style), Paragraph(gtm_class, body_style), Paragraph(gtm_conf, mono_style), Paragraph("Independent Spectrogram CNN Validator", body_style)],
-            [Paragraph("<b>Cross-Model Confidence Delta</b>", body_style), Paragraph(f"Delta: {delta}", mono_style), Paragraph(status, body_style), Paragraph("Dual Arbitration Verification Passed", body_style)]
+            [Paragraph("<b>Support Vector Machine</b>", body_style), Paragraph(py_class, body_style), Paragraph(py_conf, mono_style), Paragraph("Primary trained feature classifier", body_style)],
+            [Paragraph("<b>Random Forest</b>", body_style), Paragraph(gtm_class, body_style), Paragraph(gtm_conf, mono_style), Paragraph("Independent trained comparison classifier", body_style)],
+            [Paragraph("<b>Confidence Difference</b>", body_style), Paragraph(f"Delta: {delta}", mono_style), Paragraph(status, body_style), Paragraph("Model comparison status", body_style)]
         ]
 
         t_ai = Table(ai_data, colWidths=[160, 130, 90, 160])
@@ -123,6 +123,30 @@ def generate_incident_pdf(event_data: dict) -> bytes:
         story.append(t_ai)
         story.append(Spacer(1, 14))
 
+        # Source recording metadata
+        story.append(Paragraph("<b>RECORDING METADATA</b>", subtitle_style))
+        story.append(Spacer(1, 4))
+        audio_meta = [
+            [Paragraph("<b>Format</b>", body_style), Paragraph(str(event_data.get('audio_format') or 'Unknown'), body_style), Paragraph("<b>Duration</b>", body_style), Paragraph(f"{event_data.get('duration_seconds', 'Unknown')} s", body_style)],
+            [Paragraph("<b>Sample Rate</b>", body_style), Paragraph(f"{event_data.get('sample_rate', 'Unknown')} Hz", body_style), Paragraph("<b>Channels</b>", body_style), Paragraph(str(event_data.get('channels', 'Unknown')), body_style)],
+            [Paragraph("<b>Bit Depth</b>", body_style), Paragraph(str(event_data.get('bit_depth') or 'Unknown'), body_style), Paragraph("<b>File Size</b>", body_style), Paragraph(f"{event_data.get('file_size_bytes', 'Unknown')} bytes", body_style)],
+        ]
+        t_audio_meta = Table(audio_meta, colWidths=[80, 185, 80, 185])
+        t_audio_meta.setStyle(TableStyle([('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#CBD5E1')), ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')), ('PADDING', (0, 0), (-1, -1), 6)]))
+        story.append(t_audio_meta)
+        story.append(Spacer(1, 12))
+
+        project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        for image_field, heading in (("waveform_image_path", "WAVEFORM"), ("spectrogram_image_path", "SPECTROGRAM")):
+            image_url = event_data.get(image_field)
+            if image_url:
+                image_path = os.path.join(project_dir, str(image_url).lstrip('/').replace('/', os.sep))
+                if os.path.isfile(image_path):
+                    story.append(Paragraph(f"<b>{heading}</b>", subtitle_style))
+                    story.append(Spacer(1, 4))
+                    story.append(Image(image_path, width=520, height=156))
+                    story.append(Spacer(1, 8))
+
         # Recommended Action & SHA-256 Audit
         story.append(Paragraph("<b>IMMEDIATE DISPATCH & OPERATIONAL RECOMMENDATION</b>", subtitle_style))
         story.append(Spacer(1, 4))
@@ -135,12 +159,10 @@ def generate_incident_pdf(event_data: dict) -> bytes:
         story.append(Paragraph(sha, mono_style))
         story.append(Spacer(1, 14))
 
-        # Reviewer Sign-off box
+        # Avoid certifying the incident as a real emergency response.
         sign_data = [
-            [Paragraph("<b>Incident Certifier:</b> Dr. Elena Rostova, Lead Acoustic Reviewer", body_style),
-             Paragraph(f"<b>Verification Date:</b> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style)],
-            [Paragraph("<b>Security Operations Desk:</b> Command Central #01 (Sector B)", body_style),
-             Paragraph("<b>Forensic Tamper Seal:</b> VERIFIED AUTHENTIC", body_style)]
+            [Paragraph(f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style),
+             Paragraph("Prototype analysis report - not an emergency-response certification.", body_style)]
         ]
         t_sign = Table(sign_data, colWidths=[270, 270])
         t_sign.setStyle(TableStyle([
@@ -153,15 +175,47 @@ def generate_incident_pdf(event_data: dict) -> bytes:
         doc.build(story)
         return buffer.getvalue()
     except Exception:
-        # Fallback pure PDF text output
-        pdf_content = (
-            f"%PDF-1.4\n"
-            f"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n"
-            f"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n"
-            f"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >> endobj\n"
-            f"4 0 obj << /Length 200 >> stream\n"
-            f"BT /F1 14 Tf 50 720 Td (SONICSENTINEL AI - INCIDENT REPORT: {event_data.get('id', 'AUD-01')}) Tj ET\n"
-            f"BT /F1 10 Tf 50 700 Td (Threat: {event_data.get('final_detected_class', 'Gunshot')} | Severity: {event_data.get('severity', 'Critical')}) Tj ET\n"
-            f"endstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000214 00000 n \ntrailer << /Size 5 /Root 1 0 R >>\nstartxref\n466\n%%EOF"
-        )
-        return pdf_content.encode('utf-8')
+        # Keep a valid, readable PDF even when the optional ReportLab renderer
+        # is unavailable in a minimal installation.
+        lines = [
+            "SONICSENTINEL AI - ACOUSTIC ANALYSIS REPORT",
+            f"Audio ID: {event_data.get('id', 'Unknown')}",
+            f"File: {event_data.get('original_filename', 'Unknown')}",
+            f"Detected category: {event_data.get('final_detected_class', 'Unknown')}",
+            f"Severity / quality: {event_data.get('severity', 'Unknown')} / {event_data.get('quality_grade', 'Unknown')}",
+            f"SVM: {event_data.get('python_predicted_class', 'Unknown')} ({float(event_data.get('python_top_confidence', 0.0))*100:.1f}%)",
+            f"Random Forest: {event_data.get('gtm_predicted_class', 'Unknown')} ({float(event_data.get('gtm_top_confidence', 0.0))*100:.1f}%)",
+            f"Confidence difference: {float(event_data.get('confidence_difference', 0.0))*100:.1f}%",
+            f"Comparison status: {event_data.get('consistency_status', 'Unknown')}",
+            f"Duration: {event_data.get('duration_seconds', 'Unknown')} seconds",
+            f"Format / rate / channels: {event_data.get('audio_format', 'Unknown')} / {event_data.get('sample_rate', 'Unknown')} Hz / {event_data.get('channels', 'Unknown')}",
+            f"SHA-256: {event_data.get('sha256_hash', 'Unavailable')}",
+            "Prototype analysis report; not an emergency-response certification.",
+        ]
+        commands = ["BT /F1 14 Tf 48 748 Td"]
+        for index, line in enumerate(lines):
+            if index:
+                commands.append("/F1 10 Tf 0 -28 Td")
+            text = line.encode('latin-1', errors='replace').decode('latin-1')[:130]
+            text = text.replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
+            commands.append(f"({text}) Tj")
+        commands.append("ET")
+        stream = "\n".join(commands).encode('latin-1')
+        objects = [
+            b"<< /Type /Catalog /Pages 2 0 R >>",
+            b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+            b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            b"<< /Length " + str(len(stream)).encode('ascii') + b" >>\nstream\n" + stream + b"\nendstream",
+        ]
+        output = bytearray(b"%PDF-1.4\n")
+        offsets = [0]
+        for number, body in enumerate(objects, start=1):
+            offsets.append(len(output))
+            output.extend(f"{number} 0 obj\n".encode('ascii') + body + b"\nendobj\n")
+        xref_offset = len(output)
+        output.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode('ascii'))
+        for offset in offsets[1:]:
+            output.extend(f"{offset:010d} 00000 n \n".encode('ascii'))
+        output.extend(f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF".encode('ascii'))
+        return bytes(output)

@@ -4,9 +4,13 @@ SonicSentinel AI - NextWave Acoustic Intelligence Platform
 """
 
 import os
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_PATH = os.path.join(BASE_DIR, 'sonicsentinel.db')
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    raise RuntimeError('DATABASE_URL is required. Configure the Neon PostgreSQL connection in .env.')
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 PLOTS_FOLDER = os.path.join(BASE_DIR, 'static', 'plots')
 SAMPLE_AUDIO_FOLDER = os.path.join(BASE_DIR, 'sample_audio')

@@ -3,29 +3,12 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme Initializer - Default to Light Theme per User Specification
-    const savedTheme = localStorage.getItem('sonic_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
-
-    const themeToggleBtn = document.getElementById('theme-toggle-btn');
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = (currentTheme === 'light') ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('sonic_theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
-    }
-
-    function updateThemeIcon(theme) {
-        const icon = document.querySelector('#theme-toggle-btn i');
-        if (icon) {
-            icon.className = (theme === 'dark') ? 'fas fa-sun' : 'fas fa-moon';
-            themeToggleBtn.title = (theme === 'dark') ? 'Switch to Light Theme' : 'Switch to Dark Theme';
-        }
-    }
+    // Unified NextWave Acoustic Light Theme Enforcer
+    try {
+        localStorage.removeItem('sonic_theme');
+        localStorage.removeItem('sonicsentinel_theme');
+    } catch(e) {}
+    document.documentElement.setAttribute('data-theme', 'light');
 });
 
 // Toast notification helper with Dark Teal Green styling

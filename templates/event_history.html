@@ -9,9 +9,11 @@
         <p class="page-subtitle">Searchable log of all acoustic captures, dual-model predictions, and reviewer actions.</p>
     </div>
     <div class="page-actions-row">
+        {% if current_user and current_user['role'] == 'Administrator' %}
         <a href="{{ url_for('export_csv') }}" class="btn btn-secondary btn-sm">
             <i class="fas fa-download"></i> Download Audit (CSV)
         </a>
+        {% endif %}
     </div>
 </div>
 
@@ -58,6 +60,10 @@
                 <option value="Poor">Poor</option>
             </select>
         </div>
+        <div><label style="font-size:10px;color:var(--text-muted);text-transform:uppercase">From</label><input type="date" id="hist-from" onchange="filterHistory()" style="width:100%;margin-top:4px"></div>
+        <div><label style="font-size:10px;color:var(--text-muted);text-transform:uppercase">To</label><input type="date" id="hist-to" onchange="filterHistory()" style="width:100%;margin-top:4px"></div>
+        <div><label style="font-size:10px;color:var(--text-muted);text-transform:uppercase">Min Confidence (%)</label><input type="number" id="hist-confidence" min="0" max="100" placeholder="Any" oninput="filterHistory()" style="width:100%;margin-top:4px"></div>
+        <div><label style="font-size:10px;color:var(--text-muted);text-transform:uppercase">Review Status</label><select id="hist-review" onchange="filterHistory()" style="width:100%;margin-top:4px"><option value="All">All</option><option value="Pending">Pending Review</option><option value="Reviewed">Reviewed</option><option value="Unreviewed">No Review</option></select></div>
     </div>
 </div>
 
@@ -72,7 +78,7 @@
                     <th>Filename</th>
                     <th>Detected Class</th>
                     <th>Python Conf</th>
-                    <th>GTM Conf</th>
+                    <th>Random Forest Conf</th>
                     <th>Delta</th>
                     <th>Quality</th>
                     <th>Severity</th>
@@ -89,61 +95,47 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    renderHistory();
+let historyEvents = [];
+document.addEventListener('DOMContentLoaded', async () => {
+    const response = await fetch('/api/audio/events');
+    historyEvents = response.ok ? await response.json() : [];
+    filterHistory();
 });
-
-function renderHistory() {
-    const tbody = document.getElementById('history-tbody');
-    if (!tbody || !SONIC_DATA) return;
-
-    tbody.innerHTML = SONIC_DATA.events.map(e => `
-        <tr>
-            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
-            <td style="font-size: 11px; color: var(--text-muted);">${e.timestamp}</td>
-            <td style="font-size: 12px;">${e.filename}</td>
-            <td style="font-weight: 600;">${e.pythonClass}</td>
-            <td class="font-mono">${e.pythonConf}%</td>
-            <td class="font-mono" style="color: #c084fc;">${e.gtmConf}%</td>
-            <td class="font-mono">${e.delta}%</td>
-            <td><span class="badge badge-info">${e.quality}</span></td>
-            <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
-            <td><span class="badge badge-${e.status === 'Active' ? 'critical' : 'success'}">${e.status}</span></td>
-        </tr>
-    `).join('');
-}
-
+function safeText(value) { const node = document.createElement('span'); node.textContent = value ?? ''; return node.innerHTML; }
 function filterHistory() {
     const q = (document.getElementById('hist-search').value || '').toLowerCase();
     const cat = document.getElementById('hist-cat').value;
     const sev = document.getElementById('hist-sev').value;
     const qual = document.getElementById('hist-qual').value;
-
-    const tbody = document.getElementById('history-tbody');
-    if (!tbody || !SONIC_DATA) return;
-
-    const filtered = SONIC_DATA.events.filter(e => {
-        const mQ = e.audioId.toLowerCase().includes(q) || e.filename.toLowerCase().includes(q) || e.pythonClass.toLowerCase().includes(q);
-        const mCat = (cat === 'All' || e.pythonClass === cat);
-        const mSev = (sev === 'All' || e.severity === sev);
-        const mQual = (qual === 'All' || e.quality === qual);
-        return mQ && mCat && mSev && mQual;
+    const from = document.getElementById('hist-from').value;
+    const to = document.getElementById('hist-to').value;
+    const minConfidence = Number(document.getElementById('hist-confidence').value || 0) / 100;
+    const review = document.getElementById('hist-review').value;
+    const filtered = historyEvents.filter(e => {
+        const category = e.final_detected_class || e.python_predicted_class || '';
+        const confidence = Number(e.python_top_confidence || 0);
+        const date = String(e.created_at || '').slice(0, 10);
+        const reviewStatus = e.review_status || 'Unreviewed';
+        return (!q || `${e.id} ${e.original_filename} ${category} ${e.user_id}`.toLowerCase().includes(q)) &&
+            (cat === 'All' || category === cat || (cat === 'Aggression or Violent Conflict' && category === 'Aggression')) &&
+            (sev === 'All' || e.severity === sev) && (qual === 'All' || e.quality_grade === qual) &&
+            (!from || date >= from) && (!to || date <= to) && confidence >= minConfidence &&
+            (review === 'All' || reviewStatus === review);
     });
-
-    tbody.innerHTML = filtered.map(e => `
-        <tr>
-            <td class="font-mono" style="color: var(--text-accent); font-weight: 600;">${e.audioId}</td>
-            <td style="font-size: 11px; color: var(--text-muted);">${e.timestamp}</td>
-            <td style="font-size: 12px;">${e.filename}</td>
-            <td style="font-weight: 600;">${e.pythonClass}</td>
-            <td class="font-mono">${e.pythonConf}%</td>
-            <td class="font-mono" style="color: #c084fc;">${e.gtmConf}%</td>
-            <td class="font-mono">${e.delta}%</td>
-            <td><span class="badge badge-info">${e.quality}</span></td>
-            <td><span class="badge badge-${e.severity.toLowerCase()}">${e.severity}</span></td>
-            <td><span class="badge badge-${e.status === 'Active' ? 'critical' : 'success'}">${e.status}</span></td>
-        </tr>
-    `).join('');
+    const tbody = document.getElementById('history-tbody');
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px">No events match these filters.</td></tr>'; return; }
+    tbody.innerHTML = filtered.map(e => {
+        const py = Number(e.python_top_confidence || 0);
+        const rf = Number(e.gtm_top_confidence || 0);
+        const sevClass = safeText(String(e.severity || 'Informational').toLowerCase());
+        return `<tr><td class="font-mono"><a href="/audio-analysis?event=${encodeURIComponent(e.id)}">${safeText(e.id)}</a></td>
+            <td>${safeText(e.created_at)}</td><td>${safeText(e.original_filename || 'Recording')}</td>
+            <td>${safeText(e.final_detected_class || e.python_predicted_class || 'Unknown')}</td>
+            <td>${(py * 100).toFixed(1)}%</td><td>${(rf * 100).toFixed(1)}%</td>
+            <td>${(Number(e.confidence_difference || 0) * 100).toFixed(1)}%</td>
+            <td>${safeText(e.quality_grade || 'Unknown')}</td><td><span class="badge badge-${sevClass}">${safeText(e.severity || 'Informational')}</span></td>
+            <td>${safeText(e.review_status || e.alert_status || 'Classified')}</td></tr>`;
+    }).join('');
 }
 </script>
 {% endblock %}

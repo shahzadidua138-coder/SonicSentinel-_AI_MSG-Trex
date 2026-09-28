@@ -65,8 +65,12 @@ def evaluate_alert(prediction_result: dict, session_id: str = "default_stream") 
     if len(_WINDOW_HISTORY[session_id]) > 5:
         _WINDOW_HISTORY[session_id].pop(0)
 
-    recent_matches = sum(1 for c in _WINDOW_HISTORY[session_id] if c == final_class)
-    is_repeated = recent_matches >= CONSECUTIVE_WINDOWS_REQUIRED
+    consecutive_matches = 0
+    for category in reversed(_WINDOW_HISTORY[session_id]):
+        if category != final_class:
+            break
+        consecutive_matches += 1
+    is_repeated = consecutive_matches >= CONSECUTIVE_WINDOWS_REQUIRED
 
     # Instant confirmation bypass if both models agree with >= 85% confidence
     instant_bypass = (py_conf >= CRITICAL_INSTANT_CONFIDENCE and gtm_conf >= CRITICAL_INSTANT_CONFIDENCE and consistency in ["Strong Match", "Acceptable Match"])

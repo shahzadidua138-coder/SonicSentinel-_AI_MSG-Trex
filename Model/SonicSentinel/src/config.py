@@ -3,8 +3,15 @@
 # ============================================================
 import os
 from datetime import timedelta
+from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(Path(BASE_DIR).parents[1] / '.env')
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    raise RuntimeError('DATABASE_URL is required. Configure the Neon PostgreSQL connection in the project .env file.')
+DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
 
 
 class Config:
@@ -16,10 +23,7 @@ class Config:
     TESTING = False
 
     # --- Database ---
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{os.path.join(BASE_DIR, 'database', 'sonicsentinel.db')}"
-    )
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- File Upload ---
@@ -134,7 +138,7 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """Testing configuration."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = Config.SQLALCHEMY_DATABASE_URI
 
 
 config_by_name = {
@@ -144,7 +148,7 @@ config_by_name = {
 }
 
 # Top-level helper variables for clean imports across backend modules
-DATABASE_PATH = os.path.join(BASE_DIR, "database", "sonicsentinel.db")
+DATABASE_SCHEMA = "sonicsentinel_legacy"
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 MODEL_DIR = Config.MODEL_DIR
 SOUND_CLASSES = Config.SOUND_CLASSES

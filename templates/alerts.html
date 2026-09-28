@@ -40,7 +40,7 @@
                     <th>Severity</th>
                     <th>Detected Threat</th>
                     <th>Sensor Location</th>
-                    <th>Confidence (Py / GTM)</th>
+                    <th>Confidence (SVM / Random Forest)</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -166,7 +166,23 @@ async function escalateAlert(alertId) {
 }
 
 function triggerTestAlert() {
-    showToast("Simulated threat broadcasted across sector nodes.", "warning");
+    const newId = 'AUD-2026-' + Math.floor(1000 + Math.random() * 9000);
+    SONIC_DATA.events.unshift({
+        audioId: newId,
+        filename: "perimeter_motion_gunshot.wav",
+        timestamp: "Just Now",
+        location: "North Sector Guard Tower",
+        actualClass: "Gunshot",
+        pythonClass: "Gunshot",
+        pythonConf: 97.4,
+        gtmClass: "Gunshot",
+        gtmConf: 95.1,
+        severity: "Critical",
+        status: "Active"
+    });
+    renderAlerts();
+    showToast(`CRITICAL HAZARD: Gunshot blast detected at North Sector Tower (${newId})`, 'error');
+    sonicAudio.playSynth("gunshot", 2.5);
 }
 
 function acknowledgeAlert(audioId) {
@@ -187,24 +203,5 @@ function escalateAlert(audioId) {
     }
 }
 
-function triggerTestAlert() {
-    const newId = 'AUD-2026-' + Math.floor(1000 + Math.random() * 9000);
-    SONIC_DATA.events.unshift({
-        audioId: newId,
-        filename: "perimeter_motion_gunshot.wav",
-        timestamp: "Just Now",
-        location: "North Sector Guard Tower",
-        actualClass: "Gunshot",
-        pythonClass: "Gunshot",
-        pythonConf: 97.4,
-        gtmClass: "Gunshot",
-        gtmConf: 95.1,
-        severity: "Critical",
-        status: "Active"
-    });
-    renderAlerts();
-    showToast(`CRITICAL HAZARD: Gunshot blast detected at North Sector Tower (${newId})`, 'error');
-    sonicAudio.playSynth("gunshot", 2.5);
-}
 </script>
 {% endblock %}

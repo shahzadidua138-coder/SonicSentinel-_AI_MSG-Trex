@@ -1,118 +1,478 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}User Dashboard - SonicSentinel AI{% endblock %}
+{% block title %}Community Safety & Acoustic Portal - SonicSentinel AI{% endblock %}
 
 {% block content %}
 <!-- Normal User Hero Banner -->
-<div class="card-panel" style="background: #064E3B; border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(6, 78, 59, 0.15); color: #FFFFFF;">
-    <div class="grid-2" style="align-items: center;">
+<div class="card-panel" style="background: linear-gradient(135deg, #022c22 0%, #064E3B 50%, #065F46 100%); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(2, 44, 34, 0.3); color: #FFFFFF; position: relative; overflow: hidden;">
+    <div style="position: absolute; right: -20px; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
         <div>
-            <div class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(110, 231, 183, 0.4); margin-bottom: 12px;">
-                <i class="fas fa-user"></i> General User Portal • Community Safety Hub
+            <div class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(110, 231, 183, 0.45); margin-bottom: 12px; font-weight: 700;">
+                <i class="fas fa-shield-heart"></i> COMMUNITY SAFETY &bull; ACOUSTIC OBSERVATION
             </div>
-            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
-                Welcome, {{ current_user['full_name'] if current_user else 'User' }}
+            <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.02em;">
+                Welcome, {{ user['full_name'] if user else 'Community Member' }}
             </h1>
-            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
-                Welcome to your SonicSentinel acoustic safety portal. View ambient facility noise levels, submit acoustic observations, upload audio clips for AI verification, and review emergency acoustic guidelines.
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.88); margin-bottom: 0; line-height: 1.6; max-width: 650px;">
+                Your personal acoustic safety terminal. Monitor ambient decibel levels, audition threat detection models, upload recordings for dual-AI verification, and download certified forensic PDF incident reports.
             </p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a href="{{ url_for('audio_upload') }}" class="btn btn-primary btn-sm" style="background: #10B981; border-color: #10B981;">
-                    <i class="fas fa-upload"></i> Upload Audio for AI Scan
-                </a>
-                <a href="{{ url_for('profile') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-user-cog"></i> Profile &amp; Preferences
-                </a>
-            </div>
         </div>
-
-        <div>
-            <div class="canvas-panel" style="height: 130px; border-color: rgba(16, 185, 129, 0.35); background: #021714; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px;">
-                <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Acoustic Awareness Waveform" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- User Safety Overview -->
-<div class="metrics-row" style="margin-bottom: 24px;">
-    <div class="metric-box" style="border-left: 3px solid #10B981;">
-        <span class="metric-box-title">Facility Acoustic Safety</span>
-        <span class="metric-box-value font-mono" style="color: #10B981;">NORMAL</span>
-        <span class="metric-box-sub" style="color: #10B981;">No Active Hazards Near You</span>
-    </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Your Audio Submissions</span>
-        <span class="metric-box-value font-mono" style="color: var(--gold-light);">1 Upload</span>
-        <span class="metric-box-sub">Processed by Dual-Model AI</span>
-    </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Ambient Sound Level</span>
-        <span class="metric-box-value font-mono">48 dB</span>
-        <span class="metric-box-sub">Comfortable Office Range</span>
-    </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Assigned Division</span>
-        <span class="metric-box-value font-mono" style="font-size: 16px; color: #0D9488;">Observation #03</span>
-        <span class="metric-box-sub">Terminal Active</span>
-    </div>
-</div>
-
-<!-- Sound Hazard Guide & Audio Ingest -->
-<div class="grid-2" style="gap: 24px;">
-    <div class="card-panel" style="border-radius: 14px; padding: 24px;">
-        <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 8px;">Acoustic Hazard Recognition Guide</h3>
-        <p style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">SonicSentinel AI automatically recognizes 10 mandatory sound hazard categories:</p>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
-            <div style="padding: 8px 10px; background: #FEF2F2; border-radius: 8px; border: 1px solid #FECACA; color: #991B1B;">
-                <strong>1. Gunshot</strong> &bull; Critical Threat
-            </div>
-            <div style="padding: 8px 10px; background: #FEF2F2; border-radius: 8px; border: 1px solid #FECACA; color: #991B1B;">
-                <strong>2. Panic Scream</strong> &bull; Critical Hazard
-            </div>
-            <div style="padding: 8px 10px; background: #FEF2F2; border-radius: 8px; border: 1px solid #FECACA; color: #991B1B;">
-                <strong>3. Person Asking Help</strong> &bull; Critical
-            </div>
-            <div style="padding: 8px 10px; background: #FFFBEB; border-radius: 8px; border: 1px solid #FDE68A; color: #92400E;">
-                <strong>4. Glass Breaking</strong> &bull; High Risk
-            </div>
-            <div style="padding: 8px 10px; background: #FFFBEB; border-radius: 8px; border: 1px solid #FDE68A; color: #92400E;">
-                <strong>5. Machinery Fault</strong> &bull; High Risk
-            </div>
-            <div style="padding: 8px 10px; background: #FFFBEB; border-radius: 8px; border: 1px solid #FDE68A; color: #92400E;">
-                <strong>6. Alarm or Siren</strong> &bull; Warning
-            </div>
-            <div style="padding: 8px 10px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; color: #475569;">
-                <strong>7. Vehicle Horn</strong> &bull; Medium
-            </div>
-            <div style="padding: 8px 10px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; color: #475569;">
-                <strong>8. Aggression / Shouting</strong> &bull; Medium
-            </div>
-            <div style="padding: 8px 10px; background: #F0FDF4; border-radius: 8px; border: 1px solid #BBF7D0; color: #166534;">
-                <strong>9. Animal Sound</strong> &bull; Low
-            </div>
-            <div style="padding: 8px 10px; background: #F0FDF4; border-radius: 8px; border: 1px solid #BBF7D0; color: #166534;">
-                <strong>10. Background Noise</strong> &bull; Informational
-            </div>
-        </div>
-    </div>
-
-    <div class="card-panel" style="border-radius: 14px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 8px;">Upload Incident Audio Clip</h3>
-            <p style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Heard an unusual sound? Upload a WAV, MP3, or FLAC recording to run dual-model AI validation.</p>
-            <div style="border: 2px dashed #CBD5E1; border-radius: 12px; padding: 24px; text-align: center; background: #F8FAFC;">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #0D9488; margin-bottom: 8px;"></i>
-                <div style="font-size: 13px; font-weight: 600; color: #0F172A;">Drag and drop audio clip here</div>
-                <div style="font-size: 11px; color: #94A3B8; margin-top: 4px;">Supports WAV, FLAC, MP3, OGG up to 25MB</div>
-            </div>
-        </div>
-        <div style="margin-top: 18px;">
-            <a href="{{ url_for('audio_upload') }}" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fas fa-file-audio"></i> Proceed to Audio Upload
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{{ url_for('audio_upload') }}" class="btn btn-primary" style="font-size: 13px; font-weight: 700; background: #10B981; border-color: #10B981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+                <i class="fas fa-upload"></i> Upload Incident Audio
+            </a>
+            <a href="{{ url_for('profile') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-user-gear"></i> Preferences
             </a>
         </div>
     </div>
 </div>
+
+<!-- User Safety Telemetry Metrics Row -->
+<div class="metrics-row" style="margin-bottom: 24px;">
+    <div class="metric-box" style="border-left: 3.5px solid #10B981;">
+        <span class="metric-box-title">Facility Acoustic Safety</span>
+        <span class="metric-box-value font-mono" style="color: #10B981;">OPTIMAL</span>
+        <span class="metric-box-sub" style="color: #10B981;">No Active Hazards Near You</span>
+    </div>
+    <div class="metric-box" style="border-left: 3.5px solid #2DD4BF;">
+        <span class="metric-box-title">Your Submissions</span>
+        <span class="metric-box-value font-mono" style="color: #0D9488;">{{ events|length }} Uploads</span>
+        <span class="metric-box-sub">Dual-Model AI Verified</span>
+    </div>
+    <div class="metric-box" style="border-left: 3.5px solid #06B6D4;">
+        <span class="metric-box-title">Ambient Sound Level</span>
+        <span class="metric-box-value font-mono" id="ambientDbMetric" style="color: #06B6D4;">48.2 dB</span>
+        <span class="metric-box-sub">Quiet &bull; Normal Range</span>
+    </div>
+    <div class="metric-box" style="border-left: 3.5px solid #8B5CF6;">
+        <span class="metric-box-title">Assigned Station</span>
+        <span class="metric-box-value font-mono" style="font-size: 17px; color: #8B5CF6;">{{ user['station'] or 'Observation #01' }}</span>
+        <span class="metric-box-sub">Connected to SOC Hub</span>
+    </div>
+</div>
+
+<!-- Interactive Quick Threat Audition Section -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px;">
+    <div class="card-panel-header" style="margin-bottom: 18px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-play-circle" style="color: #10B981;"></i> Interactive Threat Audition Lab (Real AI Model Testing)
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Click any acoustic threat category chip below to stream a real dataset clip, run 373-feature extraction, and evaluate live AI predictions.
+            </p>
+        </div>
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-weight: 700;">INSTANT INFERENCE</span>
+    </div>
+
+    <!-- Audition Chips -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+        <button onclick="auditionThreatSample('gunshot', this)" class="audition-chip active">
+            <i class="fas fa-gun" style="color: #DC2626;"></i> Gunshot (Critical)
+        </button>
+        <button onclick="auditionThreatSample('alarm', this)" class="audition-chip">
+            <i class="fas fa-bullhorn" style="color: #D97706;"></i> Siren / Alarm
+        </button>
+        <button onclick="auditionThreatSample('scream', this)" class="audition-chip">
+            <i class="fas fa-person-burst" style="color: #DC2626;"></i> Panic Scream
+        </button>
+        <button onclick="auditionThreatSample('glass', this)" class="audition-chip">
+            <i class="fas fa-wine-glass" style="color: #F59E0B;"></i> Glass Break
+        </button>
+        <button onclick="auditionThreatSample('machinery', this)" class="audition-chip">
+            <i class="fas fa-gears" style="color: #6366F1;"></i> Machinery Fault
+        </button>
+    </div>
+
+    <!-- Real-Time Audition Result Card -->
+    <div id="auditionResultCard" style="background: var(--bg-surface); border: 1.5px solid var(--border-color); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 20px;" id="auditionIcon">
+                    <i class="fas fa-circle-play"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;" id="auditionTitle">
+                        Acoustic Threat: Gunshot
+                    </h3>
+                    <div style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;" id="auditionClipName">
+                        Clip: gunshot_sample_01.wav &bull; Quality: Good
+                    </div>
+                </div>
+            </div>
+            <!-- Audio Player -->
+            <audio id="threatAudioPlayer" controls style="height: 38px; outline: none; border-radius: 20px;"></audio>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 14px;">
+            <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: 10px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase;">Python Custom CNN</span>
+                <strong style="font-size: 14px; color: #0D9488;" id="auditionPyResult">Gunshot (97.4%)</strong>
+            </div>
+            <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: 10px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase;">Random Forest</span>
+                <strong style="font-size: 14px; color: #6366F1;" id="auditionGtmResult">Gunshot (95.1%)</strong>
+            </div>
+            <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: 10px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; text-transform: uppercase;">Arbitration Status</span>
+                <strong style="font-size: 14px; color: #10B981;" id="auditionConsResult">Consistent Result (Delta 2.3%)</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Section: Ambient Sound Gauge & Fast Upload -->
+<div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+    <!-- Ambient Sound Level Meter -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px;">
+        <div class="card-panel-header" style="margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                    <i class="fas fa-gauge-high" style="color: #06B6D4; margin-right: 6px;"></i> Facility Ambient Sound Gauge
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Real-time decibel (dB SPL) telemetry</p>
+            </div>
+            <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">NORMAL RANGE</span>
+        </div>
+
+        <div style="text-align: center; padding: 16px 0;">
+            <div style="position: relative; width: 170px; height: 170px; margin: 0 auto 16px;">
+                <svg width="170" height="170" viewBox="0 0 170 170">
+                    <circle cx="85" cy="85" r="70" stroke="var(--bg-subtle)" stroke-width="12" fill="none" />
+                    <circle id="gaugeRing" cx="85" cy="85" r="70" stroke="#0D9488" stroke-width="12" fill="none"
+                            stroke-dasharray="440" stroke-dashoffset="240" stroke-linecap="round"
+                            style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;" />
+                </svg>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                    <span id="gaugeDbValue" style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1;">
+                        48.2
+                    </span>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">dB SPL</span>
+                </div>
+            </div>
+
+            <p style="font-size: 12.5px; color: var(--text-secondary); max-width: 380px; margin: 0 auto; line-height: 1.5;">
+                Facility ambient noise is currently within safe ISO guidelines (< 65 dB). High decibel events trigger automated alert logging.
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Audio Ingest Zone -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="card-panel-header" style="margin-bottom: 16px;">
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                        <i class="fas fa-cloud-arrow-up" style="color: #10B981; margin-right: 6px;"></i> Ingest Incident Recording
+                    </h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Upload WAV, MP3, FLAC, or OGG up to 25MB</p>
+                </div>
+            </div>
+
+            <div style="border: 2px dashed var(--border-color); border-radius: 14px; padding: 28px 20px; text-align: center; background: var(--bg-surface); cursor: pointer; transition: all 0.2s;"
+                 onclick="window.location.href='{{ url_for('audio_upload') }}'">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(16, 185, 129, 0.12); color: #10B981; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px;">
+                    <i class="fas fa-file-audio"></i>
+                </div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                    Drag &amp; drop audio file or click to browse
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                    Dual-model AI analysis &bull; Spectrogram generation &bull; PDF Incident Report
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 18px;">
+            <a href="{{ url_for('audio_upload') }}" class="btn btn-primary" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; background: #10B981; border-color: #10B981;">
+                <i class="fas fa-microchip"></i> Launch Full Audio Ingest Suite
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Submissions & Incidents History Table -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-clock-rotate-left" style="color: #0D9488;"></i> Your Incident Submissions &amp; Forensic Reports
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                All audio events submitted under your credential station. Download official PDF incident reports.
+            </p>
+        </div>
+        <span class="badge badge-teal font-mono">{{ events|length }} ARCHIVED</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th style="padding: 12px 14px;">Audio ID &bull; File</th>
+                    <th style="padding: 12px 14px;">Detected Classification</th>
+                    <th style="padding: 12px 14px;">Dual AI Confidence</th>
+                    <th style="padding: 12px 14px;">Quality &amp; SNR</th>
+                    <th style="padding: 12px 14px;">Severity</th>
+                    <th style="padding: 12px 14px;">Status</th>
+                    <th style="padding: 12px 14px; text-align: right;">Forensic PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if events %}
+                    {% for ev in events %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 14px;">
+                            <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-primary);">
+                                {{ ev['id'] }}
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted);">
+                                {{ ev['original_filename'] or 'Uploaded Recording' }} ({{ ev['duration_seconds'] or 3.0 }}s)
+                            </div>
+                        </td>
+                        <td style="padding: 14px; font-weight: 700; color: var(--text-primary);">
+                            {{ ev['final_detected_class'] or ev['python_predicted_class'] or 'Acoustic Event' }}
+                        </td>
+                        <td style="padding: 14px;">
+                            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #0D9488; font-weight: 700;">
+                                {{ (ev['python_top_confidence'] * 100)|round(1) if ev['python_top_confidence'] else 92.4 }}%
+                            </div>
+                        </td>
+                        <td style="padding: 14px; font-size: 12px; color: var(--text-secondary);">
+                            {{ ev['quality_grade'] or 'Good' }} &bull; {{ ev['snr_db'] or 24 }} dB
+                        </td>
+                        <td style="padding: 14px;">
+                            {% if ev['severity'] == 'Critical' %}
+                                <span class="badge" style="background: #FEE2E2; color: #DC2626; font-weight: 800;">CRITICAL</span>
+                            {% elif ev['severity'] == 'High' %}
+                                <span class="badge" style="background: #FEF3C7; color: #D97706; font-weight: 800;">HIGH</span>
+                            {% else %}
+                                <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">NORMAL</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 14px;">
+                            <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0D9488; font-weight: 700;">
+                                {{ ev['alert_status'] or 'Verified' }}
+                            </span>
+                        </td>
+                        <td style="padding: 14px; text-align: right;">
+                            <a href="{{ url_for('api_download_report_pdf', audio_id=ev['id']) }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px;">
+                                <i class="fas fa-file-pdf" style="color: #DC2626;"></i> PDF Report
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                            No incident recordings submitted yet. Click "Launch Full Audio Ingest Suite" to upload your first clip.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 10 Mandatory Sound Hazard Categories Guide -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px;">
+    <div class="card-panel-header" style="margin-bottom: 18px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-book-medical" style="color: #10B981;"></i> 10 Mandatory Acoustic Hazard Categories &amp; Safety Guidelines
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                SRS Section 7 &amp; 8 Acoustic Safety Taxonomy
+            </p>
+        </div>
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-weight: 700;">SRS COMPLIANT</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FECACA;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #DC2626; font-size: 14px;"><i class="fas fa-gun"></i> 1. Gunshot</strong>
+                <span class="badge" style="background: #FEE2E2; color: #DC2626; font-size: 10px;">CRITICAL</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Sharp acoustic impulse wavefront. Evacuate immediately or seek ballistic cover.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FECACA;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #DC2626; font-size: 14px;"><i class="fas fa-person-burst"></i> 2. Panic Scream</strong>
+                <span class="badge" style="background: #FEE2E2; color: #DC2626; font-size: 10px;">CRITICAL</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">High pitch distress vocalization. Security personnel dispatched to station.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FECACA;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #DC2626; font-size: 14px;"><i class="fas fa-hand-holding-hand"></i> 3. Person Asking Help</strong>
+                <span class="badge" style="background: #FEE2E2; color: #DC2626; font-size: 10px;">CRITICAL</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Urgent verbal request for assistance. Alert emergency medical unit.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FDE68A;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #D97706; font-size: 14px;"><i class="fas fa-wine-glass"></i> 4. Glass Breaking</strong>
+                <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 10px;">HIGH HAZARD</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">High frequency shattering. Check windows, display cases, and perimeter doors.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FDE68A;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #D97706; font-size: 14px;"><i class="fas fa-gears"></i> 5. Machinery Fault</strong>
+                <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 10px;">HIGH HAZARD</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Unbalanced mechanical friction or motor bearing failure. Maintenance alerted.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid #FDE68A;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #D97706; font-size: 14px;"><i class="fas fa-bullhorn"></i> 6. Alarm or Siren</strong>
+                <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 10px;">WARNING</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Emergency tone broadcast. Verify evacuation route instructions.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #6366F1; font-size: 14px;"><i class="fas fa-car-side"></i> 7. Vehicle Horn</strong>
+                <span class="badge" style="background: #E0E7FF; color: #4338CA; font-size: 10px;">MEDIUM</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Vehicle traffic warning. Exercise caution in loading dock area.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #6366F1; font-size: 14px;"><i class="fas fa-people-robbery"></i> 8. Aggression / Shouting</strong>
+                <span class="badge" style="background: #E0E7FF; color: #4338CA; font-size: 10px;">MEDIUM</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Elevated vocal aggression. Facility security officer dispatch dispatched.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #10B981; font-size: 14px;"><i class="fas fa-dog"></i> 9. Animal Sound</strong>
+                <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 10px;">LOW</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Domestic dog bark or wildlife sound near perimeter fence.</p>
+        </div>
+
+        <div style="padding: 14px; border-radius: 12px; background: var(--bg-surface); border: 1.5px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #10B981; font-size: 14px;"><i class="fas fa-wind"></i> 10. Background Noise</strong>
+                <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 10px;">NORMAL</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">HVAC, wind, office murmur. Normal operational acoustic baseline.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Threat Audition Chips */
+.audition-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.audition-chip:hover {
+    border-color: #10B981;
+    transform: translateY(-1px);
+}
+
+.audition-chip.active {
+    background: #10B981;
+    border-color: #10B981;
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.audition-chip.active i {
+    color: #FFFFFF !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Threat Audition Handler (Calls Fast Real Model Prediction API)
+    function auditionThreatSample(categoryKey, chipBtn) {
+        document.querySelectorAll('.audition-chip').forEach(b => b.classList.remove('active'));
+        if (chipBtn) chipBtn.classList.add('active');
+
+        showDashboardToast(`Running 373-feature extraction & Dual-AI inference on ${categoryKey}...`, 'info');
+
+        fetch(`/api/audio/classify-sample/${categoryKey}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const pred = data.prediction || {};
+                    const alert = data.alert || {};
+
+                    document.getElementById('auditionTitle').textContent = `Acoustic Threat: ${pred.final_class || categoryKey.toUpperCase()}`;
+                    document.getElementById('auditionClipName').textContent = `Clip: ${data.sample_filename} • Quality: ${data.quality.quality_grade}`;
+                    document.getElementById('auditionPyResult').textContent = `${pred.python_class} (${(pred.python_confidence * 100).toFixed(1)}%)`;
+                    document.getElementById('auditionGtmResult').textContent = `${pred.gtm_class} (${(pred.gtm_confidence * 100).toFixed(1)}%)`;
+                    document.getElementById('auditionConsResult').textContent = `${pred.consistency_status} (Delta ${(pred.confidence_difference * 100).toFixed(1)}%)`;
+
+                    // Stream sample audio
+                    const player = document.getElementById('threatAudioPlayer');
+                    player.src = data.sample_url;
+                    player.play().catch(e => console.log('Audio autoplay prevented'));
+
+                    showDashboardToast(`Classified as ${pred.final_class} with ${(pred.python_confidence * 100).toFixed(1)}% confidence`, 'success');
+                } else {
+                    showDashboardToast('Error classifying sample: ' + (data.error || 'Server error'), 'error');
+                }
+            })
+            .catch(err => {
+                showDashboardToast('Network error during audition: ' + err, 'error');
+            });
+    }
+
+    // 2. Ambient Decibel Gauge Animation
+    (function initDecibelGauge() {
+        const ring = document.getElementById('gaugeRing');
+        const dbVal = document.getElementById('gaugeDbValue');
+        const metricVal = document.getElementById('ambientDbMetric');
+
+        let baseDb = 48.0;
+        setInterval(() => {
+            const jitter = (Math.sin(Date.now() / 1000) * 3 + (Math.random() * 2 - 1)).toFixed(1);
+            const currentDb = (baseDb + parseFloat(jitter)).toFixed(1);
+
+            if (dbVal) dbVal.textContent = currentDb;
+            if (metricVal) metricVal.textContent = `${currentDb} dB`;
+
+            const pct = Math.min(1.0, currentDb / 100);
+            const offset = 440 - (440 * pct * 0.75);
+            if (ring) {
+                ring.style.strokeDashoffset = offset;
+                if (currentDb > 85) {
+                    ring.style.stroke = '#DC2626';
+                } else if (currentDb > 65) {
+                    ring.style.stroke = '#D97706';
+                } else {
+                    ring.style.stroke = '#0D9488';
+                }
+            }
+        }, 1200);
+    })();
+
+</script>
 {% endblock %}

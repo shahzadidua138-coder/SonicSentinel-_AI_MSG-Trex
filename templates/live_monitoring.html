@@ -121,7 +121,7 @@
             <!-- Python Model -->
             <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-weight: 600; font-size: 12px;"><i class="fab fa-python" style="color: var(--text-accent); margin-right: 4px;"></i> Python CNN (v2.4)</span>
+                    <span style="font-weight: 600; font-size: 12px;"><i class="fab fa-python" style="color: var(--text-accent); margin-right: 4px;"></i> Support Vector Machine (v2.4)</span>
                     <span class="font-mono" style="font-weight: 700; color: var(--text-accent);" id="live-py-conf">96.4%</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
@@ -131,10 +131,10 @@
                 <div class="progress-track"><div class="progress-fill" id="live-py-fill" style="width: 96.4%;"></div></div>
             </div>
 
-            <!-- GTM Model -->
+            <!-- Random Forest Model -->
             <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-weight: 600; font-size: 12px;"><i class="fas fa-brain" style="color: #a855f7; margin-right: 4px;"></i> Google Teachable Machine (v1.8)</span>
+                    <span style="font-weight: 600; font-size: 12px;"><i class="fas fa-brain" style="color: #a855f7; margin-right: 4px;"></i> Independent Random Forest</span>
                     <span class="font-mono" style="font-weight: 700; color: #c084fc;" id="live-gtm-conf">94.8%</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
@@ -192,16 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Start streaming sliding window chunks every 1.5s
                     liveStreamTimer = setInterval(async () => {
-                        if (!sonicAudio.isMicActive || !sonicAudio.analyser) return;
+                        if (!sonicAudio.isMicActive || !sonicAudio.audioWindowQueue.length) return;
 
-                        // Capture Float32 time-domain buffer
-                        const buffer = new Float32Array(sonicAudio.analyser.frequencyBinCount);
-                        sonicAudio.analyser.getFloatTimeDomainData(buffer);
+                        // Send one captured 1.5-second mono window at 22.05 kHz.
+                        const buffer = sonicAudio.audioWindowQueue.shift();
 
                         try {
                             const resp = await fetch('/api/audio/live-chunk', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/octet-stream' },
+                                headers: { 'Content-Type': 'application/octet-stream', 'X-Audio-Sample-Rate': '22050' },
                                 body: buffer.buffer
                             });
                             const data = await resp.json();
@@ -216,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 document.getElementById('live-py-conf').innerText = `${pyPct}%`;
                                 document.getElementById('live-py-fill').style.width = `${pyPct}%`;
 
-                                // Update GTM prediction
+                                // Update independent comparison model prediction
                                 document.getElementById('live-gtm-class').innerText = p.gtm_class;
                                 const gtmPct = (p.gtm_confidence * 100).toFixed(1);
                                 document.getElementById('live-gtm-conf').innerText = `${gtmPct}%`;

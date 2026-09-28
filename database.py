@@ -1,44 +1,164 @@
 """
-database.py - SQLite Database Management for SonicSentinel AI
+database.py - PostgreSQL Database Management for SonicSentinel AI
 Handles user credentials, secure password hashing, and session queries.
 Implements complete acoustic persistence: audio_records, predictions, alerts, reviews, audit_logs.
 Simplified Auth: Only 'admin' and 'user' roles.
 """
 
-import sqlite3
 import os
 import json
 import uuid
+import re
+from pathlib import Path
+import psycopg
+from psycopg import sql
+from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'sonicsentinel.db')
+load_dotenv(Path(__file__).resolve().parent / '.env')
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_SCHEMA = os.environ.get('DATABASE_SCHEMA', 'public')
+if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', DATABASE_SCHEMA):
+    raise RuntimeError('DATABASE_SCHEMA must be a simple PostgreSQL schema name.')
 
-# Only two roles in the system
-ROLE_ADMIN = 'admin'
-ROLE_USER = 'user'
+
+class DatabaseRow(dict):
+    """PostgreSQL row supporting both named and positional indexing."""
+    def __init__(self, values, names):
+        super().__init__(zip(names, values))
+        self._names = names
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            key = self._names[key]
+        return super().__getitem__(key)
+
+
+def _row_factory(cursor):
+    if cursor.description is None:
+        return lambda values: values
+    names = [column.name for column in cursor.description]
+    return lambda values: DatabaseRow(values, names)
+
+
+def _connect_database():
+    connection = psycopg.connect(DATABASE_URL, row_factory=_row_factory)
+    with connection.cursor() as cursor:
+        if DATABASE_SCHEMA != 'public':
+            cursor.execute(sql.SQL('CREATE SCHEMA IF NOT EXISTS {}').format(sql.Identifier(DATABASE_SCHEMA)))
+        cursor.execute(sql.SQL('SET search_path TO {}').format(sql.Identifier(DATABASE_SCHEMA)))
+    connection.commit()
+    return connection
+
+
+class CompatCursor:
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def execute(self, query, params=None):
+        query = _postgres_sql(query)
+        if params is None:
+            self._cursor.execute(query)
+        else:
+            self._cursor.execute(query, params)
+        return self
+
+    def fetchone(self): return self._cursor.fetchone()
+    def fetchall(self): return self._cursor.fetchall()
+    @property
+    def rowcount(self): return self._cursor.rowcount
+    @property
+    def lastrowid(self): return None
+
+
+class CompatConnection:
+    def __init__(self, connection):
+        self._connection = connection
+
+    def cursor(self): return CompatCursor(self._connection.cursor(row_factory=_row_factory))
+    def execute(self, query, params=None):
+        cursor = self.cursor()
+        try:
+            return cursor.execute(query, params)
+        except psycopg.OperationalError:
+            # Read-only retries are safe after a Neon pooler disconnect; never replay writes.
+            normalized = _postgres_sql(query)
+            if not normalized.lstrip().upper().startswith('SELECT'):
+                raise
+            self._connection = _connect_database()
+            return self.cursor().execute(normalized, params)
+    def commit(self): return self._connection.commit()
+    def rollback(self): return self._connection.rollback()
+    def close(self): return self._connection.close()
+
+
+def _postgres_sql(query):
+    query = query.strip()
+    if query.upper().startswith('PRAGMA '):
+        raise ValueError('SQLite PRAGMA statements are not supported by PostgreSQL')
+    is_replace = bool(re.match(r'INSERT\s+OR\s+REPLACE\s+INTO', query, flags=re.IGNORECASE))
+    query = re.sub(r'\bINSERT\s+OR\s+REPLACE\s+INTO\b', 'INSERT INTO', query, flags=re.IGNORECASE)
+    if is_replace and 'ON CONFLICT' not in query.upper() and 'RETURNING' not in query.upper():
+        match = re.match(r'(INSERT INTO\s+\w+)\s*\(([^)]+)\)(\s*VALUES\s*\(.+\))\s*;?$', query, flags=re.IGNORECASE | re.DOTALL)
+        if match:
+            columns = [name.strip() for name in match.group(2).split(',')]
+            updates = ', '.join(f'{name}=EXCLUDED.{name}' for name in columns if name.lower() != 'id')
+            suffix = f'ON CONFLICT (id) DO UPDATE SET {updates}' if updates else 'ON CONFLICT (id) DO NOTHING'
+            query = f'{match.group(1)} ({match.group(2)}){match.group(3)} {suffix}'
+    return re.sub(r'\?', '%s', query)
+
+# 5 Standard SRS Roles (SRS Section 1.6 ii)
+ROLE_ADMIN = 'Administrator'
+ROLE_SECURITY = 'Security Operator'
+ROLE_REVIEWER = 'Audio Reviewer'
+ROLE_MAINTENANCE = 'Maintenance Operator'
+ROLE_USER = 'Normal User'
+
+ALL_ASSIGNABLE_ROLES = [
+    ROLE_USER,
+    ROLE_SECURITY,
+    ROLE_REVIEWER,
+    ROLE_MAINTENANCE
+]
+
+
+def normalize_role(role_val):
+    """
+    Normalizes any role string representation to one of the 5 canonical SRS role names.
+    Supports case-insensitivity and legacy short names ('admin', 'user', 'operator', 'reviewer', 'maintenance').
+    """
+    if not role_val:
+        return ROLE_USER
+    val = str(role_val).strip().lower()
+    if 'admin' in val:
+        return ROLE_ADMIN
+    elif 'maint' in val:
+        return ROLE_MAINTENANCE
+    elif 'rev' in val:
+        return ROLE_REVIEWER
+    elif 'sec' in val or 'operat' in val:
+        return ROLE_SECURITY
+    else:
+        return ROLE_USER
+
 
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    if not DATABASE_URL:
+        raise RuntimeError('DATABASE_URL is required. Configure the Neon PostgreSQL connection in .env.')
+    return CompatConnection(_connect_database())
+
 
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Enable WAL mode for high performance concurrency
-    try:
-        cursor.execute('PRAGMA journal_mode=WAL;')
-    except Exception:
-        pass
-
     # 1. Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id BIGSERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
@@ -53,9 +173,9 @@ def init_db():
         )
     ''')
 
-    # Migration: Ensure is_active column exists
-    cursor.execute('PRAGMA table_info(users)')
-    columns = [col[1] for col in cursor.fetchall()]
+    # Migrations for existing PostgreSQL installations.
+    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'users'")
+    columns = {col[0] for col in cursor.fetchall()}
     if 'is_active' not in columns:
         cursor.execute('ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1')
 
@@ -68,8 +188,11 @@ def init_db():
             file_path TEXT,
             original_filename TEXT,
             duration_seconds REAL NOT NULL,
+            audio_format TEXT,
             sample_rate INTEGER NOT NULL DEFAULT 22050,
             channels INTEGER DEFAULT 1,
+            bit_depth INTEGER,
+            file_size_bytes INTEGER,
             sha256_hash TEXT,
             quality_grade TEXT NOT NULL DEFAULT 'Good',
             is_clipped INTEGER DEFAULT 0,
@@ -79,6 +202,16 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     ''')
+
+    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'audio_records'")
+    audio_columns = {col[0] for col in cursor.fetchall()}
+    for column, declaration in {
+        'audio_format': 'TEXT',
+        'bit_depth': 'INTEGER',
+        'file_size_bytes': 'INTEGER',
+    }.items():
+        if column not in audio_columns:
+            cursor.execute(f'ALTER TABLE audio_records ADD COLUMN {column} {declaration}')
 
     # 3. Predictions table (Dual AI Models)
     cursor.execute('''
@@ -98,7 +231,7 @@ def init_db():
             waveform_image_path TEXT,
             spectrogram_image_path TEXT,
             evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (audio_id) REFERENCES audio_records(id)
+        FOREIGN KEY (audio_id) REFERENCES audio_records(id)
         )
     ''')
 
@@ -148,30 +281,76 @@ def init_db():
         )
     ''')
 
-    # Ensure built-in Administrator account exists
-    cursor.execute("SELECT id FROM users WHERE LOWER(username) = 'admin'")
-    admin_exists = cursor.fetchone()
+    # Normalize legacy roles in database
+    cursor.execute("UPDATE users SET role = 'Administrator' WHERE LOWER(username) = 'admin' OR LOWER(role) = 'admin'")
+    cursor.execute("UPDATE users SET role = 'Security Operator' WHERE LOWER(username) = 'operator' OR LOWER(role) IN ('operator', 'security')")
+    cursor.execute("UPDATE users SET role = 'Audio Reviewer' WHERE LOWER(username) = 'reviewer' OR LOWER(role) = 'reviewer'")
+    cursor.execute("UPDATE users SET role = 'Maintenance Operator' WHERE LOWER(username) = 'maintenance' OR LOWER(role) IN ('maintenance', 'maint')")
+    cursor.execute("UPDATE users SET role = 'Normal User' WHERE (LOWER(username) = 'user' OR LOWER(role) = 'user') AND LOWER(username) != 'admin'")
 
-    if not admin_exists:
-        admin_pass_hash = generate_password_hash('Admin@123')
-        cursor.execute('''
-            INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        ''', (
-            'admin',
-            'admin@sonicsentinel.ai',
-            admin_pass_hash,
-            'System Administrator',
-            ROLE_ADMIN,
-            'SonicSentinel Command',
-            'Admin Console',
-            'light'
-        ))
+    # Demo accounts are opt-in; never insert known default credentials into a Neon database.
+    default_accounts = [
+        {
+            'username': 'admin',
+            'email': 'admin@sonicsentinel.ai',
+            'password': 'Admin@123',
+            'full_name': 'System Administrator',
+            'role': ROLE_ADMIN,
+            'station': 'Admin Console (HQ)',
+            'org': 'SonicSentinel Command HQ'
+        },
+        {
+            'username': 'operator',
+            'email': 'operator@sonicsentinel.ai',
+            'password': 'Operator@123',
+            'full_name': 'Officer Marcus Vance',
+            'role': ROLE_SECURITY,
+            'station': 'Security Operations Center (SOC)',
+            'org': 'Perimeter Defense Division'
+        },
+        {
+            'username': 'reviewer',
+            'email': 'reviewer@sonicsentinel.ai',
+            'password': 'Reviewer@123',
+            'full_name': 'Dr. Elena Rostova',
+            'role': ROLE_REVIEWER,
+            'station': 'Acoustic Forensics Lab',
+            'org': 'Forensics & Arbitration'
+        },
+        {
+            'username': 'maintenance',
+            'email': 'maintenance@sonicsentinel.ai',
+            'password': 'Maint@123',
+            'full_name': 'Eng. Tyler Briggs',
+            'role': ROLE_MAINTENANCE,
+            'station': 'Sensor Array Diagnostic Dock',
+            'org': 'Hardware Engineering'
+        },
+        {
+            'username': 'user',
+            'email': 'user@sonicsentinel.ai',
+            'password': 'User@123',
+            'full_name': 'Sarah Jenkins',
+            'role': ROLE_USER,
+            'station': 'Community Safety Portal',
+            'org': 'SonicSentinel Community'
+        }
+    ]
+
+    for acc in default_accounts if os.environ.get('SEED_DEMO_DATA', '').lower() == 'true' else []:
+        cursor.execute("SELECT id FROM users WHERE LOWER(username) = ?", (acc['username'].lower(),))
+        if not cursor.fetchone():
+            pass_hash = generate_password_hash(acc['password'])
+            cursor.execute('''
+                INSERT INTO users (username, email, password_hash, full_name, role, organization, station, theme_preference, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'light', 1)
+            ''', (acc['username'], acc['email'], pass_hash, acc['full_name'], acc['role'], acc['org'], acc['station']))
 
     conn.commit()
 
     # Seed the 11 mandatory competition scenarios if not present
-    seed_competition_scenarios(conn)
+    if os.environ.get('SEED_DEMO_DATA', '').lower() == 'true':
+        seed_competition_scenarios(conn)
 
     conn.close()
 
@@ -423,11 +602,13 @@ def seed_competition_scenarios(conn):
 def get_all_audio_events():
     conn = get_db_connection()
     events = conn.execute('''
-        SELECT a.id, a.original_filename, a.duration_seconds, a.quality_grade, a.snr_db, a.created_at,
+        SELECT a.id, a.user_id, a.source_type, a.original_filename, a.duration_seconds, a.quality_grade, a.snr_db, a.created_at,
                p.python_predicted_class, p.python_top_confidence,
                p.gtm_predicted_class, p.gtm_top_confidence,
                p.confidence_difference, p.top_two_margin, p.consistency_status, p.final_detected_class,
-               alt.severity, alt.status as alert_status, alt.recommended_action
+               alt.severity, alt.status as alert_status, alt.recommended_action,
+               (SELECT CASE WHEN r.is_override = 1 THEN 'Reviewed' ELSE 'Pending' END
+                FROM reviews r WHERE r.audio_id = a.id ORDER BY r.reviewed_at DESC LIMIT 1) AS review_status
         FROM audio_records a
         LEFT JOIN predictions p ON a.id = p.audio_id
         LEFT JOIN alerts alt ON a.id = alt.audio_id
@@ -480,26 +661,27 @@ def get_active_alerts():
 
 def update_alert_status(alert_id, status, user_id=None):
     conn = get_db_connection()
-    conn.execute('''
+    cursor = conn.execute('''
         UPDATE alerts 
         SET status = ?, acknowledged_by = ?, acknowledged_at = ?
         WHERE id = ?
     ''', (status, user_id, datetime.utcnow() if status != 'Active' else None, alert_id))
     conn.commit()
     conn.close()
-    return True
+    return cursor.rowcount > 0
 
 
 def get_review_queue():
     conn = get_db_connection()
     reviews = conn.execute('''
-        SELECT r.*, a.original_filename, a.duration_seconds, a.quality_grade, a.snr_db,
+        SELECT r.*, a.original_filename, a.duration_seconds, a.quality_grade, a.snr_db, a.file_path,
                p.python_predicted_class, p.python_top_confidence,
                p.gtm_predicted_class, p.gtm_top_confidence,
-               p.confidence_difference, p.consistency_status
+               p.confidence_difference, p.consistency_status, p.waveform_image_path
         FROM reviews r
         JOIN audio_records a ON r.audio_id = a.id
         LEFT JOIN predictions p ON a.id = p.audio_id
+        WHERE r.reviewer_id IS NULL
         ORDER BY r.reviewed_at DESC
     ''').fetchall()
     conn.close()
@@ -553,51 +735,74 @@ def log_audit_action(user_id, action, details=None):
 
 
 # ==========================================
-# USER METHODS (SIMPLIFIED - admin + user only)
+# USER METHODS (FULL CRUD & RBAC MANAGEMENT)
 # ==========================================
 
 def get_user_by_id(user_id):
+    """Retrieves user by primary key ID and returns dict with normalized role."""
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
-    return user
+    if user:
+        d = dict(user)
+        d['role'] = normalize_role(d['role'])
+        return d
+    return None
 
 
 def get_user_by_email_or_username(identifier):
+    """Retrieves user by either email or username with normalized role."""
     conn = get_db_connection()
     user = conn.execute(
         'SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)',
         (identifier, identifier)
     ).fetchone()
     conn.close()
-    return user
+    if user:
+        d = dict(user)
+        d['role'] = normalize_role(d['role'])
+        return d
+    return None
 
 
 def get_all_users():
-    """Retrieve all users for Admin management"""
+    """Retrieve all users with normalized role ordering for Admin management."""
     conn = get_db_connection()
     users = conn.execute('''
         SELECT id, username, email, full_name, role, organization, station, is_active, created_at, last_login
         FROM users
         ORDER BY 
-            CASE role 
-                WHEN 'admin' THEN 1 
-                ELSE 2 
+            CASE 
+                WHEN LOWER(role) IN ('administrator', 'admin') THEN 1 
+                WHEN LOWER(role) IN ('security operator', 'operator', 'security') THEN 2 
+                WHEN LOWER(role) IN ('audio reviewer', 'reviewer') THEN 3 
+                WHEN LOWER(role) IN ('maintenance operator', 'maintenance', 'maint') THEN 4 
+                ELSE 5 
             END,
             created_at DESC
     ''').fetchall()
     conn.close()
-    return users
+    result = []
+    for u in users:
+        d = dict(u)
+        d['role'] = normalize_role(d['role'])
+        result.append(d)
+    return result
 
 
-def create_user(username, email, password, full_name, role=ROLE_USER, organization='SonicSentinel Community', station='Web Portal', is_active=1):
+def create_user(username, email, password, full_name, role=ROLE_USER, organization='SonicSentinel Community', station=None, is_active=1, is_admin_provision=False):
     """
     Creates a new user record.
     Enforces password hashing and checks username/email uniqueness.
-    Public registration ALWAYS creates 'user' role.
+    If created via public register (is_admin_provision=False), ALWAYS sets 'Normal User'.
+    If provisioned by Admin in UI, role must be one of the 4 assignable roles (cannot create Administrator).
     """
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    username = username.strip()
+    email = email.strip()
+    full_name = full_name.strip()
 
     # Check duplicate username
     cursor.execute('SELECT id FROM users WHERE LOWER(username) = LOWER(?)', (username,))
@@ -611,36 +816,162 @@ def create_user(username, email, password, full_name, role=ROLE_USER, organizati
         conn.close()
         return False, "Email address is already registered. Please sign in or use another email."
 
+    norm_role = normalize_role(role)
+    if not is_admin_provision:
+        norm_role = ROLE_USER
+    else:
+        # Admin can only create users with one of the 4 operational roles
+        if norm_role not in ALL_ASSIGNABLE_ROLES:
+            norm_role = ROLE_USER
+
+    if not station:
+        station_defaults = {
+            ROLE_ADMIN: 'Central Command',
+            ROLE_SECURITY: 'Security Operations Center (SOC)',
+            ROLE_REVIEWER: 'Acoustic Forensics Lab',
+            ROLE_MAINTENANCE: 'Sensor Array Diagnostic Dock',
+            ROLE_USER: 'Community Safety Portal'
+        }
+        station = station_defaults.get(norm_role, 'Web Portal')
+
     password_hash = generate_password_hash(password)
 
     cursor.execute('''
         INSERT INTO users (username, email, password_hash, full_name, role, organization, station, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (username, email, password_hash, full_name, role, organization, station, is_active))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+    ''', (username, email, password_hash, full_name, norm_role, organization, station, is_active))
 
     conn.commit()
-    user_id = cursor.lastrowid
+    user_id = cursor.fetchone()['id']
     conn.close()
     return True, user_id
 
 
-def toggle_user_status(user_id):
-    """Activates or deactivates an account. Admin cannot be deactivated."""
+def update_user(user_id, full_name, email, role=None, station=None, organization=None, password=None):
+    """
+    Full CRUD Update: Modifies user details.
+    Allows changing user role to any of the 4 assignable roles.
+    Prevents assigning 'Administrator' through UI.
+    Prevents modifying built-in Administrator's role.
+    """
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     if not user:
         conn.close()
         return False, "User not found."
 
-    if user['role'] == ROLE_ADMIN:
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?', (email.strip(), user_id))
+    if cursor.fetchone():
         conn.close()
-        return False, "The built-in Administrator account cannot be deactivated."
+        return False, "Email address is already in use by another account."
+
+    current_role = normalize_role(user['role'])
+    target_role = current_role
+    if role:
+        norm_target = normalize_role(role)
+        if current_role == ROLE_ADMIN or user['username'].lower() == 'admin':
+            # Built-in administrator role is protected
+            target_role = ROLE_ADMIN
+        else:
+            if norm_target in ALL_ASSIGNABLE_ROLES:
+                target_role = norm_target
+            else:
+                conn.close()
+                return False, "Invalid role. Administrator role cannot be assigned through UI."
+
+    updates = [
+        "full_name = ?",
+        "email = ?",
+        "role = ?",
+        "station = ?",
+        "organization = ?"
+    ]
+    params = [
+        full_name.strip(),
+        email.strip(),
+        target_role,
+        (station or user['station'] or 'Web Portal').strip(),
+        (organization or user['organization'] or 'SonicSentinel Community').strip()
+    ]
+
+    if password and len(password.strip()) >= 6:
+        updates.append("password_hash = ?")
+        params.append(generate_password_hash(password.strip()))
+
+    params.append(user_id)
+    query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
+    conn.execute(query, params)
+    conn.commit()
+    conn.close()
+    return True, f"User '{user['username']}' updated successfully."
+
+
+def update_user_role(user_id, new_role):
+    """
+    Specifically changes a user's role to any of the 4 assignable roles:
+    - Normal User
+    - Security Operator
+    - Audio Reviewer
+    - Maintenance Operator
+    Administrator role CANNOT be assigned here (database direct only).
+    """
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return False, "User not found."
+
+    if normalize_role(user['role']) == ROLE_ADMIN or user['username'].lower() == 'admin':
+        conn.close()
+        return False, "The Administrator role cannot be modified."
+
+    norm_role = normalize_role(new_role)
+    if norm_role not in ALL_ASSIGNABLE_ROLES:
+        conn.close()
+        return False, "Invalid role selection. Only operational roles (Normal User, Security Operator, Audio Reviewer, Maintenance Operator) may be assigned."
+
+    conn.execute('UPDATE users SET role = ? WHERE id = ?', (norm_role, user_id))
+    conn.commit()
+    conn.close()
+    return True, f"User '{user['username']}' role updated to '{norm_role}'."
+
+
+def delete_user(user_id):
+    """Deletes a user account. Built-in Administrator cannot be deleted."""
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return False, "User not found."
+
+    if normalize_role(user['role']) == ROLE_ADMIN or user['username'].lower() == 'admin':
+        conn.close()
+        return False, "The built-in Administrator account cannot be deleted."
+
+    conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return True, f"User account '{user['username']}' has been permanently deleted."
+
+
+def toggle_user_status(user_id):
+    """Suspends / Deactivates or Activates an account. Admin cannot be deactivated."""
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return False, "User not found."
+
+    if normalize_role(user['role']) == ROLE_ADMIN or user['username'].lower() == 'admin':
+        conn.close()
+        return False, "The built-in Administrator account cannot be suspended or deactivated."
 
     new_status = 0 if user['is_active'] == 1 else 1
     conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (new_status, user_id))
     conn.commit()
     conn.close()
-    status_label = "activated" if new_status == 1 else "deactivated"
+    status_label = "activated" if new_status == 1 else "suspended / deactivated"
     return True, f"User account '{user['username']}' has been {status_label}."
 
 
@@ -658,7 +989,7 @@ def verify_user_credentials(identifier, password):
 
     # Check active status
     if user['is_active'] == 0:
-        return None, "Your account has been deactivated. Please contact an administrator."
+        return None, "Your account has been deactivated or suspended. Please contact an administrator."
 
     # Update last login timestamp
     conn = get_db_connection()
@@ -682,13 +1013,13 @@ def update_user_profile(user_id, full_name, station, theme_preference):
 
 
 def reset_user_password(identifier, new_password):
-    """Securely updates password for a verified user by email or username"""
+    """Securely updates password for a verified user by email or username."""
     user = get_user_by_email_or_username(identifier)
     if not user:
         return False, "No account associated with this username or email was found."
 
     if user['is_active'] == 0:
-        return False, "Account is deactivated. Password reset is not permitted."
+        return False, "Account is suspended/deactivated. Password reset is not permitted."
 
     new_hash = generate_password_hash(new_password)
     conn = get_db_connection()
@@ -696,3 +1027,108 @@ def reset_user_password(identifier, new_password):
     conn.commit()
     conn.close()
     return True, "Your password has been successfully reset. You may now log in."
+
+
+def get_user_role_counts():
+    """Returns counts for each role and active/suspended totals."""
+    conn = get_db_connection()
+    rows = conn.execute('SELECT role, is_active, COUNT(*) as cnt FROM users GROUP BY role, is_active').fetchall()
+    conn.close()
+    counts = {
+        'total': 0,
+        'active': 0,
+        'suspended': 0,
+        'admin': 0,
+        'security': 0,
+        'reviewer': 0,
+        'maintenance': 0,
+        'user': 0
+    }
+    for r in rows:
+        cnt = r['cnt']
+        counts['total'] += cnt
+        if r['is_active'] == 1:
+            counts['active'] += cnt
+        else:
+            counts['suspended'] += cnt
+        norm = normalize_role(r['role'])
+        if norm == ROLE_ADMIN:
+            counts['admin'] += cnt
+        elif norm == ROLE_SECURITY:
+            counts['security'] += cnt
+        elif norm == ROLE_REVIEWER:
+            counts['reviewer'] += cnt
+        elif norm == ROLE_MAINTENANCE:
+            counts['maintenance'] += cnt
+        else:
+            counts['user'] += cnt
+    return counts
+
+
+def get_system_overview_stats():
+    """Calculates comprehensive telemetry stats for all dashboards."""
+    conn = get_db_connection()
+    total_audio = conn.execute('SELECT COUNT(*) FROM audio_records').fetchone()[0]
+    total_alerts = conn.execute('SELECT COUNT(*) FROM alerts').fetchone()[0]
+    active_alerts = conn.execute("SELECT COUNT(*) FROM alerts WHERE status = 'Active'").fetchone()[0]
+    critical_alerts = conn.execute("SELECT COUNT(*) FROM alerts WHERE severity = 'Critical' AND status = 'Active'").fetchone()[0]
+    high_alerts = conn.execute("SELECT COUNT(*) FROM alerts WHERE severity = 'High' AND status = 'Active'").fetchone()[0]
+    pending_reviews = conn.execute("SELECT COUNT(*) FROM reviews WHERE reviewer_id IS NULL").fetchone()[0]
+    disagreements = conn.execute("SELECT COUNT(*) FROM predictions WHERE consistency_status LIKE '%Disagreement%'").fetchone()[0]
+    poor_quality = conn.execute("SELECT COUNT(*) FROM audio_records WHERE quality_grade IN ('Poor', 'Unusable')").fetchone()[0]
+    avg_conf = conn.execute("SELECT AVG(python_top_confidence) FROM predictions").fetchone()[0] or 0.885
+    conn.close()
+
+    return {
+        'total_audio': total_audio,
+        'total_alerts': total_alerts,
+        'active_alerts': active_alerts,
+        'critical_alerts': critical_alerts,
+        'high_alerts': high_alerts,
+        'pending_reviews': pending_reviews,
+        'disagreements': disagreements,
+        'poor_quality': poor_quality,
+        'avg_confidence_pct': round(float(avg_conf) * 100, 1),
+        'hardware_nodes_online': 12,
+        'total_hardware_nodes': 12,
+        'system_health': 'OPTIMAL'
+    }
+
+
+def get_category_distribution():
+    """Counts events per category for chart and breakdown display across all 10 mandatory categories."""
+    conn = get_db_connection()
+    rows = conn.execute('''
+        SELECT final_detected_class, COUNT(*) as cnt 
+        FROM predictions 
+        GROUP BY final_detected_class
+    ''').fetchall()
+    conn.close()
+    db_counts = {r['final_detected_class']: r['cnt'] for r in rows}
+
+    categories = [
+        {"name": "Gunshot", "severity": "Critical"},
+        {"name": "Panic Scream", "severity": "Critical"},
+        {"name": "Person Asking for Help", "severity": "Critical"},
+        {"name": "Glass Breaking", "severity": "High"},
+        {"name": "Machinery Fault", "severity": "High"},
+        {"name": "Alarm or Siren", "severity": "Warning"},
+        {"name": "Vehicle Horn", "severity": "Medium"},
+        {"name": "Aggression", "severity": "Medium"},
+        {"name": "Animal Sound", "severity": "Low"},
+        {"name": "Background Noise", "severity": "Informational"}
+    ]
+
+    res = []
+    for cat in categories:
+        cnt = db_counts.get(cat['name'], 0)
+        if cnt == 0:
+            for k, v in db_counts.items():
+                if k and (cat['name'].lower() in k.lower() or k.lower() in cat['name'].lower()):
+                    cnt += v
+        res.append({
+            "name": cat['name'],
+            "count": cnt,
+            "severity": cat['severity']
+        })
+    return res

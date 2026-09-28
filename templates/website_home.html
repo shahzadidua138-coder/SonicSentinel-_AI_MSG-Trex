@@ -12,9 +12,9 @@
             <div class="hud-title-badge">
                 <i class="fa-solid fa-radiation"></i> CRITICAL ACOUSTIC THREAT DETECTED
             </div>
-            <h3 class="hud-headline" id="hudThreatHeadline">GUNSHOT DETECTED &bull; 98.4% CONFIDENCE</h3>
+            <h3 class="hud-headline" id="hudThreatHeadline">AWAITING MODEL INPUT</h3>
             <p class="hud-subdetail" id="hudThreatDetail">
-                Automatic Dispatch: Sector Alpha Security Unit alerted. Incident Certificate #SS-2026 generated.
+                A verified acoustic event will appear here after live analysis.
             </p>
         </div>
     </div>
@@ -33,6 +33,12 @@
      Image clear on right, fading smoothly to left
      ========================================== -->
 <section class="hero-showcase-section" id="heroSection">
+    <video class="hero-video-background" id="heroVideo" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source src="{{ url_for('static', filename='video/hero-background-hd.mp4') }}" type="video/mp4">
+    </video>
+    <button class="hero-video-sound-toggle" id="heroVideoSoundToggle" type="button" aria-label="Enable hero video sound" aria-pressed="false">
+        <i class="fa-solid fa-volume-xmark"></i><span>Sound off</span>
+    </button>
     <!-- Right Background Visual with Smooth Leftward Fade Mask -->
     <div class="hero-fading-bg-visual"></div>
 
@@ -43,16 +49,16 @@
         <path d="M200 480C390 410 520 620 800 460C940 370 1000 520 1080 450" stroke="url(#wave_teal_glow1)" stroke-width="1.8" stroke-dasharray="6 4" opacity="0.45"/>
         <defs>
             <linearGradient id="wave_teal_glow1" x1="0" y1="350" x2="1000" y2="350" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#2DD4BF" stop-opacity="0"/>
-                <stop offset="0.3" stop-color="#2DD4BF" stop-opacity="0.6"/>
-                <stop offset="0.8" stop-color="#14B8A6" stop-opacity="0.9"/>
-                <stop offset="1" stop-color="#00F2FE" stop-opacity="1"/>
+                <stop stop-color="#AF8DA6" stop-opacity="0"/>
+                <stop offset="0.3" stop-color="#AF8DA6" stop-opacity="0.6"/>
+                <stop offset="0.8" stop-color="#825D78" stop-opacity="0.9"/>
+                <stop offset="1" stop-color="#E7D8E5" stop-opacity="1"/>
             </linearGradient>
             <linearGradient id="wave_teal_glow2" x1="0" y1="400" x2="1000" y2="400" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#5EEAD4" stop-opacity="0"/>
-                <stop offset="0.4" stop-color="#2DD4BF" stop-opacity="0.7"/>
-                <stop offset="0.85" stop-color="#0D9488" stop-opacity="0.95"/>
-                <stop offset="1" stop-color="#2DD4BF" stop-opacity="1"/>
+                <stop stop-color="#D2BBD0" stop-opacity="0"/>
+                <stop offset="0.4" stop-color="#AF8DA6" stop-opacity="0.7"/>
+                <stop offset="0.85" stop-color="#6B4A63" stop-opacity="0.95"/>
+                <stop offset="1" stop-color="#E7D8E5" stop-opacity="1"/>
             </linearGradient>
         </defs>
     </svg>
@@ -73,20 +79,20 @@
                     <i class="fa-solid fa-bolt"></i> Interactive Quick Threat Audition:
                 </div>
                 <div class="hero-chips-scroll">
-                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('gunshot', 'Gunshot', '98.4%', 'Immediate Security Lockdown Dispatch')">
-                        <i class="fa-solid fa-crosshairs" style="color: #EF4444;"></i> Gunshot (98.4%)
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('gunshot', 'Gunshot')">
+                        <i class="fa-solid fa-crosshairs" style="color: #EF4444;"></i> Gunshot
                     </button>
-                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('scream', 'Panic Scream', '96.9%', 'Medical & Crisis Team Alerted')">
-                        <i class="fa-solid fa-person-circle-exclamation" style="color: #EF4444;"></i> Scream (96.9%)
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('scream', 'Panic Scream')">
+                        <i class="fa-solid fa-person-circle-exclamation" style="color: #EF4444;"></i> Scream
                     </button>
-                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('glass', 'Glass Breaking', '95.8%', 'Perimeter Intrusion Unit Dispatched')">
+                    <button class="hero-audition-chip danger-chip" onclick="triggerHeroAudition('glass', 'Glass Breaking')">
                         <i class="fa-solid fa-burst" style="color: #F59E0B;"></i> Glass Shatter
                     </button>
-                    <button class="hero-audition-chip" onclick="triggerHeroAudition('alarm', 'Alarm / Siren', '97.2%', 'Emergency Protocol Activated')">
+                    <button class="hero-audition-chip" onclick="triggerHeroAudition('alarm', 'Alarm / Siren')">
                         <i class="fa-solid fa-bell" style="color: #3B82F6;"></i> Siren Alert
                     </button>
-                    <button class="hero-audition-chip" onclick="triggerHeroAudition('machinery', 'Machinery Fault', '93.6%', 'Preventive Maintenance Scheduled')">
-                        <i class="fa-solid fa-gears" style="color: #10B981;"></i> Machinery Fault
+                    <button class="hero-audition-chip" onclick="triggerHeroAudition('machinery', 'Machinery Fault')">
+                        <i class="fa-solid fa-gears" style="color: var(--purple-600);"></i> Machinery Fault
                     </button>
                 </div>
             </div>
@@ -312,7 +318,7 @@
 
                 <div class="pane-label-bar" style="margin-top: 10px;">
                     <span>Or Select Real Dataset Sample (10 Classes)</span>
-                    <span style="font-size: 10px; color: var(--teal-400);">SRS §1.2</span>
+                    <span style="font-size: 10px; color: var(--purple-400);">SRS §1.2</span>
                 </div>
 
                 <!-- Preset Sound Chips List (All 10 SRS Mandatory Classes) -->
@@ -382,15 +388,15 @@
                 <!-- Quality Gatekeeper Metrics (SRS Step 13) -->
                 <div class="quality-metrics-strip">
                     <div class="q-metric-card">
-                        <div class="q-metric-val" id="studioSnrVal">34.2 dB</div>
+                        <div class="q-metric-val" id="studioSnrVal">—</div>
                         <div class="q-metric-lbl">Signal-to-Noise</div>
                     </div>
                     <div class="q-metric-card">
-                        <div class="q-metric-val" id="studioGradeVal">Good</div>
+                        <div class="q-metric-val" id="studioGradeVal">—</div>
                         <div class="q-metric-lbl">Quality Grade</div>
                     </div>
                     <div class="q-metric-card">
-                        <div class="q-metric-val" id="studioClipVal">0% (Clean)</div>
+                        <div class="q-metric-val" id="studioClipVal">—</div>
                         <div class="q-metric-lbl">Clipping / Silence</div>
                     </div>
                 </div>
@@ -406,33 +412,33 @@
                 <!-- Final Decision Card -->
                 <div class="final-decision-hero-card">
                     <div class="decision-label">Arbitrated Threat Detection</div>
-                    <div class="decision-event-name" id="studioDecisionName">Gunshot</div>
+                    <div class="decision-event-name" id="studioDecisionName">Awaiting audio input</div>
                     <div class="decision-match-chip" id="studioMatchStatus">
-                        <i class="fa-solid fa-circle-check"></i> Acceptable Match (&Delta; = 2.3%)
+                        <i class="fa-solid fa-waveform-lines"></i> No analysis yet
                     </div>
                 </div>
 
                 <!-- Dual Confidence Meters -->
                 <div class="model-confidence-meter-box">
-                    <!-- Python Model -->
+                    <!-- Primary trained model -->
                     <div class="meter-row-group">
                         <div class="meter-row-header">
-                            <span><i class="fa-brands fa-python" style="color:#2DD4BF;"></i> Python CNN Model</span>
-                            <span id="pyModelConfidence" style="font-family: var(--font-mono); color: var(--teal-300);">98.4%</span>
+                            <span><i class="fa-solid fa-brain" style="color:var(--purple-600);"></i> Support Vector Machine</span>
+                            <span id="pyModelConfidence" style="font-family: var(--font-mono); color: var(--purple-300);">—</span>
                         </div>
                         <div class="meter-bar-track">
-                            <div class="meter-bar-fill" id="pyModelBarFill" style="width: 98.4%;"></div>
+                            <div class="meter-bar-fill" id="pyModelBarFill" style="width: 0%;"></div>
                         </div>
                     </div>
 
-                    <!-- Google Teachable Machine -->
+                    <!-- Independent comparison model reported by the backend -->
                     <div class="meter-row-group">
                         <div class="meter-row-header">
-                            <span><i class="fa-brands fa-google" style="color:#60A5FA;"></i> Google Teachable Machine</span>
-                            <span id="gtmModelConfidence" style="font-family: var(--font-mono); color: #60A5FA;">96.1%</span>
+                            <span><i class="fa-solid fa-code-compare" style="color:var(--purple-500);"></i> Random Forest Comparison</span>
+                            <span id="gtmModelConfidence" style="font-family: var(--font-mono); color: var(--purple-500);">—</span>
                         </div>
                         <div class="meter-bar-track">
-                            <div class="meter-bar-fill gtm" id="gtmModelBarFill" style="width: 96.1%;"></div>
+                            <div class="meter-bar-fill gtm" id="gtmModelBarFill" style="width: 0%;"></div>
                         </div>
                     </div>
                 </div>
@@ -440,16 +446,16 @@
                 <!-- Arbitration Formula Calculation (SRS Step 11) -->
                 <div class="arbitration-formula-card">
                     <div class="formula-row">
-                        <span>Confidence &Delta; = |Python - GTM|:</span>
-                        <strong id="confDeltaFormula">2.3%</strong>
+                        <span>Confidence &Delta; = |SVM - Random Forest|:</span>
+                        <strong id="confDeltaFormula">—</strong>
                     </div>
                     <div class="formula-row">
                         <span>Top-Two Margin:</span>
-                        <strong id="topTwoMarginFormula">94.2%</strong>
+                        <strong id="topTwoMarginFormula">—</strong>
                     </div>
                     <div class="formula-row">
                         <span>Repeated Detection:</span>
-                        <strong style="color: #34D399;">Confirmed (2 Windows)</strong>
+                        <strong id="repeatedDetectionFormula">Awaiting repeated window</strong>
                     </div>
                 </div>
             </div>
@@ -642,7 +648,7 @@
             <div class="pipeline-node-icon"><i class="fa-solid fa-brain"></i></div>
             <span class="pipeline-step-num">Step 04</span>
             <h4 class="pipeline-step-title">Dual-AI Inference</h4>
-            <p class="pipeline-step-desc">Executes Python CNN &amp; Google Teachable Machine in parallel independent passes.</p>
+            <p class="pipeline-step-desc">Executes the Support Vector Machine and Random Forest models in independent passes.</p>
         </div>
 
         <!-- Node 5 -->
@@ -669,7 +675,7 @@
                     <span class="live-blink-circle"></span> Live Feed
                 </span>
             </div>
-            <div style="font-size: 12px; color: var(--teal-700); font-family: var(--font-mono);" id="incidentCountLabel">
+            <div style="font-size: 12px; color: var(--purple-700); font-family: var(--font-mono);" id="incidentCountLabel">
                 Showing recent acoustic events
             </div>
         </div>
@@ -682,56 +688,16 @@
                         <th>Class Detected</th>
                         <th>Severity</th>
                         <th>Python Conf</th>
-                        <th>GTM Conf</th>
+                        <th>Comparison Conf</th>
                         <th>Quality</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="incidentFeedTbody">
-                    <tr>
-                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-9B417A</td>
-                        <td><i class="fa-solid fa-bullseye" style="color: #EF4444; margin-right: 6px;"></i> Gunshot</td>
-                        <td><span class="badge-sev critical">Critical</span></td>
-                        <td>98.4%</td>
-                        <td>96.1%</td>
-                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
-                        <td><span style="color:#EF4444; font-weight:700;">Alert Dispatched</span></td>
-                    </tr>
-                    <tr>
-                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-3C891D</td>
-                        <td><i class="fa-solid fa-burst" style="color: #F59E0B; margin-right: 6px;"></i> Glass Breaking</td>
-                        <td><span class="badge-sev high">High</span></td>
-                        <td>95.8%</td>
-                        <td>94.2%</td>
-                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
-                        <td><span style="color:#F59E0B; font-weight:700;">Zone 3 Warning</span></td>
-                    </tr>
-                    <tr>
-                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-77E2A0</td>
-                        <td><i class="fa-solid fa-gears" style="color: #F59E0B; margin-right: 6px;"></i> Machinery Fault</td>
-                        <td><span class="badge-sev high">High</span></td>
-                        <td>93.6%</td>
-                        <td>91.8%</td>
-                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
-                        <td><span style="color:#3B82F6; font-weight:600;">Inspection Logged</span></td>
-                    </tr>
-                    <tr>
-                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-1F55C9</td>
-                        <td><i class="fa-solid fa-person-burst" style="color: #EF4444; margin-right: 6px;"></i> Panic Scream</td>
-                        <td><span class="badge-sev critical">Critical</span></td>
-                        <td>96.9%</td>
-                        <td>95.3%</td>
-                        <td><span style="color:#10B981; font-weight:600;">Good</span></td>
-                        <td><span style="color:#EF4444; font-weight:700;">Alert Dispatched</span></td>
-                    </tr>
-                    <tr>
-                        <td style="font-family: var(--font-mono); font-weight: 700;">AUD-802D3E</td>
-                        <td><i class="fa-solid fa-wind" style="color: var(--teal-600); margin-right: 6px;"></i> Background Noise</td>
-                        <td><span class="badge-sev low">Info</span></td>
-                        <td>99.1%</td>
-                        <td>98.8%</td>
-                        <td><span style="color:#10B981; font-weight:600;">Acceptable</span></td>
-                        <td><span style="color:var(--text-muted);">Normal Baseline</span></td>
+                    <tr class="incident-empty-row">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                            Awaiting the first verified acoustic detection.
+                        </td>
                     </tr>
                 </tbody>
             </table>

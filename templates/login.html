@@ -1,8 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        try {
+            localStorage.removeItem('sonicsentinel_theme');
+            localStorage.removeItem('sonic_theme');
+        } catch(e) {}
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
     <title>Sign In - SonicSentinel AI</title>
     
     <!-- Google Fonts Plus Jakarta Sans & JetBrains Mono -->
@@ -12,6 +19,10 @@
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Official Favicon -->
+    <link rel="icon" href="{{ url_for('brand_logo') }}">
+    <link rel="shortcut icon" href="{{ url_for('brand_logo') }}">
     
     <!-- Auth Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
@@ -27,11 +38,7 @@
 
             <div class="brand-header">
                 <div class="brand-logo-mark">
-                    <i class="fas fa-wave-square"></i>
-                </div>
-                <div class="brand-title-group">
-                    <span class="brand-main-title">SonicSentinel AI</span>
-                    <span class="brand-subtitle-tag">ACOUSTICX INTELLIGENCE V1.0</span>
+                    <img src="{{ url_for('brand_logo') }}" alt="SonicSentinel AI" class="brand-logo-img">
                 </div>
             </div>
 
@@ -45,7 +52,7 @@
                 </h1>
                 
                 <p class="auth-hero-desc">
-                    Continuous real-time temporal sound-event recognition powered by dual-model validation (Python CNN & Google Teachable Machine) for instant critical hazard dispatch.
+                    Continuous real-time temporal sound-event recognition powered by dual-model validation (Support Vector Machine & Random Forest) for instant critical hazard dispatch.
                 </p>
 
                 <!-- Crystal Faceted Geometric Waveform Capsule (Exact Reference Match) -->
@@ -127,14 +134,6 @@
                         <span>Authenticate & Access Console</span>
                     </button>
                 </form>
-
-                <!-- Demo Seed Credentials Box -->
-                <div class="credentials-hint-card">
-                    <div style="font-weight: 700; margin-bottom: 3px; color: var(--teal-primary);">PRE-CONFIGURED DEMO CREDENTIALS:</div>
-                    <div>Security Operator: <strong>operator</strong> / <strong>Operator@123</strong></div>
-                    <div>Administrator: <strong>admin</strong> / <strong>Admin@123</strong></div>
-                    <div>Audio Reviewer: <strong>reviewer</strong> / <strong>Reviewer@123</strong></div>
-                </div>
 
                 <div class="auth-switch-prompt">
                     New operator onboarding? <a href="{{ url_for('register') }}" class="teal-link">Register operator account</a>

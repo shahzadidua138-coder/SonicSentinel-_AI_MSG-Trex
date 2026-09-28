@@ -25,7 +25,7 @@
                     <th>Audio ID</th>
                     <th>Filename</th>
                     <th>Python Prediction</th>
-                    <th>GTM Prediction</th>
+                    <th>Random Forest Prediction</th>
                     <th>Divergence Reason</th>
                     <th>Quality</th>
                     <th>Action</th>
@@ -54,7 +54,7 @@
                 </button>
                 <div>
                     <div style="font-weight: 600;" id="rev-filename">loading_zone_ambiguous_echo.wav</div>
-                    <div style="font-size: 11px; color: var(--text-muted);" id="rev-reason">Disagreement: Py says Alarm (54.2%), GTM says Horn (61.8%)</div>
+                    <div style="font-size: 11px; color: var(--text-muted);" id="rev-reason">Disagreement: Py says Alarm (54.2%), Random Forest says Horn (61.8%)</div>
                 </div>
             </div>
             <div class="canvas-panel" style="height: 120px;">
@@ -68,7 +68,7 @@
                 <div>
                     <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Class Decision (Confirm / Override):</label>
                     <select id="rev-override-select" style="width: 100%; margin-top: 4px;">
-                        <option value="Vehicle Horn">Vehicle Horn (GTM Preferred)</option>
+                        <option value="Vehicle Horn">Vehicle Horn (Random Forest Prediction)</option>
                         <option value="Alarm or Siren">Alarm or Siren (Python Preferred)</option>
                         <option value="Machinery Fault">Machinery Fault</option>
                         <option value="Glass Breaking">Glass Breaking</option>
@@ -102,6 +102,7 @@
 <script>
 let currentRevId = "AUD-07";
 let serverReviews = [];
+let reviewAudio = new Audio();
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchReviewQueue();
@@ -172,7 +173,7 @@ function loadReviewItem(revId) {
     document.getElementById('rev-filename').innerText = ev.original_filename || audioId;
     const pyCl = ev.python_predicted_class || 'N/A';
     const gtmCl = ev.gtm_predicted_class || 'N/A';
-    document.getElementById('rev-reason').innerText = `Divergence: Python classified '${pyCl}', while GTM classified '${gtmCl}' (${ev.triage_reason}).`;
+    document.getElementById('rev-reason').innerText = `Divergence: Python classified '${pyCl}', while Random Forest classified '${gtmCl}' (${ev.triage_reason}).`;
 
     // Draw canvas
     const canvas = document.getElementById('rev-wave-canvas');
@@ -180,19 +181,20 @@ function loadReviewItem(revId) {
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = "#07090e";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#06b6d4";
-        ctx.beginPath();
-        for (let x = 0; x < canvas.width; x += 4) {
-            const y = canvas.height/2 + Math.sin(x*0.08)*30*(Math.random()*0.5+0.5);
-            if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        if (ev.waveform_image_path) {
+            const image = new Image();
+            image.onload = () => ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            image.src = ev.waveform_image_path;
         }
-        ctx.stroke();
     }
 }
 
 function playReviewSound() {
-    showToast(`Playing audio segment for review item ${currentRevId}`, 'info');
-    sonicAudio.playSynth("siren", 2.5);
+    const ev = serverReviews.find(item => item.id === currentRevId || item.audio_id === currentRevId);
+    const audioId = ev && (ev.audio_id || ev.id);
+    if (!audioId) return showToast('No recording is attached to this review item.', 'warning');
+    reviewAudio.src = `/api/audio/${encodeURIComponent(audioId)}/file`;
+    reviewAudio.play().catch(() => showToast('Stored recording could not be played.', 'error'));
 }
 
 async function commitReviewVerdict() {

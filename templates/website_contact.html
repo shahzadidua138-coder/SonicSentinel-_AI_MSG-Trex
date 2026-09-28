@@ -378,20 +378,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(initContactMap, 200);
-
-        // Re-render map tiles if theme is toggled
-        const themeBtn = document.getElementById('themeToggleBtn');
-        if (themeBtn) {
-            themeBtn.addEventListener('click', () => {
-                setTimeout(() => {
-                    if (contactMap) {
-                        contactMap.remove();
-                        contactMap = null;
-                        initContactMap();
-                    }
-                }, 100);
-            });
-        }
     });
 </script>
 {% endblock %}

@@ -14,7 +14,7 @@
                 Welcome, {{ current_user['full_name'] if current_user else 'Operator' }}
             </h1>
             <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
-                SonicSentinel AI is continuously monitoring 12 distributed microphone sensors. Dual-model inference (Python CNN & Google Teachable Machine) is fully operational with &lt; 3.0s sliding windows.
+                SonicSentinel AI is continuously monitoring 12 distributed microphone sensors. Dual-model inference (Support Vector Machine & Random Forest) is fully operational with &lt; 3.0s sliding windows.
             </p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <a href="{{ url_for('live_monitoring') }}" class="btn btn-primary btn-sm">
@@ -58,7 +58,7 @@
     <div class="metric-box">
         <span class="metric-box-title">Model Disagreement Rate</span>
         <span class="metric-box-value font-mono">6.8%</span>
-        <span class="metric-box-sub">Python vs GTM Divergence</span>
+        <span class="metric-box-sub">SVM vs Random Forest Divergence</span>
     </div>
     <div class="metric-box">
         <span class="metric-box-title">Poor Quality Signals</span>
@@ -92,7 +92,7 @@
                     <tr>
                         <th>Audio ID</th>
                         <th>Event Category</th>
-                        <th>Confidence (Py / GTM)</th>
+                        <th>Confidence (SVM / Random Forest)</th>
                         <th>Consistency</th>
                         <th>Severity</th>
                         <th>Action</th>

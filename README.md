@@ -7,7 +7,7 @@
 ---
 
 ## 1. Project Overview
-**SonicSentinel AI** is an intelligent, real-time acoustic surveillance and sound event recognition platform. It continuously analyzes uploaded audio recordings and real-time live microphone streams to detect 10 mandatory sound categories with dual AI/ML cross-validation:
+**SonicSentinel AI** is an intelligent, real-time acoustic surveillance and sound event recognition platform. It analyzes uploaded audio recordings and live microphone windows to detect the 10 mandatory sound categories with two independent, locally loaded classifiers:
 
 1. **Gunshot** *(Critical)* — Supersonic shockwave blast detection.
 2. **Panic Scream** *(Critical)* — High-pitch human distress vocalization ($>1000\text{ Hz}$).
@@ -23,9 +23,9 @@
 ---
 
 ## 2. Core Architectural Highlights
-* **Zero Commercial Cost ($0.00):** 100% local inference with open-source Python DSP, Scikit-Learn feature modeling, and Google Teachable Machine exported models.
+* **Neon PostgreSQL persistence:** Accounts, audio metadata, predictions, alerts, reviews, and audit logs are stored in Neon. Audio inference remains on the application server.
 * **Dual AI Cross-Arbitration:** Cross-validates a 40-MFCC spectral feature model against an independent spectrogram neural network.
-* **Confidence Delta & Top-2 Margin:** Computes $|C_{\text{py}} - C_{\text{gtm}}|$ and enforces minimum top-two class separation margin.
+* **Confidence Delta & Top-2 Margin:** Computes the difference between the SVM and Random Forest confidence values and enforces minimum top-two class separation margins.
 * **Audio Quality Gatekeeper:** Evaluates silence ($RMS < 0.005$) and severe clipping ($> 1.0\%$) to block false alarms.
 * **Multi-Window Persistence:** Requires multi-window repeated confirmation on critical threats to prevent panic false alarms.
 * **Role-Based Access Control (RBAC):** 5 dedicated roles with tailored dashboards:
@@ -41,6 +41,11 @@
 
 ### Prerequisites
 Python 3.10+ installed.
+
+The project requires a `DATABASE_URL` for Neon PostgreSQL in the root `.env` file. The checked-in `.env.example` is a template; never commit database credentials. The main website stores its tables in the Neon `public` schema. The separate API and legacy app use `sonicsentinel_backend` and `sonicsentinel_legacy` schemas to keep their table names isolated.
+
+
+User accounts and audio-event records are stored in Neon. Audio files themselves are written to the local `uploads/` folder; the database stores their file paths and metadata. Keep that folder on persistent storage when deploying the app, or configure object storage for a multi-instance deployment. The existing local database records were migrated to Neon; 8 of the 14 referenced audio files were present in the local project when checked.
 
 ### Launch Server
 ```bash
@@ -67,7 +72,7 @@ python tests/test_api_endpoints.py
 
 ## 4. 11 Mandatory Competition Test Scenarios
 
-The system pre-populates and validates all 11 competition scenarios:
+The project defines and validates these 11 competition scenarios. Demo records are opt-in (`SEED_DEMO_DATA=true`) so a new Neon database is not populated with fabricated activity by default:
 
 | ID | Scenario | Acoustic Profile | Dual Model Verdict | System Action |
 | :- | :--- | :--- | :--- | :--- |

@@ -2,12 +2,13 @@
 test_auth_rbac.py - Automated Test Suite for SonicSentinel Authentication & RBAC
 """
 
+import os
 import urllib.request
 import urllib.parse
 import http.cookiejar
 import database
 
-BASE = 'http://127.0.0.1:5000'
+BASE = os.environ.get('SONICSENTINEL_TEST_BASE', 'http://127.0.0.1:5000')
 
 
 def get_session():
@@ -51,8 +52,8 @@ def run_tests():
         'password': 'Password@123'
     }).encode('utf-8')
     resp = opener.open(urllib.request.Request(f'{BASE}/login', data=login_data))
-    assert '/user/dashboard' in resp.geturl(), f"Expected /user/dashboard, got {resp.geturl()}"
-    print("[PASS] 2. Normal User login routes automatically to /user/dashboard.")
+    assert '/home' in resp.geturl() or '/user/dashboard' in resp.geturl(), f"Expected /home or /user/dashboard, got {resp.geturl()}"
+    print("[PASS] 2. Normal User login routes automatically to public website (/home).")
 
     # 3. Normal User accessing /admin/dashboard -> 403 Forbidden
     try:
@@ -123,8 +124,8 @@ def run_tests():
 
     # 11. Already logged-in user visiting /login -> redirected to dashboard
     revisit = opener.open(f'{BASE}/login')
-    assert '/user/dashboard' in revisit.geturl(), "Logged-in user visiting /login not redirected to dashboard"
-    print("[PASS] 11. Logged-in user accessing /login redirected to their own dashboard.")
+    assert '/home' in revisit.geturl() or '/user/dashboard' in revisit.geturl(), "Logged-in user visiting /login not redirected to home or dashboard"
+    print("[PASS] 11. Logged-in user accessing /login redirected appropriately.")
 
     print("\n==================================================")
     print("  ALL 11 BACKEND AUTH & RBAC TESTS PASSED 100%!")

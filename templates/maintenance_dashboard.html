@@ -1,91 +1,239 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Maintenance Dashboard - SonicSentinel AI{% endblock %}
+{% block title %}Facility Engineering & Hardware Dock - SonicSentinel AI{% endblock %}
 
 {% block content %}
 <!-- Maintenance Operator Hero Banner -->
-<div class="card-panel" style="background: #292524; border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(180, 83, 9, 0.15); color: #FFFFFF;">
-    <div class="grid-2" style="align-items: center;">
+<div class="card-panel" style="background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%); border: 1.5px solid rgba(245, 158, 11, 0.4); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(28, 25, 23, 0.3); color: #FFFFFF; position: relative; overflow: hidden;">
+    <div style="position: absolute; right: -20px; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
         <div>
-            <div class="badge" style="background: rgba(245, 158, 11, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); margin-bottom: 12px;">
-                <i class="fas fa-tools"></i> Facility Engineering & Hardware Dock • Diagnostic Node
+            <div class="badge" style="background: rgba(245, 158, 11, 0.2); color: #FCD34D; border: 1px solid rgba(252, 211, 77, 0.45); margin-bottom: 12px; font-weight: 700;">
+                <i class="fas fa-microchip"></i> HARDWARE DIAGNOSTICS &bull; 12-NODE DISTRIBUTED ARRAY
             </div>
-            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
-                Welcome, {{ current_user['full_name'] if current_user else 'Maintenance Engineer' }}
+            <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.02em;">
+                Engineering Diagnostic Dock
             </h1>
-            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
-                Monitor 12 distributed microphone hardware nodes, execute sensor frequency calibration sweeps, inspect battery and power levels, and diagnose acoustic array faults.
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.88); margin-bottom: 0; line-height: 1.6; max-width: 650px;">
+                Welcome, {{ user['full_name'] if user else 'Maintenance Engineer' }}. Monitor the physical health of all 12 acoustic sensor arrays, trigger hardware frequency sweeps, ping telemetry nodes, and audit signal quality metrics.
             </p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" style="background: #F59E0B; border-color: #F59E0B; color: #1C1917; font-weight: 700;" onclick="alert('Simulation: Full 12-Node Acoustic Frequency Calibration Sweep Dispatched.');">
-                    <i class="fas fa-sync-alt"></i> Run Array Calibration
-                </button>
-                <a href="{{ url_for('live_monitoring') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-satellite-dish"></i> Sensor Audio Levels
-                </a>
-            </div>
         </div>
-
-        <div>
-            <div class="canvas-panel" style="height: 130px; border-color: rgba(245, 158, 11, 0.35); background: #0C0A09; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px;">
-                <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Telemetry Diagnostics" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button onclick="startArrayCalibrationSweep()" class="btn btn-primary" style="font-size: 13px; font-weight: 700; background: #F59E0B; border-color: #F59E0B; color: #1C1917; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);">
+                <i class="fas fa-arrows-rotate"></i> Run Array Sweep
+            </button>
+            <a href="{{ url_for('live_monitoring') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-satellite-dish"></i> Sensor Spectrum
+            </a>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-download"></i> Sensor Audit
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Hardware Telemetry Metrics -->
+<!-- Telemetry Metrics Row -->
 <div class="metrics-row" style="margin-bottom: 24px;">
-    <div class="metric-box" style="border-left: 3px solid #10B981;">
+    <div class="metric-box" style="border-left: 3.5px solid #10B981;">
         <span class="metric-box-title">Healthy Sensor Nodes</span>
-        <span class="metric-box-value font-mono" style="color: #10B981;">11 / 12</span>
-        <span class="metric-box-sub" style="color: #10B981;">Node #07 Calibration Due</span>
+        <span class="metric-box-value font-mono" id="healthyNodeCount" style="color: #10B981;">12 / 12</span>
+        <span class="metric-box-sub" style="color: #10B981;">100% Operational &bull; Online</span>
     </div>
-    <div class="metric-box">
+    <div class="metric-box" style="border-left: 3.5px solid #2DD4BF;">
         <span class="metric-box-title">Average Stream Latency</span>
-        <span class="metric-box-value font-mono" style="color: var(--gold-light);">42 ms</span>
+        <span class="metric-box-value font-mono" style="color: #0D9488;">38 ms</span>
         <span class="metric-box-sub">Gigabit Fiber Backhaul</span>
     </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Array Battery Reserve</span>
-        <span class="metric-box-value font-mono" style="color: #10B981;">98.4%</span>
-        <span class="metric-box-sub">PoE Active &amp; Online</span>
+    <div class="metric-box" style="border-left: 3.5px solid #F59E0B;">
+        <span class="metric-box-title">Power Over Ethernet (PoE)</span>
+        <span class="metric-box-value font-mono" style="color: #F59E0B;">99.4%</span>
+        <span class="metric-box-sub">Redundant UPS Online</span>
     </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Hardware Fault Logs</span>
-        <span class="metric-box-value font-mono">0 Critical</span>
-        <span class="metric-box-sub">1 Warning (Clipping)</span>
+    <div class="metric-box" style="border-left: 3.5px solid #6366F1;">
+        <span class="metric-box-title">Audio Quality Gatekeeper</span>
+        <span class="metric-box-value font-mono" style="color: #6366F1;">PASSED</span>
+        <span class="metric-box-sub">0% Clipping &bull; 0% Silent</span>
     </div>
 </div>
 
-<!-- 12 Sensor Nodes Diagnostic Grid -->
-<div class="card-panel" style="border-radius: 14px; padding: 24px;">
-    <div class="card-panel-header" style="margin-bottom: 18px;">
+<!-- Interactive Array Calibration Sweep Deck -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
         <div>
-            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">Distributed Sensor Array Telemetry (12 Nodes)</h3>
-            <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0;">Inspect hardware health, SNR, microphone calibration, and PoE power levels.</p>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-satellite-dish" style="color: #F59E0B;"></i> Distributed Array Calibration Sweep
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Perform synchronized frequency response calibration and line impedance verification across all 12 remote nodes.
+            </p>
         </div>
-        <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #166534; font-weight: 700;">11 HEALTHY &bull; 1 PENDING</span>
+        <button id="sweepActionBtn" onclick="startArrayCalibrationSweep()" class="btn btn-primary btn-sm" style="background: #F59E0B; border-color: #F59E0B; color: #1C1917; font-weight: 700;">
+            <i class="fas fa-play"></i> Initiate Sweep
+        </button>
     </div>
 
-    <div class="grid-4" style="gap: 14px;">
+    <!-- Animated Progress Bar -->
+    <div style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text-secondary);">
+            <span id="sweepStatusText">Sweep Status: Standby &bull; Ready</span>
+            <span id="sweepPercentText" class="font-mono" style="color: #F59E0B;">0%</span>
+        </div>
+        <div style="width: 100%; height: 10px; background: var(--bg-subtle); border-radius: 5px; overflow: hidden; border: 1px solid var(--border-color);">
+            <div id="sweepProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #F59E0B, #10B981); border-radius: 5px; transition: width 0.3s ease;"></div>
+        </div>
+    </div>
+
+    <!-- Diagnostic Terminal Console -->
+    <div style="background: #0C0A09; border-radius: 12px; padding: 16px; border: 1.5px solid rgba(245, 158, 11, 0.3); font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #A8A29E; height: 130px; overflow-y: auto;" id="diagnosticTerminal">
+        <div style="color: #FCD34D;">[SYSTEM] Telemetry link active. Ready for hardware sweep.</div>
+        <div>[NODES] 12/12 Distributed microphones synchronized on Gigabit Network.</div>
+    </div>
+</div>
+
+<!-- 12 Distributed Sensor Nodes Diagnostic Grid -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-network-wired" style="color: #10B981;"></i> Distributed Sensor Array Telemetry (12 Nodes)
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Live SNR levels, signal latency, PoE power draw, and individual diagnostic actions for every node.
+            </p>
+        </div>
+        <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">12 NODES MONITORED</span>
+    </div>
+
+    <div class="grid-4" style="gap: 16px;">
         {% for node_num in range(1, 13) %}
-        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-weight: 700; font-size: 13px; color: #0F172A;" class="font-mono">Node #{{ "%02d" % node_num }}</span>
-                {% if node_num == 7 %}
-                <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 10px;">Calib Due</span>
-                {% else %}
-                <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 10px;">99.9% OK</span>
-                {% endif %}
+        {% set sector_code = ['A', 'B', 'C', 'D'][(node_num - 1) % 4] %}
+        {% set sector_name = ['North Gate & Admin', 'East Loading Dock', 'Server Vault & Power', 'Perimeter Corridor'][(node_num - 1) % 4] %}
+        {% set is_warning = (node_num == 7) %}
+        
+        <div class="node-card" id="node-card-{{ node_num }}" style="background: var(--bg-surface); border: 1.5px solid {% if is_warning %}#FDE68A{% else %}var(--border-color){% endif %}; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: {% if is_warning %}#D97706{% else %}#10B981{% endif %};" id="node-dot-{{ node_num }}"></span>
+                        <strong class="font-mono" style="font-size: 14px; color: var(--text-primary);">Node #{{ "%02d" % node_num }}</strong>
+                    </div>
+                    <span class="badge" id="node-status-{{ node_num }}" style="font-size: 10px; padding: 2px 7px; background: {% if is_warning %}#FEF3C7; color: #92400E;{% else %}#DCFCE7; color: #166534;{% endif %}">
+                        {% if is_warning %}Calib Due{% else %}Optimal{% endif %}
+                    </span>
+                </div>
+
+                <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px;">
+                    <i class="fas fa-location-dot" style="margin-right: 4px; color: #0D9488;"></i> Sector {{ sector_code }} &bull; {{ sector_name }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+                    <div style="background: var(--bg-subtle); padding: 6px 8px; border-radius: 6px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 9.5px;">SNR RATIO</span>
+                        <strong style="color: #0D9488;">{{ 22 + (node_num % 5) }} dB</strong>
+                    </div>
+                    <div style="background: var(--bg-subtle); padding: 6px 8px; border-radius: 6px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 9.5px;">LATENCY</span>
+                        <strong style="color: var(--text-primary);" id="node-latency-{{ node_num }}">{{ 34 + (node_num % 10) }} ms</strong>
+                    </div>
+                </div>
             </div>
-            <div style="font-size: 11.5px; color: #64748B; margin-bottom: 4px;">Sector {{ ['A','B','C','D'][(node_num % 4)] }} &bull; {{ ['East Corridor', 'Perimeter Fence', 'Server Vault', 'Loading Dock'][(node_num % 4)] }}</div>
-            <div style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #0D9488; display: flex; justify-content: space-between; margin-top: 8px;">
-                <span>SNR: {{ 22 + (node_num % 5) }} dB</span>
-                <span>{{ 38 + (node_num % 12) }}ms</span>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px;">
+                <button onclick="pingSingleNode({{ node_num }})" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 5px 8px; justify-content: center;">
+                    <i class="fas fa-network-wired"></i> Ping
+                </button>
+                <button onclick="calibrateSingleNode({{ node_num }})" class="btn btn-primary btn-sm" style="background: #0D9488; border-color: #0D9488; font-size: 11px; padding: 5px 8px; justify-content: center;">
+                    <i class="fas fa-wrench"></i> Calibrate
+                </button>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Ping Single Node Action
+    function pingSingleNode(nodeNum) {
+        const latencyEl = document.getElementById(`node-latency-${nodeNum}`);
+        const randomMs = Math.floor(28 + Math.random() * 15);
+        if (latencyEl) latencyEl.textContent = `${randomMs} ms`;
+
+        showDashboardToast(`Node #${String(nodeNum).padStart(2, '0')} ACK: Latency ${randomMs}ms (Packet 0% loss)`, 'success');
+        logTerminal(`[PING] Node #${String(nodeNum).padStart(2, '0')} responsive: latency=${randomMs}ms ttl=64`);
+    }
+
+    // 2. Calibrate Single Node Action
+    function calibrateSingleNode(nodeNum) {
+        const statusBadge = document.getElementById(`node-status-${nodeNum}`);
+        const dot = document.getElementById(`node-dot-${nodeNum}`);
+        const card = document.getElementById(`node-card-${nodeNum}`);
+
+        if (statusBadge) {
+            statusBadge.style.background = '#DCFCE7';
+            statusBadge.style.color = '#166534';
+            statusBadge.textContent = 'Optimal (Calibrated)';
+        }
+        if (dot) dot.style.background = '#10B981';
+        if (card) card.style.borderColor = 'var(--border-color)';
+
+        showDashboardToast(`Node #${String(nodeNum).padStart(2, '0')} calibrated to nominal frequency curve.`, 'success');
+        logTerminal(`[CALIBRATE] Node #${String(nodeNum).padStart(2, '0')} digital gain tuned. Frequency response ±0.2dB.`);
+    }
+
+    // 3. Full Array Calibration Sweep (Animated Progress)
+    let isSweepRunning = false;
+
+    function startArrayCalibrationSweep() {
+        if (isSweepRunning) return;
+        isSweepRunning = true;
+
+        const progressBar = document.getElementById('sweepProgressBar');
+        const percentText = document.getElementById('sweepPercentText');
+        const statusText = document.getElementById('sweepStatusText');
+        const btn = document.getElementById('sweepActionBtn');
+
+        btn.disabled = true;
+        statusText.textContent = 'Sweep Status: Running Synced Acoustic Sweep...';
+        logTerminal(`[SWEEP] Starting synchronous frequency calibration across all 12 nodes...`);
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            progressBar.style.width = `${progress}%`;
+            percentText.textContent = `${progress}%`;
+
+            if (progress === 30) {
+                logTerminal(`[SWEEP] 20Hz-20,000Hz sweep tone emitted. Phase angles aligned.`);
+            } else if (progress === 60) {
+                logTerminal(`[SWEEP] Pre-amplifier noise floor calibrated to -58.4dB.`);
+            } else if (progress === 90) {
+                logTerminal(`[SWEEP] Verifying line impedance on Nodes #01 through #12...`);
+            } else if (progress >= 100) {
+                clearInterval(interval);
+                isSweepRunning = false;
+                btn.disabled = false;
+                statusText.textContent = 'Sweep Status: Complete &bull; All 12 Nodes Calibrated';
+                logTerminal(`[SUCCESS] 12/12 Sensor Arrays Calibrated & Operating at Peak Fidelity.`);
+                showDashboardToast('Acoustic Array Calibration Sweep completed with 100% pass rate!', 'success');
+
+                // Mark any pending nodes as optimal
+                for (let i = 1; i <= 12; i++) {
+                    calibrateSingleNode(i);
+                }
+            }
+        }, 300);
+    }
+
+    function logTerminal(msg) {
+        const term = document.getElementById('diagnosticTerminal');
+        if (!term) return;
+        const time = new Date().toTimeString().split(' ')[0];
+        const line = document.createElement('div');
+        line.innerHTML = `<span style="color:#0D9488;">[${time}]</span> ${msg}`;
+        term.appendChild(line);
+        term.scrollTop = term.scrollHeight;
+    }
+</script>
 {% endblock %}

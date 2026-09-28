@@ -9,7 +9,7 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 import os, uuid, json, time, csv, io
 from pathlib import Path
@@ -46,8 +46,17 @@ CORS(app, origins=CORS_ORIGINS)
 jwt = JWTManager(app)
 
 # Database
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+backend_database_url = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+backend_database_schema = os.environ.get("BACKEND_DATABASE_SCHEMA", "sonicsentinel_backend")
+if not backend_database_schema.replace("_", "").isalnum() or backend_database_schema[0].isdigit():
+    raise RuntimeError("BACKEND_DATABASE_SCHEMA must be a simple PostgreSQL schema name.")
+engine = create_engine(backend_database_url)
+with engine.begin() as connection:
+    connection.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{backend_database_schema}"'))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base.metadata.schema = backend_database_schema
+for table in Base.metadata.tables.values():
+    table.schema = backend_database_schema
 Base.metadata.create_all(bind=engine)
 
 # Prediction Service (singleton)

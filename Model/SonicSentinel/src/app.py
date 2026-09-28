@@ -12,7 +12,8 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from flask import Flask, jsonify
-from src.config import Config, DATABASE_PATH, UPLOAD_FOLDER, MODEL_DIR
+from sqlalchemy import text
+from src.config import Config, DATABASE_SCHEMA, UPLOAD_FOLDER, MODEL_DIR
 from src.extensions import db, login_manager, cors
 from src.models.user import User, UserRole
 from src.routes import (
@@ -34,17 +35,21 @@ def create_app(config_class=Config) -> Flask:
     app.config.from_object(config_class)
 
     # Ensure necessary folders exist
-    os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(MODEL_DIR, exist_ok=True)
 
     # Initialize Extensions
     db.init_app(app)
+    db.metadata.schema = DATABASE_SCHEMA
+    for table in db.metadata.tables.values():
+        table.schema = DATABASE_SCHEMA
     login_manager.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
 
     # Auto-seed Admin User on app context if not exists
     with app.app_context():
+        with db.engine.begin() as connection:
+            connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {DATABASE_SCHEMA}"))
         db.create_all()
         admin = User.query.filter_by(username="admin").first()
         if not admin:
@@ -88,9 +93,15 @@ def create_app(config_class=Config) -> Flask:
 
     @app.route("/api/health")
     def health_check():
+        try:
+            with db.engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            connected = True
+        except Exception:
+            connected = False
         return jsonify({
             "status": "healthy",
-            "database": os.path.exists(DATABASE_PATH)
+            "database": connected
         }), 200
 
     # Custom CLI Commands

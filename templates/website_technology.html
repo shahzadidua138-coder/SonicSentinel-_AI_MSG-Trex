@@ -147,10 +147,10 @@
                 <span class="card-step-num">Stage 04</span>
             </div>
             <h3 class="card-title" style="margin: 16px 0 10px; font-size: 18px; font-weight: 700; color: var(--dark-slate);">
-                Google Teachable Machine Arbitration
+                Random Forest Arbitration
             </h3>
             <p class="card-description" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
-                The audio segment is independently classified by the Google Teachable Machine neural benchmark. The arbitration engine calculates &Delta; = |Python - GTM| and top-two confidence margin to assign Strong Match, Acceptable Match, or Review Required.
+                The audio segment is independently classified by the Random Forest classifier. The arbitration engine calculates &Delta; = |Python - Random Forest| and top-two confidence margin to assign Strong Match, Acceptable Match, or Review Required.
             </p>
         </div>
 
@@ -251,7 +251,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; font-size: 13px; color: var(--text-dark);">
                 <div style="background: #FFFFFF; padding: 16px; border-radius: 12px; border: 1px solid var(--border-light);">
                     <div style="font-weight: 700; color: var(--teal-700); margin-bottom: 4px;">Confidence Delta (&Delta;):</div>
-                    <code>&Delta; = |Python_Conf - GTM_Conf|</code>
+                    <code>&Delta; = |SVM_Conf - RF_Conf|</code>
                     <p style="margin-top: 6px; color: var(--text-muted); font-size: 12px;">
                         &Delta; &le; 0.05 &rarr; Strong Match<br>
                         0.05 &lt; &Delta; &le; 0.15 &rarr; Acceptable Match<br>

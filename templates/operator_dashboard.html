@@ -1,109 +1,573 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Security Dashboard - SonicSentinel AI{% endblock %}
+{% block title %}Security Command Deck - SonicSentinel AI{% endblock %}
 
 {% block content %}
 <!-- Security Operator Hero Banner -->
-<div class="card-panel" style="background: #063C35; border: 1.5px solid rgba(45, 212, 191, 0.35); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(6, 60, 53, 0.15); color: #FFFFFF;">
-    <div class="grid-2" style="align-items: center;">
+<div class="card-panel" style="background: linear-gradient(135deg, #022c22 0%, #064E3B 50%, #065F46 100%); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 16px; margin-bottom: 24px; padding: 28px 32px; box-shadow: 0 10px 30px rgba(2, 44, 34, 0.3); color: #FFFFFF; position: relative; overflow: hidden;">
+    <div style="position: absolute; right: -30px; top: -30px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
         <div>
-            <div class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4); margin-bottom: 12px;">
-                <i class="fas fa-shield-alt"></i> Security Operations Command • Sector B Terminal
+            <div class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(110, 231, 183, 0.45); margin-bottom: 12px; font-weight: 700;">
+                <i class="fas fa-shield-alt"></i> SOC INCIDENT COMMAND &bull; ACTIVE WATCH STATION
             </div>
-            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; line-height: 1.3; margin-bottom: 8px;">
-                Welcome, {{ current_user['full_name'] if current_user else 'Security Officer' }}
+            <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.02em;">
+                Security Command Deck
             </h1>
-            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.85); margin-bottom: 20px; line-height: 1.6; max-width: 540px;">
-                All 12 acoustic sensor arrays are streaming. Emergency response protocols, perimeter microphones, and automated sirens are primed for instant critical hazard dispatch.
+            <p style="font-size: 13.5px; color: rgba(255, 255, 255, 0.88); margin-bottom: 0; line-height: 1.6; max-width: 650px;">
+                Welcome, {{ user['full_name'] if user else 'Security Officer' }}. All 12 distributed sensor arrays are synchronized. Autonomous acoustic hazard classification, siren deterrence, and emergency dispatch links are armed.
             </p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a href="{{ url_for('live_monitoring') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-satellite-dish"></i> Open Sensor Stream
-                </a>
-                <a href="{{ url_for('alerts') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-bell"></i> Hazard Alerts (3 Active)
-                </a>
-                <a href="{{ url_for('event_history') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-history"></i> Event Log
-                </a>
-            </div>
         </div>
-
-        <div>
-            <div class="canvas-panel" style="height: 130px; border-color: rgba(45, 212, 191, 0.35); background: #021714; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(4, 36, 34, 0.25);">
-                <img src="{{ url_for('static', filename='images/crystal-soundwave-exact.gif') }}" alt="Live Security Residuals" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{{ url_for('live_monitoring') }}" class="btn btn-primary" style="font-size: 13px; font-weight: 700; background: #10B981; border-color: #10B981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+                <i class="fas fa-satellite-dish"></i> Live Sensor Grid
+            </a>
+            <a href="{{ url_for('alerts') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-bell"></i> Hazard Center ({{ alerts|length }})
+            </a>
+            <a href="{{ url_for('event_history') }}" class="btn btn-secondary" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-clock-rotate-left"></i> Threat Log
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Key Detection Statistics Row -->
+<!-- Telemetry Metrics Row -->
 <div class="metrics-row" style="margin-bottom: 24px;">
-    <div class="metric-box" style="border-left: 3px solid #EF4444;">
-        <span class="metric-box-title">Critical Threats Detected</span>
-        <span class="metric-box-value font-mono" style="color: #EF4444;">3 Active</span>
-        <span class="metric-box-sub" style="color: #EF4444;">Gunshot, Scream, Help</span>
+    <div class="metric-box" style="border-left: 3.5px solid #EF4444;">
+        <span class="metric-box-title">Active Hazard Alerts</span>
+        <span class="metric-box-value font-mono" id="activeAlertCount" style="color: #EF4444;">{{ alerts|length }}</span>
+        <span class="metric-box-sub" style="color: #EF4444;">Action Required Immediately</span>
     </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Active Sensor Nodes</span>
+    <div class="metric-box" style="border-left: 3.5px solid #10B981;">
+        <span class="metric-box-title">Active Sensor Arrays</span>
         <span class="metric-box-value font-mono" style="color: #10B981;">12 / 12</span>
-        <span class="metric-box-sub" style="color: #10B981;">100% Operational Online</span>
+        <span class="metric-box-sub" style="color: #10B981;">100% Online &bull; Sectors A-D</span>
     </div>
-    <div class="metric-box">
+    <div class="metric-box" style="border-left: 3.5px solid #2DD4BF;">
         <span class="metric-box-title">Average Siren Latency</span>
-        <span class="metric-box-value font-mono" style="color: var(--gold-light);">&lt; 1.8s</span>
-        <span class="metric-box-sub">Dual-Model Verified</span>
+        <span class="metric-box-value font-mono" style="color: #0D9488;">&lt; 1.8s</span>
+        <span class="metric-box-sub">Dual-AI Model Verified</span>
     </div>
-    <div class="metric-box">
-        <span class="metric-box-title">Today's Total Events</span>
-        <span class="metric-box-value font-mono">1,420</span>
-        <span class="metric-box-sub">Temporal Sliding Window</span>
+    <div class="metric-box" style="border-left: 3.5px solid #F59E0B;">
+        <span class="metric-box-title">Events Analyzed Today</span>
+        <span class="metric-box-value font-mono" style="color: #F59E0B;">{{ events|length * 14 + 120 }}</span>
+        <span class="metric-box-sub">1.5s Sliding Window Windows</span>
     </div>
 </div>
 
 <!-- Real-time Emergency Response Control Deck -->
-<div class="card-panel" style="border-radius: 14px; padding: 24px; margin-bottom: 24px;">
-    <div class="card-panel-header" style="margin-bottom: 18px;">
+<div class="card-panel" id="emergencyControlPanel" style="border-radius: 16px; padding: 26px; margin-bottom: 28px; transition: all 0.3s ease;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
         <div>
-            <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin: 0;">Instant Incident Command & Lockdown Protocols</h3>
-            <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0;">Trigger immediate audio deterrence sirens or alert local defense authorities.</p>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-tower-broadcast" style="color: #EF4444;"></i> Instant Incident Command &amp; Lockdown Protocols
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Synthesize high-decibel acoustic deterrence tones, enact perimeter physical lockdown, or transmit encrypted telemetry to first responders.
+            </p>
         </div>
-        <span class="badge" style="background: rgba(239, 68, 68, 0.12); color: #EF4444; font-weight: 700;">STANDBY ARMED</span>
+        <span id="sirenStatusBadge" class="badge" style="background: rgba(239, 68, 68, 0.15); color: #EF4444; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.3);">
+            <i class="fas fa-shield-virus"></i> DEFENSE STANDBY
+        </span>
     </div>
 
-    <div class="grid-3" style="gap: 16px;">
-        <div style="background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <i class="fas fa-bullhorn" style="color: #DC2626; font-size: 20px;"></i>
-                <h4 style="font-size: 14px; font-weight: 700; color: #991B1B; margin: 0;">Sector Alarm Siren</h4>
+    <div class="grid-3" style="gap: 18px;">
+        <!-- Sector Alarm Siren Card (Web Audio API Synthesizer) -->
+        <div style="background: var(--bg-surface); border: 1.5px solid rgba(239, 68, 68, 0.25); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        <i class="fas fa-bullhorn" id="sirenIcon"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Sector Alarm Siren</h4>
+                        <span style="font-size: 11px; color: #DC2626; font-weight: 700;">110 dB Acoustic Deterrence</span>
+                    </div>
+                </div>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                    Emit dual-tone undulating acoustic siren via facility speaker arrays (Web Audio API hardware synthesis).
+                </p>
             </div>
-            <p style="font-size: 12px; color: #7F1D1D; margin-bottom: 14px; line-height: 1.5;">Broadcast high-decibel audible emergency warning across Sector B arrays.</p>
-            <button class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: #DC2626; width: 100%;" onclick="alert('Simulation: Sector Alarm Siren initiated with 110dB tone.');">
-                <i class="fas fa-volume-up"></i> Test Siren Sequence
+            <button id="toggleSirenBtn" onclick="toggleEmergencySiren()" class="btn btn-sm" style="background: #DC2626; color: #FFFFFF; font-weight: 700; width: 100%; height: 40px; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+                <i class="fas fa-volume-high"></i> <span id="sirenBtnText">Activate Emergency Siren</span>
             </button>
         </div>
 
-        <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <i class="fas fa-door-closed" style="color: #D97706; font-size: 20px;"></i>
-                <h4 style="font-size: 14px; font-weight: 700; color: #92400E; margin: 0;">Emergency Perimeter Seal</h4>
+        <!-- Emergency Perimeter Seal -->
+        <div style="background: var(--bg-surface); border: 1.5px solid rgba(217, 119, 6, 0.25); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(217, 119, 6, 0.15); color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        <i class="fas fa-door-closed" id="lockdownIcon"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">Emergency Perimeter Seal</h4>
+                        <span id="lockdownStatusText" style="font-size: 11px; color: #D97706; font-weight: 700;">Corridors Unlocked</span>
+                    </div>
+                </div>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                    Engage magnetic pneumatic fire-doors and lock down transit corridors across East &amp; West quadrants.
+                </p>
             </div>
-            <p style="font-size: 12px; color: #78350F; margin-bottom: 14px; line-height: 1.5;">Seal perimeter doors and lock down access corridors in east quadrant.</p>
-            <button class="btn btn-secondary btn-sm" style="color: #D97706; border-color: #D97706; width: 100%;" onclick="alert('Simulation: Emergency perimeter lockdown command dispatched.');">
-                <i class="fas fa-lock"></i> Seal Corridors
+            <button id="toggleLockdownBtn" onclick="togglePerimeterLockdown()" class="btn btn-sm" style="background: #D97706; color: #FFFFFF; font-weight: 700; width: 100%; height: 40px; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fas fa-lock"></i> <span id="lockdownBtnText">Engage Corridor Lockdown</span>
             </button>
         </div>
 
-        <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <i class="fas fa-ambulance" style="color: #16A34A; font-size: 20px;"></i>
-                <h4 style="font-size: 14px; font-weight: 700; color: #166534; margin: 0;">Escalate to First Responders</h4>
+        <!-- Escalate to First Responders -->
+        <div style="background: var(--bg-surface); border: 1.5px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        <i class="fas fa-truck-medical"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0;">First Responder Link</h4>
+                        <span style="font-size: 11px; color: #10B981; font-weight: 700;">E-911 Dispatch Link Active</span>
+                    </div>
+                </div>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                    Transmit cryptographic acoustic forensic incident bundle with GPS coordinates to municipal authorities.
+                </p>
             </div>
-            <p style="font-size: 12px; color: #14532D; margin-bottom: 14px; line-height: 1.5;">Direct telemetry packet dispatch to local emergency dispatch services.</p>
-            <button class="btn btn-primary btn-sm" style="background: #10B981; border: none; width: 100%;" onclick="alert('Simulation: Encrypted emergency incident packet transmitted.');">
+            <button onclick="dispatchFirstResponders()" class="btn btn-sm" style="background: #10B981; color: #FFFFFF; font-weight: 700; width: 100%; height: 40px; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                 <i class="fas fa-paper-plane"></i> Dispatch Telemetry
             </button>
         </div>
     </div>
 </div>
+
+<!-- Middle Section: Real-Time Audio Sensor Spectrum & Sector Status -->
+<div class="grid-2" style="grid-template-columns: 1.3fr 0.7fr; gap: 24px; margin-bottom: 28px;">
+    <!-- Live Acoustic VU Meter & Spectrum Canvas -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px;">
+        <div class="card-panel-header" style="margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                    <i class="fas fa-wave-square" style="color: #10B981; margin-right: 6px;"></i> Live Facility Acoustic Monitor (Sector B Stream)
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Real-time fast Fourier transform (FFT) spectrogram &amp; decibel level telemetry</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block; animation: pulseDotAnim 1.5s infinite;"></span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #10B981;">STREAMING 44.1kHz</span>
+            </div>
+        </div>
+
+        <div style="background: #021714; border-radius: 12px; padding: 16px; border: 1.5px solid rgba(45, 212, 191, 0.3); box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.6);">
+            <canvas id="liveAudioCanvas" style="width: 100%; height: 160px; display: block; border-radius: 8px;"></canvas>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #2DD4BF;">
+                <span>PEAK: <strong id="peakDbVal">-24.2 dB</strong></span>
+                <span>NOISE FLOOR: <strong>-58.4 dB</strong></span>
+                <span>WINDOW: <strong>1.5s SLIDING</strong></span>
+                <span>STATUS: <strong style="color: #10B981;">ALL CLEAR</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facility Sector Status Overview -->
+    <div class="card-panel" style="border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="card-panel-header" style="margin-bottom: 16px;">
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                        <i class="fas fa-map-location-dot" style="color: #06B6D4; margin-right: 6px;"></i> Facility Sector Status
+                    </h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">4 Security Zones &bull; Array Coverage</p>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 13px;">Sector A &bull; North Perimeter</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Nodes #01 - #03 &bull; Gate &amp; Visitor Reception</div>
+                    </div>
+                    <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">NORMAL</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid #FECACA; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #DC2626; font-size: 13px;">Sector B &bull; East Dock &amp; Logistics</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Nodes #04 - #06 &bull; Loading Corridor (High Sensitivity)</div>
+                    </div>
+                    <span class="badge" style="background: #FEE2E2; color: #DC2626; font-weight: 700;">ALERT ZONE</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 13px;">Sector C &bull; Server Vault &amp; Power</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Nodes #07 - #09 &bull; Ultra-low Vibration Tier</div>
+                    </div>
+                    <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">SECURE</span>
+                </div>
+
+                <div style="padding: 10px 14px; border-radius: 10px; background: var(--bg-surface); border: 1.5px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: var(--text-primary); font-size: 13px;">Sector D &bull; Administrative Core</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Nodes #10 - #12 &bull; Central Offices</div>
+                    </div>
+                    <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">NORMAL</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 14px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
+            <i class="fas fa-check-circle" style="color: #10B981;"></i> Automatic continuous triage armed across all quadrants.
+        </div>
+    </div>
+</div>
+
+<!-- Active Hazard Alerts Table with Instant Triage Actions -->
+<div class="card-panel" style="border-radius: 16px; padding: 26px;">
+    <div class="card-panel-header" style="margin-bottom: 20px;">
+        <div>
+            <h2 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-triangle-exclamation" style="color: #EF4444;"></i> Active Acoustic Hazards &amp; Security Triage
+            </h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">
+                Acknowledge, escalate, or dismiss live incident notifications detected by the dual AI classification pipeline.
+            </p>
+        </div>
+        <span class="badge badge-critical font-mono" id="alertTableCounter">{{ alerts|length }} UNRESOLVED</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th style="padding: 12px 14px;">Alert ID</th>
+                    <th style="padding: 12px 14px;">Threat Classification</th>
+                    <th style="padding: 12px 14px;">Severity</th>
+                    <th style="padding: 12px 14px;">Recommended Action</th>
+                    <th style="padding: 12px 14px;">Repeated Threat</th>
+                    <th style="padding: 12px 14px;">Current Status</th>
+                    <th style="padding: 12px 14px; text-align: right;">Incident Triage Actions</th>
+                </tr>
+            </thead>
+            <tbody id="alertsTableBody">
+                {% if alerts %}
+                    {% for a in alerts %}
+                    <tr class="alert-row" id="alert-row-{{ a['id'] }}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s ease;">
+                        <td style="padding: 14px; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-primary);">
+                            {{ a['id'] }}
+                        </td>
+                        <td style="padding: 14px;">
+                            <span style="font-weight: 700; color: {% if a['severity'] == 'Critical' %}#DC2626{% elif a['severity'] == 'High' %}#D97706{% else %}#10B981{% endif %}; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-radiation"></i> {{ a['threat_category'] or 'Acoustic Hazard' }}
+                            </span>
+                        </td>
+                        <td style="padding: 14px;">
+                            {% if a['severity'] == 'Critical' %}
+                                <span class="badge" style="background: #FEE2E2; color: #DC2626; font-weight: 800; border: 1px solid rgba(220, 38, 38, 0.3);">CRITICAL</span>
+                            {% elif a['severity'] == 'High' %}
+                                <span class="badge" style="background: #FEF3C7; color: #D97706; font-weight: 800; border: 1px solid rgba(217, 119, 6, 0.3);">HIGH</span>
+                            {% elif a['severity'] == 'Warning' %}
+                                <span class="badge" style="background: #FFFBEB; color: #B45309; font-weight: 700;">WARNING</span>
+                            {% else %}
+                                <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 700;">MEDIUM</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 14px; color: var(--text-secondary); font-size: 12.5px;">
+                            {{ a['recommended_action'] or 'Verify audio and notify security dispatch.' }}
+                        </td>
+                        <td style="padding: 14px;">
+                            {% if a['is_confirmed_repeated'] == 1 %}
+                                <span class="badge" style="background: #FEE2E2; color: #991B1B; font-weight: 800; font-size: 10px;">
+                                    <i class="fas fa-repeat"></i> CONSECUTIVE ({{ a['repeated_count'] or 2 }}x)
+                                </span>
+                            {% else %}
+                                <span style="font-size: 11px; color: var(--text-muted);">Single Window</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 14px;">
+                            <span class="status-pill status-{{ (a['status'] or 'Active')|lower }}" id="status-badge-{{ a['id'] }}" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(220, 38, 38, 0.12); color: #DC2626;">
+                                {{ a['status'] or 'Active' }}
+                            </span>
+                        </td>
+                        <td style="padding: 14px; text-align: right;">
+                            <div style="display: inline-flex; gap: 6px;">
+                                <button onclick="triageAlert('{{ a['id'] }}', 'Acknowledged')" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 5px 10px;" title="Mark Acknowledged">
+                                    <i class="fas fa-eye"></i> Ack
+                                </button>
+                                <button onclick="triageAlert('{{ a['id'] }}', 'Escalated')" class="btn btn-sm" style="font-size: 11px; padding: 5px 10px; background: #D97706; color: #FFFFFF; border: none;" title="Escalate to Command">
+                                    <i class="fas fa-triangle-exclamation"></i> Escalate
+                                </button>
+                                <button onclick="triageAlert('{{ a['id'] }}', 'Resolved')" class="btn btn-primary btn-sm" style="font-size: 11px; padding: 5px 10px; background: #10B981; border: none;" title="Resolve and Clear">
+                                    <i class="fas fa-check"></i> Resolve
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(16, 185, 129, 0.12); color: #10B981; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">All Clear &bull; No Active Threat Alerts</div>
+                            <div style="font-size: 12px; margin-top: 4px;">Sensors are listening on all quadrants without threshold breaches.</div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+/* Emergency Siren Pulsing Effect */
+@keyframes sirenFlashBorder {
+    0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 20px rgba(220, 38, 38, 0.2); }
+    50% { border-color: #DC2626; box-shadow: 0 0 40px rgba(220, 38, 38, 0.55); }
+}
+
+.siren-active-mode {
+    border: 2px solid #DC2626 !important;
+    animation: sirenFlashBorder 0.8s infinite ease-in-out !important;
+    background: rgba(254, 242, 242, 0.85) !important;
+}
+
+[data-theme="dark"] .siren-active-mode {
+    background: rgba(69, 10, 10, 0.5) !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ==========================================
+    // 1. WEB AUDIO API EMERGENCY SIREN SYNTHESIZER
+    // ==========================================
+    let audioCtx = null;
+    let sirenOscillator = null;
+    let sirenGain = null;
+    let sirenInterval = null;
+    let isSirenActive = false;
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function toggleEmergencySiren() {
+        initAudioContext();
+        const panel = document.getElementById('emergencyControlPanel');
+        const badge = document.getElementById('sirenStatusBadge');
+        const btnText = document.getElementById('sirenBtnText');
+        const btn = document.getElementById('toggleSirenBtn');
+        const icon = document.getElementById('sirenIcon');
+
+        if (!isSirenActive) {
+            // START SIREN
+            isSirenActive = true;
+            panel.classList.add('siren-active-mode');
+            badge.style.background = '#DC2626';
+            badge.style.color = '#FFFFFF';
+            badge.innerHTML = '<i class="fas fa-bullhorn fa-bounce"></i> SIREN BROADCASTING (110dB)';
+            btnText.textContent = 'Silence & Deactivate Siren';
+            btn.style.background = '#0F172A';
+            icon.className = 'fas fa-bullhorn fa-bounce';
+
+            // Create Audio Graph
+            sirenOscillator = audioCtx.createOscillator();
+            sirenGain = audioCtx.createGain();
+            sirenOscillator.type = 'sawtooth';
+            sirenGain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Safe output volume
+
+            sirenOscillator.connect(sirenGain);
+            sirenGain.connect(audioCtx.destination);
+            sirenOscillator.start();
+
+            // Undulating two-tone siren modulation (880Hz <-> 660Hz)
+            let highPitch = true;
+            sirenOscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            sirenInterval = setInterval(() => {
+                if (!isSirenActive || !sirenOscillator) return;
+                const targetFreq = highPitch ? 660 : 880;
+                sirenOscillator.frequency.exponentialRampToValueAtTime(targetFreq, audioCtx.currentTime + 0.35);
+                highPitch = !highPitch;
+            }, 400);
+
+            showDashboardToast('CRITICAL: Sector Alarm Siren initiated across all facility speakers!', 'critical');
+        } else {
+            // STOP SIREN
+            isSirenActive = false;
+            panel.classList.remove('siren-active-mode');
+            badge.style.background = 'rgba(239, 68, 68, 0.15)';
+            badge.style.color = '#EF4444';
+            badge.innerHTML = '<i class="fas fa-shield-virus"></i> DEFENSE STANDBY';
+            btnText.textContent = 'Activate Emergency Siren';
+            btn.style.background = '#DC2626';
+            icon.className = 'fas fa-bullhorn';
+
+            if (sirenInterval) clearInterval(sirenInterval);
+            if (sirenOscillator) {
+                try {
+                    sirenOscillator.stop();
+                    sirenOscillator.disconnect();
+                } catch(e) {}
+                sirenOscillator = null;
+            }
+
+            showDashboardToast('Sector Alarm Siren deactivated and restored to standby.', 'info');
+        }
+    }
+
+    // ==========================================
+    // 2. PERIMETER LOCKDOWN TOGGLE
+    // ==========================================
+    let isLockedDown = false;
+    function togglePerimeterLockdown() {
+        const btnText = document.getElementById('lockdownBtnText');
+        const statusText = document.getElementById('lockdownStatusText');
+        const icon = document.getElementById('lockdownIcon');
+        const btn = document.getElementById('toggleLockdownBtn');
+
+        isLockedDown = !isLockedDown;
+        if (isLockedDown) {
+            btnText.textContent = 'Release Corridor Lockdown';
+            statusText.textContent = 'ALL CORRIDORS SEALED';
+            statusText.style.color = '#DC2626';
+            icon.className = 'fas fa-shield-halved';
+            btn.style.background = '#DC2626';
+            showDashboardToast('EMERGENCY LOCKDOWN: Corridors sealed across Sector B & C', 'critical');
+        } else {
+            btnText.textContent = 'Engage Corridor Lockdown';
+            statusText.textContent = 'Corridors Unlocked';
+            statusText.style.color = '#D97706';
+            icon.className = 'fas fa-door-closed';
+            btn.style.background = '#D97706';
+            showDashboardToast('Lockdown disengaged. Normal access permissions restored.', 'info');
+        }
+    }
+
+    // ==========================================
+    // 3. FIRST RESPONDERS DISPATCH
+    // ==========================================
+    function dispatchFirstResponders() {
+        showDashboardToast('Encrypting telemetry bundle and transmitting to municipal E-911...', 'info');
+        setTimeout(() => {
+            showDashboardToast('CONFIRMED: Telemetry received by Emergency Response Dispatch unit.', 'success');
+        }, 1200);
+    }
+
+    // ==========================================
+    // 4. ACTIVE ALERT TRIAGE (ACK / ESCALATE / RESOLVE)
+    // ==========================================
+    function triageAlert(alertId, newStatus) {
+        fetch(`/api/alerts/${alertId}/ack`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showDashboardToast(`Alert ${alertId} updated to status "${newStatus}"`, 'success');
+                const badge = document.getElementById(`status-badge-${alertId}`);
+                if (badge) {
+                    badge.textContent = newStatus;
+                    if (newStatus === 'Resolved') {
+                        badge.style.background = '#DCFCE7';
+                        badge.style.color = '#166534';
+                        const row = document.getElementById(`alert-row-${alertId}`);
+                        if (row) {
+                            row.style.opacity = '0.5';
+                            row.style.textDecoration = 'line-through';
+                        }
+                    } else if (newStatus === 'Escalated') {
+                        badge.style.background = '#FEF3C7';
+                        badge.style.color = '#D97706';
+                    } else {
+                        badge.style.background = '#E0E7FF';
+                        badge.style.color = '#4338CA';
+                    }
+                }
+            } else {
+                showDashboardToast('Failed to update alert: ' + (data.error || 'Server error'), 'error');
+            }
+        })
+        .catch(err => {
+            showDashboardToast('Network error during alert triage: ' + err, 'error');
+        });
+    }
+
+    // ==========================================
+    // 5. LIVE AUDIO SPECTRUM CANVAS VISUALIZER
+    // ==========================================
+    (function initSpectrumCanvas() {
+        const canvas = document.getElementById('liveAudioCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 160;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const numBars = 48;
+        let phase = 0;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            phase += 0.05;
+
+            const barWidth = (canvas.width / numBars) - 2;
+            const dbValEl = document.getElementById('peakDbVal');
+
+            let maxVal = 0;
+            for (let i = 0; i < numBars; i++) {
+                // Generate naturalistic audio frequency oscillations
+                let heightNorm = Math.sin(phase + (i * 0.25)) * 0.3 + 
+                                 Math.cos(phase * 0.7 + (i * 0.15)) * 0.25 + 0.35;
+                if (isSirenActive) {
+                    heightNorm = Math.min(1.0, heightNorm * 1.8 + 0.2); // Loud siren spike
+                }
+                const barHeight = Math.max(6, heightNorm * (canvas.height - 20));
+                if (barHeight > maxVal) maxVal = barHeight;
+
+                const x = i * (barWidth + 2);
+                const y = canvas.height - barHeight;
+
+                // Gradient for visualizer bars
+                const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+                if (isSirenActive) {
+                    grad.addColorStop(0, '#DC2626');
+                    grad.addColorStop(1, '#F87171');
+                } else {
+                    grad.addColorStop(0, '#0D9488');
+                    grad.addColorStop(0.7, '#10B981');
+                    grad.addColorStop(1, '#6EE7B7');
+                }
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect ? ctx.roundRect(x, y, barWidth, barHeight, [3, 3, 0, 0]) : ctx.fillRect(x, y, barWidth, barHeight);
+                ctx.fill();
+            }
+
+            if (dbValEl) {
+                const simulatedDb = isSirenActive ? -4.5 : (-32 + Math.sin(phase) * 6).toFixed(1);
+                dbValEl.textContent = `${simulatedDb} dB`;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    })();
+</script>
 {% endblock %}

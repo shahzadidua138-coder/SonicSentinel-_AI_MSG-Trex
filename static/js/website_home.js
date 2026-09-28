@@ -1,15 +1,14 @@
 /**
  * SonicSentinel AI - Interactive Homepage Engine
- * Ambient acoustic waves, Web Audio API oscilloscope, dual-model live simulation,
+ * Ambient acoustic waves, Web Audio API oscilloscope, dual-model live pipeline,
  * interactive sound presets, real-time dataset playback, and trained ML fast APIs.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
+    initHeroVideo();
     initCustomCursor();
     initPixieDustGlitter();
-    initSonarClickEngine();
-    initScrollTelemetryHud();
     init3DCardTilt();
     initHeroHoloCore();
     initScrollAnimations();
@@ -23,33 +22,61 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
+   HERO VIDEO: muted autoplay with best-effort sound after a real user gesture
+   ========================================================================== */
+function initHeroVideo() {
+    const video = document.getElementById('heroVideo');
+    const toggle = document.getElementById('heroVideoSoundToggle');
+    if (!video) return;
+
+    video.muted = true;
+    video.play().catch(() => {});
+
+    const updateToggle = () => {
+        if (!toggle) return;
+        toggle.setAttribute('aria-pressed', String(!video.muted));
+        toggle.innerHTML = video.muted
+            ? '<i class="fa-solid fa-volume-xmark"></i><span>Sound off</span>'
+            : '<i class="fa-solid fa-volume-high"></i><span>Sound on</span>';
+    };
+
+    const enableAfterGesture = () => {
+        if (video.dataset.soundPreference === 'muted') return;
+        video.muted = false;
+        video.volume = 0.62;
+        video.play().catch(() => {});
+        updateToggle();
+        document.removeEventListener('pointerdown', enableAfterGesture);
+        document.removeEventListener('keydown', enableAfterGesture);
+    };
+
+    document.addEventListener('pointerdown', enableAfterGesture, { passive: true });
+    document.addEventListener('keydown', enableAfterGesture, { passive: true });
+
+    if (toggle) {
+        toggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            video.dataset.soundPreference = video.muted ? 'on' : 'muted';
+            video.muted = !video.muted;
+            if (!video.muted) {
+                video.volume = 0.62;
+                video.play().catch(() => {});
+            }
+            updateToggle();
+        });
+    }
+    updateToggle();
+}
+
+/* ==========================================================================
    0. THEME TOGGLE & PERSISTENCE ENGINE (Light / Dark Mode)
    ========================================================================== */
 function initThemeToggle() {
-    const themeBtn = document.getElementById('themeToggleBtn');
-    const currentTheme = localStorage.getItem('sonicsentinel_theme') || 'light';
-
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('sonicsentinel_theme', theme);
-        if (themeBtn) {
-            const icon = themeBtn.querySelector('i');
-            if (icon) {
-                icon.className = (theme === 'dark') ? 'fa-solid fa-moon' : 'fa-regular fa-sun';
-            }
-        }
-    }
-
-    applyTheme(currentTheme);
-
-    if (themeBtn) {
-        themeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = (activeTheme === 'dark') ? 'light' : 'dark';
-            applyTheme(newTheme);
-        });
-    }
+    try {
+        localStorage.removeItem('sonicsentinel_theme');
+        localStorage.removeItem('sonic_theme');
+    } catch(e) {}
+    document.documentElement.setAttribute('data-theme', 'light');
 }
 
 /* ==========================================================================
@@ -102,10 +129,10 @@ function initAmbientWaveCanvas() {
     function drawWaves() {
         ctx.clearRect(0, 0, width, height);
 
-        // Wave 1: Gentle teal ribbon
+        // Wave 1: Gentle lavender ribbon
         ctx.beginPath();
         ctx.lineWidth = 1.8;
-        ctx.strokeStyle = 'rgba(45, 212, 191, 0.22)';
+        ctx.strokeStyle = 'rgba(175, 141, 166, 0.22)';
         for (let x = 0; x < width; x += 10) {
             const y = Math.sin(x * 0.003 + step * 0.015) * 45 + 
                       Math.cos(x * 0.0015 - step * 0.01) * 30 + 
@@ -115,10 +142,10 @@ function initAmbientWaveCanvas() {
         }
         ctx.stroke();
 
-        // Wave 2: Cyan harmonic ribbon
+        // Wave 2: Silver-lavender harmonic ribbon
         ctx.beginPath();
         ctx.lineWidth = 1.2;
-        ctx.strokeStyle = 'rgba(20, 184, 166, 0.16)';
+        ctx.strokeStyle = 'rgba(210, 187, 208, 0.18)';
         for (let x = 0; x < width; x += 10) {
             const y = Math.sin(x * 0.004 - step * 0.02) * 55 + 
                       Math.sin(x * 0.002 + step * 0.008) * 40 + 
@@ -128,10 +155,10 @@ function initAmbientWaveCanvas() {
         }
         ctx.stroke();
 
-        // Wave 3: Deep subtle bass ribbon
+        // Wave 3: Deep purple bass ribbon
         ctx.beginPath();
         ctx.lineWidth = 2.2;
-        ctx.strokeStyle = 'rgba(13, 148, 136, 0.12)';
+        ctx.strokeStyle = 'rgba(130, 93, 120, 0.14)';
         for (let x = 0; x < width; x += 12) {
             const y = Math.cos(x * 0.0025 + step * 0.012) * 65 + 
                       (height * 0.6);
@@ -165,7 +192,7 @@ function initHeroMicToggle() {
             if (statusLabel) statusLabel.textContent = 'Listening Live: Acoustic Stream Active';
             soundBars.forEach(bar => {
                 bar.style.animationDuration = '0.5s';
-                bar.style.filter = 'drop-shadow(0 0 6px #2DD4BF)';
+                bar.style.filter = 'drop-shadow(0 0 6px #AF8DA6)';
             });
 
             // Smooth scroll down to interactive studio
@@ -201,132 +228,8 @@ let audioCtx = null;
 let analyser = null;
 let micStream = null;
 let isStudioLive = false;
-let animWaveId = null;
 let activeAudioElement = null;
 let liveMicPollTimer = null;
-
-const PRESET_DATA = {
-    'gunshot': {
-        name: 'Gunshot',
-        severity: 'Critical',
-        sevClass: 'critical',
-        pyConf: 98.4,
-        gtmConf: 96.1,
-        snr: '34.2 dB',
-        quality: 'Good',
-        margin: '94.2%',
-        freq: 'Impulsive transient: 100 Hz - 8,000 Hz broadband shockwave',
-        recommendation: 'Immediate lockdown and notify law enforcement'
-    },
-    'glass': {
-        name: 'Glass Breaking',
-        severity: 'High',
-        sevClass: 'high',
-        pyConf: 95.8,
-        gtmConf: 94.2,
-        snr: '29.7 dB',
-        quality: 'Good',
-        margin: '89.5%',
-        freq: 'High-frequency scatter: 2,500 Hz - 9,000 Hz',
-        recommendation: 'Dispatch perimeter security patrol to Zone 3'
-    },
-    'machinery': {
-        name: 'Machinery Fault',
-        severity: 'High',
-        sevClass: 'high',
-        pyConf: 93.6,
-        gtmConf: 91.8,
-        snr: '26.4 dB',
-        quality: 'Good',
-        margin: '82.1%',
-        freq: 'Bearing harmonic spikes: 120 Hz - 1,800 Hz',
-        recommendation: 'Schedule mechanical preventive inspection on Turbine #4'
-    },
-    'alarm': {
-        name: 'Alarm / Siren',
-        severity: 'High',
-        sevClass: 'high',
-        pyConf: 97.2,
-        gtmConf: 98.0,
-        snr: '32.1 dB',
-        quality: 'Good',
-        margin: '95.1%',
-        freq: 'Continuous modulated sine: 800 Hz - 1,600 Hz sweep',
-        recommendation: 'Verify facility emergency suppression protocol'
-    },
-    'scream': {
-        name: 'Panic Scream',
-        severity: 'Critical',
-        sevClass: 'critical',
-        pyConf: 96.9,
-        gtmConf: 95.3,
-        snr: '28.8 dB',
-        quality: 'Good',
-        margin: '91.4%',
-        freq: 'High-pitch vocal rough formant: 1,200 Hz - 4,500 Hz',
-        recommendation: 'Alert safety floor wardens to Sector 2'
-    },
-    'aggression': {
-        name: 'Aggression',
-        severity: 'High',
-        sevClass: 'high',
-        pyConf: 94.7,
-        gtmConf: 92.4,
-        snr: '25.3 dB',
-        quality: 'Good',
-        margin: '84.8%',
-        freq: 'Aggressive vocal bursts and physical impact: 250 Hz - 3,200 Hz',
-        recommendation: 'Security personnel intervention required at monitor station'
-    },
-    'help': {
-        name: 'Call for Help',
-        severity: 'Critical',
-        sevClass: 'critical',
-        pyConf: 95.5,
-        gtmConf: 93.8,
-        snr: '27.1 dB',
-        quality: 'Good',
-        margin: '88.3%',
-        freq: 'Distress formant speech recognition ("Help me", "Emergency"): 300 Hz - 3,400 Hz',
-        recommendation: 'Safety floor warden immediate dispatch for welfare check'
-    },
-    'animal': {
-        name: 'Animal Sound',
-        severity: 'Low',
-        sevClass: 'low',
-        pyConf: 91.2,
-        gtmConf: 89.5,
-        snr: '24.0 dB',
-        quality: 'Good',
-        margin: '79.6%',
-        freq: 'Barking or wildlife vocalization: 350 Hz - 2,800 Hz',
-        recommendation: 'Perimeter monitoring log recorded. No emergency dispatch.'
-    },
-    'horn': {
-        name: 'Vehicle Horn',
-        severity: 'Medium',
-        sevClass: 'medium',
-        pyConf: 92.8,
-        gtmConf: 91.0,
-        snr: '29.4 dB',
-        quality: 'Good',
-        margin: '81.2%',
-        freq: 'Dual-tone harmonic klaxon: 400 Hz - 1,200 Hz',
-        recommendation: 'Traffic sound logged. Environmental baseline updated.'
-    },
-    'noise': {
-        name: 'Background Noise',
-        severity: 'Informational',
-        sevClass: 'low',
-        pyConf: 99.1,
-        gtmConf: 98.8,
-        snr: '18.2 dB',
-        quality: 'Acceptable',
-        margin: '97.6%',
-        freq: 'Diffuse ambient ventilation: 40 Hz - 300 Hz pink noise',
-        recommendation: 'Normal ambient operation, baseline recalibrated'
-    }
-};
 
 function initInteractiveStudio() {
     const waveCanvas = document.getElementById('studioWaveformCanvas');
@@ -339,8 +242,8 @@ function initInteractiveStudio() {
 
     if (!waveCanvas) return;
 
-    // Start synthetic idle oscilloscope
-    runIdleOscilloscope(waveCanvas, specCanvas);
+    // Keep the console honest until a real sample or microphone stream is selected.
+    clearStudioCanvases(waveCanvas, specCanvas);
 
     // Preset buttons click
     presetBtns.forEach(btn => {
@@ -404,8 +307,6 @@ function initInteractiveStudio() {
 }
 
 async function loadStudioPreset(key, waveCanvas, specCanvas) {
-    const fallbackData = PRESET_DATA[key] || PRESET_DATA['gunshot'];
-
     // Play real audio sample from dataset
     playRealAudioSample(key);
 
@@ -420,10 +321,12 @@ async function loadStudioPreset(key, waveCanvas, specCanvas) {
     const marginVal = document.getElementById('topTwoMarginFormula');
     const snrVal = document.getElementById('studioSnrVal');
     const gradeVal = document.getElementById('studioGradeVal');
+    const clipVal = document.getElementById('studioClipVal');
+    const heroStatus = document.getElementById('heroAudioStatus');
+    const repeatedVal = document.getElementById('repeatedDetectionFormula');
 
     if (decisionName) decisionName.textContent = 'Analyzing with Model...';
     if (decisionMatch) decisionMatch.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Extracting 373 Acoustic Features...';
-    animateBurst(waveCanvas, specCanvas, key);
 
     try {
         const response = await fetch(`/api/audio/classify-sample/${key}`);
@@ -431,6 +334,10 @@ async function loadStudioPreset(key, waveCanvas, specCanvas) {
             const data = await response.json();
             const pred = data.prediction;
             const quality = data.quality || {};
+
+            renderRealSamplePreview(data.sample_url, waveCanvas, specCanvas).catch((previewError) => {
+                console.warn('Could not render the real sample preview:', previewError);
+            });
 
             const pyConfPct = (pred.python_confidence * 100).toFixed(1);
             const gtmConfPct = (pred.gtm_confidence * 100).toFixed(1);
@@ -447,8 +354,11 @@ async function loadStudioPreset(key, waveCanvas, specCanvas) {
             if (gtmVal) gtmVal.textContent = `${gtmConfPct}%`;
             if (diffVal) diffVal.textContent = `${diffPct}%`;
             if (marginVal) marginVal.textContent = `${marginPct}%`;
-            if (snrVal) snrVal.textContent = `${quality.snr_db || 28.5} dB`;
-            if (gradeVal) gradeVal.textContent = quality.quality_grade || 'Good';
+            if (snrVal) snrVal.textContent = quality.snr_db != null ? `${quality.snr_db} dB` : '—';
+            if (gradeVal) gradeVal.textContent = quality.quality_grade || '—';
+            if (clipVal) clipVal.textContent = quality.is_silent ? 'Silent' : (quality.is_clipped ? 'Clipped' : 'Clean');
+            if (heroStatus) heroStatus.textContent = `${pred.final_class} • ${pyConfPct}% model confidence`;
+            if (repeatedVal) repeatedVal.textContent = pred.consistency_status || 'Evaluated by backend';
 
             // Trigger Threat Alert HUD if hazard category detected
             if (['Gunshot', 'Panic Scream', 'Aggression', 'Glass Breaking', 'Alarm / Siren'].includes(pred.final_class)) {
@@ -466,32 +376,92 @@ async function loadStudioPreset(key, waveCanvas, specCanvas) {
             return;
         }
     } catch (e) {
-        console.warn('Real model API network check, applying fallback:', e);
+        console.warn('Real model API request failed:', e);
     }
 
-    // Fallback if network interrupted
-    if (decisionName) decisionName.textContent = fallbackData.name;
-    if (decisionMatch) {
-        const delta = Math.abs(fallbackData.pyConf - fallbackData.gtmConf).toFixed(1);
-        decisionMatch.innerHTML = `<i class="fa-solid fa-circle-check"></i> Acceptable Match (&Delta; = ${delta}%)`;
-    }
-    if (pyFill) pyFill.style.width = `${fallbackData.pyConf}%`;
-    if (pyVal) pyVal.textContent = `${fallbackData.pyConf}%`;
-    if (gtmFill) gtmFill.style.width = `${fallbackData.gtmConf}%`;
-    if (gtmVal) gtmVal.textContent = `${fallbackData.gtmConf}%`;
-    if (diffVal) diffVal.textContent = `${Math.abs(fallbackData.pyConf - fallbackData.gtmConf).toFixed(1)}%`;
-    if (marginVal) marginVal.textContent = fallbackData.margin;
-    if (snrVal) snrVal.textContent = fallbackData.snr;
-    if (gradeVal) gradeVal.textContent = fallbackData.quality;
+    if (decisionName) decisionName.textContent = 'Analysis unavailable';
+    if (decisionMatch) decisionMatch.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Backend/model result unavailable';
+    if (pyFill) pyFill.style.width = '0%';
+    if (pyVal) pyVal.textContent = '—';
+    if (gtmFill) gtmFill.style.width = '0%';
+    if (gtmVal) gtmVal.textContent = '—';
+    if (diffVal) diffVal.textContent = '—';
+    if (marginVal) marginVal.textContent = '—';
+    if (snrVal) snrVal.textContent = '—';
+    if (gradeVal) gradeVal.textContent = '—';
+    if (clipVal) clipVal.textContent = '—';
+    if (repeatedVal) repeatedVal.textContent = 'Awaiting repeated window';
+    if (heroStatus) heroStatus.textContent = 'Model service unavailable — upload audio or try again';
+    dismissThreatAlertHud();
+}
 
-    if (fallbackData.sevClass === 'critical' || fallbackData.sevClass === 'high') {
-        showThreatAlertHud(
-            fallbackData.name,
-            `${fallbackData.name.toUpperCase()} DETECTED • ${fallbackData.pyConf}% CONFIDENCE`,
-            `Automatic Dispatch: ${fallbackData.recommendation}. Incident Certificate generated.`
-        );
-    } else {
-        dismissThreatAlertHud();
+function clearStudioCanvases(wCanvas, sCanvas) {
+    [wCanvas, sCanvas].forEach((canvas) => {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width = Math.max(canvas.clientWidth, 1);
+        const height = canvas.height = Math.max(canvas.clientHeight, 1);
+        ctx.clearRect(0, 0, width, height);
+        ctx.strokeStyle = 'rgba(175, 141, 166, .18)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(width, height / 2);
+        ctx.stroke();
+    });
+}
+
+async function renderRealSamplePreview(sampleUrl, wCanvas, sCanvas) {
+    if (!sampleUrl || !wCanvas || !sCanvas) return;
+    const response = await fetch(sampleUrl);
+    if (!response.ok) throw new Error(`Sample preview returned ${response.status}`);
+    const audioBuffer = await getAudioContext().decodeAudioData(await response.arrayBuffer());
+    const samples = audioBuffer.getChannelData(0);
+
+    const wCtx = wCanvas.getContext('2d');
+    const w = wCanvas.width = Math.max(wCanvas.clientWidth, 1);
+    const h = wCanvas.height = Math.max(wCanvas.clientHeight, 1);
+    wCtx.clearRect(0, 0, w, h);
+    wCtx.strokeStyle = '#AF8DA6';
+    wCtx.lineWidth = 2;
+    wCtx.beginPath();
+    for (let x = 0; x < w; x += 1) {
+        const start = Math.floor((x / w) * samples.length);
+        const end = Math.max(start + 1, Math.floor(((x + 1) / w) * samples.length));
+        let peak = 0;
+        for (let i = start; i < end && i < samples.length; i += 1) peak = Math.max(peak, Math.abs(samples[i]));
+        const y = h / 2 - Math.min(peak, 1) * (h * .45);
+        const yMirror = h / 2 + Math.min(peak, 1) * (h * .45);
+        if (x === 0) wCtx.moveTo(x, y);
+        else wCtx.lineTo(x, y);
+        if (x === w - 1) {
+            wCtx.moveTo(x, yMirror);
+            for (let px = w - 1; px >= 0; px -= 1) {
+                const pStart = Math.floor((px / w) * samples.length);
+                const pEnd = Math.max(pStart + 1, Math.floor(((px + 1) / w) * samples.length));
+                let pPeak = 0;
+                for (let i = pStart; i < pEnd && i < samples.length; i += 1) pPeak = Math.max(pPeak, Math.abs(samples[i]));
+                wCtx.lineTo(px, h / 2 + Math.min(pPeak, 1) * (h * .45));
+            }
+        }
+    }
+    wCtx.stroke();
+
+    const sCtx = sCanvas.getContext('2d');
+    const sw = sCanvas.width = Math.max(sCanvas.clientWidth, 1);
+    const sh = sCanvas.height = Math.max(sCanvas.clientHeight, 1);
+    sCtx.clearRect(0, 0, sw, sh);
+    const bands = 48;
+    const segment = Math.max(Math.floor(samples.length / bands), 1);
+    for (let i = 0; i < bands; i += 1) {
+        const start = i * segment;
+        const end = Math.min(start + segment, samples.length);
+        let energy = 0;
+        for (let j = start; j < end; j += 1) energy += samples[j] * samples[j];
+        const rms = Math.sqrt(energy / Math.max(end - start, 1));
+        const barHeight = Math.min(rms * 4.2, 1) * sh * .9;
+        sCtx.fillStyle = '#AF8DA6';
+        sCtx.fillRect(i * (sw / bands), sh - barHeight, (sw / bands) - 1.5, barHeight);
     }
 }
 
@@ -531,25 +501,17 @@ function triggerHeroAudition(key, name, conf, dispatchAdvice) {
     const statusLabel = document.getElementById('heroAudioStatus');
     const waveStrip = document.getElementById('heroSoundwaveStrip');
     if (statusLabel) {
-        statusLabel.innerHTML = `<span style="color:#EF4444; font-weight:800;">[ACTIVE THREAT]</span> ${name} &bull; ${conf} Confidence`;
+        statusLabel.textContent = `Analyzing ${name} with the trained model…`;
     }
     if (waveStrip) {
         waveStrip.classList.add('active-surge');
         setTimeout(() => waveStrip.classList.remove('active-surge'), 3000);
     }
 
-    // Trigger HUD
-    showThreatAlertHud(
-        name,
-        `${name.toUpperCase()} DETECTED &bull; ${conf} CONFIDENCE`,
-        `Automatic Dispatch: ${dispatchAdvice}. Real-time DSP Spectrogram synchronized.`
-    );
-
     // Also trigger in studio if canvases are available
     const wCanvas = document.getElementById('studioWaveformCanvas');
     const sCanvas = document.getElementById('studioSpectrogramCanvas');
     if (wCanvas && sCanvas) {
-        animateBurst(wCanvas, sCanvas, key);
         loadStudioPreset(key, wCanvas, sCanvas);
     }
 }
@@ -564,76 +526,10 @@ function playRealAudioSample(categoryKey) {
         activeAudioElement = new Audio(`/api/audio/sample/${categoryKey}`);
         activeAudioElement.volume = 0.7;
         activeAudioElement.play().catch(err => {
-            synthesizeAcousticSample(categoryKey);
+            console.warn('Real sample playback was blocked or unavailable:', err);
         });
     } catch (e) {
-        synthesizeAcousticSample(categoryKey);
-    }
-}
-
-// Synthesize pleasant realistic signature tones using Web Audio API
-function synthesizeAcousticSample(type) {
-    try {
-        const ctx = getAudioContext();
-        if (ctx.state === 'suspended') ctx.resume();
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        const now = ctx.currentTime;
-
-        if (type === 'gunshot') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(400, now);
-            osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
-            gain.gain.setValueAtTime(0.8, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        } else if (type === 'glass') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(3200, now);
-            osc.frequency.exponentialRampToValueAtTime(6500, now + 0.15);
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-            osc.start(now);
-            osc.stop(now + 0.35);
-        } else if (type === 'alarm') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(900, now);
-            osc.frequency.linearRampToValueAtTime(1400, now + 0.2);
-            osc.frequency.linearRampToValueAtTime(900, now + 0.4);
-            gain.gain.setValueAtTime(0.35, now);
-            gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-            osc.start(now);
-            osc.stop(now + 0.5);
-        } else if (type === 'machinery') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(120, now);
-            gain.gain.setValueAtTime(0.4, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-            osc.start(now);
-            osc.stop(now + 0.6);
-        } else if (type === 'scream') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1200, now);
-            osc.frequency.linearRampToValueAtTime(2200, now + 0.3);
-            gain.gain.setValueAtTime(0.35, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-            osc.start(now);
-            osc.stop(now + 0.45);
-        } else {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(80, now);
-            gain.gain.setValueAtTime(0.15, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-            osc.start(now);
-            osc.stop(now + 0.4);
-        }
-    } catch (e) {
-        console.warn('Web Audio synthesis not supported or prevented:', e);
+        console.warn('Real sample playback was unavailable:', e);
     }
 }
 
@@ -661,109 +557,6 @@ function getAudioContext() {
     return audioCtx;
 }
 
-/* Oscilloscope Renderers */
-function runIdleOscilloscope(wCanvas, sCanvas) {
-    if (!wCanvas || !sCanvas) return;
-    const wCtx = wCanvas.getContext('2d');
-    const sCtx = sCanvas.getContext('2d');
-    let phase = 0;
-
-    function renderIdle() {
-        if (isStudioLive) return; // real mic taking over
-
-        const w = wCanvas.width = wCanvas.clientWidth;
-        const h = wCanvas.height = wCanvas.clientHeight;
-        wCtx.clearRect(0, 0, w, h);
-
-        // Draw waveform grid
-        wCtx.strokeStyle = 'rgba(45, 212, 191, 0.1)';
-        wCtx.lineWidth = 1;
-        wCtx.beginPath();
-        wCtx.moveTo(0, h / 2);
-        wCtx.lineTo(w, h / 2);
-        wCtx.stroke();
-
-        // Waveform trace
-        wCtx.beginPath();
-        wCtx.lineWidth = 2;
-        wCtx.strokeStyle = '#2DD4BF';
-        for (let x = 0; x < w; x++) {
-            const y = (h / 2) + Math.sin(x * 0.04 + phase) * 18 * Math.cos(x * 0.01 - phase * 0.5) +
-                      Math.sin(x * 0.1 + phase * 2) * 6;
-            if (x === 0) wCtx.moveTo(x, y);
-            else wCtx.lineTo(x, y);
-        }
-        wCtx.stroke();
-
-        // Spectrogram heat-map bars
-        const sw = sCanvas.width = sCanvas.clientWidth;
-        const sh = sCanvas.height = sCanvas.clientHeight;
-        sCtx.clearRect(0, 0, sw, sh);
-
-        const barCount = 48;
-        const barWidth = sw / barCount;
-        for (let i = 0; i < barCount; i++) {
-            const mag = Math.abs(Math.sin(i * 0.18 + phase * 0.8)) * 0.75 + 
-                        Math.cos(i * 0.08 - phase) * 0.25;
-            const barH = mag * (sh * 0.85);
-            const r = Math.floor(13 + mag * 32);
-            const g = Math.floor(148 + mag * 90);
-            const b = Math.floor(136 + mag * 70);
-            sCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            sCtx.fillRect(i * barWidth, sh - barH, barWidth - 1.5, barH);
-        }
-
-        phase += 0.04;
-        animWaveId = requestAnimationFrame(renderIdle);
-    }
-    renderIdle();
-}
-
-function animateBurst(wCanvas, sCanvas, key) {
-    if (!wCanvas || !sCanvas) return;
-    const wCtx = wCanvas.getContext('2d');
-    const sCtx = sCanvas.getContext('2d');
-    let frame = 0;
-    const maxFrames = 30;
-
-    function renderBurst() {
-        if (frame > maxFrames || isStudioLive) return;
-
-        const w = wCanvas.width = wCanvas.clientWidth;
-        const h = wCanvas.height = wCanvas.clientHeight;
-        wCtx.clearRect(0, 0, w, h);
-
-        const intensity = 1 - (frame / maxFrames);
-        wCtx.beginPath();
-        wCtx.lineWidth = 2.5;
-        wCtx.strokeStyle = key === 'gunshot' || key === 'scream' ? '#EF4444' : '#2DD4BF';
-
-        for (let x = 0; x < w; x++) {
-            const envelope = Math.exp(-Math.pow((x - w * 0.4) / (w * 0.18), 2));
-            const y = (h / 2) + Math.sin(x * 0.15) * 36 * envelope * intensity * (Math.random() * 0.4 + 0.8);
-            if (x === 0) wCtx.moveTo(x, y);
-            else wCtx.lineTo(x, y);
-        }
-        wCtx.stroke();
-
-        const sw = sCanvas.width = sCanvas.clientWidth;
-        const sh = sCanvas.height = sCanvas.clientHeight;
-        sCtx.clearRect(0, 0, sw, sh);
-
-        const barCount = 48;
-        const barWidth = sw / barCount;
-        for (let i = 0; i < barCount; i++) {
-            const barH = (Math.random() * 0.7 + 0.3) * (sh * 0.9) * intensity;
-            sCtx.fillStyle = key === 'gunshot' || key === 'scream' ? '#F87171' : '#14B8A6';
-            sCtx.fillRect(i * barWidth, sh - barH, barWidth - 1.5, barH);
-        }
-
-        frame++;
-        requestAnimationFrame(renderBurst);
-    }
-    renderBurst();
-}
-
 /* Real Browser Microphone Recording & Live Model Streaming */
 async function startRealMicrophone(wCanvas, sCanvas) {
     try {
@@ -786,7 +579,7 @@ async function startRealMicrophone(wCanvas, sCanvas) {
 
         const toggleBox = document.getElementById('studioMicToggleBox');
         if (toggleBox) {
-            toggleBox.style.borderColor = '#10B981';
+            toggleBox.style.borderColor = '#AF8DA6';
             const titleEl = document.getElementById('studioMicTitle');
             const subEl = document.getElementById('studioMicSub');
             if (titleEl) titleEl.textContent = 'Live Microphone: Active (Streaming to AI)';
@@ -817,13 +610,13 @@ function stopRealMicrophone(wCanvas, sCanvas) {
     isStudioLive = false;
     const toggleBox = document.getElementById('studioMicToggleBox');
     if (toggleBox) {
-        toggleBox.style.borderColor = 'var(--teal-400)';
+        toggleBox.style.borderColor = 'var(--purple-400)';
         const titleEl = document.getElementById('studioMicTitle');
         const subEl = document.getElementById('studioMicSub');
         if (titleEl) titleEl.textContent = 'Capture Live Microphone';
         if (subEl) subEl.textContent = 'Click to enable real-time browser audio stream & live AI scoring';
     }
-    runIdleOscilloscope(wCanvas, sCanvas);
+    clearStudioCanvases(wCanvas, sCanvas);
 }
 
 function sendLiveMicSlice() {
@@ -904,7 +697,7 @@ function drawLiveMicrophoneWave(wCanvas, sCanvas) {
         wCtx.clearRect(0, 0, w, h);
 
         wCtx.lineWidth = 2.2;
-        wCtx.strokeStyle = '#2DD4BF';
+        wCtx.strokeStyle = '#AF8DA6';
         wCtx.beginPath();
 
         const sliceWidth = w / bufferLength;
@@ -926,7 +719,7 @@ function drawLiveMicrophoneWave(wCanvas, sCanvas) {
         const barWidth = sw / bufferLength;
         for (let i = 0; i < bufferLength; i++) {
             const barHeight = (freqData[i] / 255) * sh;
-            sCtx.fillStyle = '#14B8A6';
+            sCtx.fillStyle = '#AF8DA6';
             sCtx.fillRect(i * barWidth, sh - barHeight, barWidth - 1, barHeight);
         }
 
@@ -944,9 +737,9 @@ async function handleUploadedAudioFile(files, wCanvas, sCanvas) {
     const decisionMatch = document.getElementById('studioMatchStatus');
 
     if (decisionName) decisionName.textContent = 'Extracting 373 Acoustic Features...';
-    if (decisionMatch) decisionMatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running Trained SVM & GTM Pipeline...';
+    if (decisionMatch) decisionMatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running trained SVM + Random Forest pipeline...';
 
-    animateBurst(wCanvas, sCanvas, 'gunshot');
+    clearStudioCanvases(wCanvas, sCanvas);
 
     const formData = new FormData();
     formData.append('audio', file);
@@ -987,8 +780,13 @@ async function handleUploadedAudioFile(files, wCanvas, sCanvas) {
             if (gtmVal) gtmVal.textContent = `${gtmConfPct}%`;
             if (diffVal) diffVal.textContent = `${diffPct}%`;
             if (marginVal) marginVal.textContent = `${marginPct}%`;
-            if (snrVal) snrVal.textContent = `${quality.snr_db || 31.4} dB`;
-            if (gradeVal) gradeVal.textContent = quality.quality_grade || 'Good';
+            if (snrVal) snrVal.textContent = quality.snr_db != null ? `${quality.snr_db} dB` : '—';
+            if (gradeVal) gradeVal.textContent = quality.quality_grade || '—';
+
+            const uploadPreviewUrl = URL.createObjectURL(file);
+            renderRealSamplePreview(uploadPreviewUrl, wCanvas, sCanvas)
+                .catch(previewError => console.warn('Could not render the uploaded sample preview:', previewError))
+                .finally(() => URL.revokeObjectURL(uploadPreviewUrl));
 
             appendIncidentToFeed(pred, quality, file.name);
 
@@ -1048,7 +846,6 @@ async function loadIncidentFeed() {
         if (!res.ok) return;
         const events = await res.json();
         if (!events || events.length === 0) return;
-
         const tbody = document.getElementById('incidentFeedTbody');
         if (!tbody) return;
 
@@ -1062,17 +859,17 @@ async function loadIncidentFeed() {
             const detectedClass = ev.final_detected_class || ev.final_class || ev.predicted_class || 'Sound Event';
             const pyVal = ev.python_top_confidence != null ? ev.python_top_confidence : ev.python_confidence;
             const gtmVal = ev.gtm_top_confidence != null ? ev.gtm_top_confidence : ev.gtm_confidence;
-            const pyConf = pyVal != null ? (pyVal * 100).toFixed(1) + '%' : '94.5%';
-            const gtmConf = gtmVal != null ? (gtmVal * 100).toFixed(1) + '%' : '93.0%';
+            const pyConf = pyVal != null ? (pyVal * 100).toFixed(1) + '%' : '—';
+            const gtmConf = gtmVal != null ? (gtmVal * 100).toFixed(1) + '%' : '—';
 
             tr.innerHTML = `
-                <td style="font-family: var(--font-mono); font-weight: 700;">${ev.id || 'AUD-001'}</td>
-                <td><i class="fa-solid fa-volume-high" style="color: var(--teal-400); margin-right: 6px;"></i> ${detectedClass}</td>
-                <td><span class="badge-sev ${sevClass}">${ev.severity || 'Medium'}</span></td>
+                <td style="font-family: var(--font-mono); font-weight: 700;">${ev.id || '—'}</td>
+                <td><i class="fa-solid fa-volume-high" style="color: var(--purple-400); margin-right: 6px;"></i> ${detectedClass}</td>
+                <td><span class="badge-sev ${sevClass}">${ev.severity || 'Unknown'}</span></td>
                 <td>${pyConf}</td>
                 <td>${gtmConf}</td>
-                <td><span style="color:#10B981; font-weight:600;">${ev.quality_grade || 'Good'}</span></td>
-                <td><span style="color:var(--text-muted); font-weight:600;">${ev.alert_status || 'Logged'}</span></td>
+                <td><span style="color:var(--purple-600); font-weight:600;">${ev.quality_grade || '—'}</span></td>
+                <td><span style="color:var(--text-muted); font-weight:600;">${ev.alert_status || '—'}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -1084,23 +881,25 @@ async function loadIncidentFeed() {
 function appendIncidentToFeed(pred, quality, filename) {
     const tbody = document.getElementById('incidentFeedTbody');
     if (!tbody) return;
+    const emptyRow = tbody.querySelector('.incident-empty-row');
+    if (emptyRow) emptyRow.remove();
     const audioId = 'AUD-' + Math.random().toString(16).substring(2, 8).toUpperCase();
     const tr = document.createElement('tr');
-    tr.style.background = 'rgba(45, 212, 191, 0.08)';
+    tr.style.background = 'rgba(175, 141, 166, 0.08)';
 
-    const sevClass = (pred.severity || 'Medium').toLowerCase();
+    const sevClass = (pred.severity || 'unknown').toLowerCase();
     const pyConf = (pred.python_confidence * 100).toFixed(1) + '%';
     const gtmConf = (pred.gtm_confidence * 100).toFixed(1) + '%';
-    const qGrade = quality.quality_grade || 'Good';
+    const qGrade = quality.quality_grade || '—';
 
     tr.innerHTML = `
         <td style="font-family: var(--font-mono); font-weight: 700;">${audioId}</td>
-        <td><i class="fa-solid fa-waveform" style="color: var(--teal-400); margin-right: 6px;"></i> ${pred.final_class}</td>
-        <td><span class="badge-sev ${sevClass}">${pred.severity || 'Medium'}</span></td>
+        <td><i class="fa-solid fa-waveform" style="color: var(--purple-400); margin-right: 6px;"></i> ${pred.final_class}</td>
+        <td><span class="badge-sev ${sevClass}">${pred.severity || 'Unknown'}</span></td>
         <td>${pyConf}</td>
         <td>${gtmConf}</td>
-        <td><span style="color:#10B981; font-weight:600;">${qGrade}</span></td>
-        <td><span style="color:var(--teal-600); font-weight:700;">${pred.consistency_status}</span></td>
+        <td><span style="color:var(--purple-600); font-weight:600;">${qGrade}</span></td>
+        <td><span style="color:var(--purple-700); font-weight:700;">${pred.consistency_status || '—'}</span></td>
     `;
     tbody.insertBefore(tr, tbody.firstChild);
 
@@ -1129,21 +928,59 @@ function initHeaderScroll() {
 
 function initMobileNav() {
     const mobileBtn = document.getElementById('mobileMenuBtn');
-    const navMenu = document.getElementById('navPillMenu');
-    if (!mobileBtn || !navMenu) return;
+    const mobileIcon = document.getElementById('mobileMenuIcon');
+    const drawer = document.getElementById('mobileNavDrawer');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    if (!mobileBtn || !drawer) return;
 
-    mobileBtn.addEventListener('click', () => {
-        const isShown = navMenu.style.display === 'flex';
-        navMenu.style.display = isShown ? 'none' : 'flex';
-        if (!isShown) {
-            navMenu.style.position = 'absolute';
-            navMenu.style.top = '76px';
-            navMenu.style.left = '0';
-            navMenu.style.right = '0';
-            navMenu.style.background = '#FFFFFF';
-            navMenu.style.padding = '20px';
-            navMenu.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-            navMenu.style.flexDirection = 'column';
+    function openDrawer() {
+        drawer.classList.add('open');
+        if (backdrop) backdrop.classList.add('open');
+        if (mobileIcon) {
+            mobileIcon.classList.remove('fa-bars');
+            mobileIcon.classList.add('fa-xmark');
+        }
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
+        if (mobileIcon) {
+            mobileIcon.classList.remove('fa-xmark');
+            mobileIcon.classList.add('fa-bars');
+        }
+    }
+
+    mobileBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (drawer.classList.contains('open')) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    });
+
+    if (backdrop) {
+        backdrop.addEventListener('click', closeDrawer);
+    }
+
+    // Close when tapping navigation links
+    drawer.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeDrawer);
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && drawer.classList.contains('open')) {
+            closeDrawer();
+        }
+    });
+
+    // Close when window resized to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992 && drawer.classList.contains('open')) {
+            closeDrawer();
         }
     });
 }
@@ -1154,7 +991,7 @@ function initMobileNav() {
 function initCustomCursor() {
     const ring = document.getElementById('customCursorRing');
     const dot = document.getElementById('customCursorDot');
-    if (!ring || !dot) return;
+    if (!ring || !dot || window.innerWidth <= 992 || !window.matchMedia('(pointer: fine)').matches) return;
 
     let targetX = -100, targetY = -100;
     let ringX = -100, ringY = -100;
@@ -1166,8 +1003,8 @@ function initCustomCursor() {
     }, { passive: true });
 
     function renderCursor() {
-        ringX += (targetX - ringX) * 0.22;
-        ringY += (targetY - ringY) * 0.22;
+        ringX += (targetX - ringX) * 0.72;
+        ringY += (targetY - ringY) * 0.72;
         ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
         requestAnimationFrame(renderCursor);
     }
@@ -1208,18 +1045,18 @@ function initPixieDustGlitter() {
     });
 
     const particles = [];
-    const maxParticles = 160;
+    const maxParticles = 120;
 
     // Palette: Shimmering Silver, Platinum, Starlight Specular, with delicate Cyan Glow
     const colors = [
         '#FFFFFF',
-        '#F8FAFC',
-        '#F1F5F9',
-        '#E2E8F0',
-        '#CBD5E1',
-        'rgba(241, 245, 249, 0.95)',
-        'rgba(203, 213, 225, 0.9)',
-        'rgba(45, 212, 191, 0.7)'
+        '#FBF8FB',
+        '#F4ECF3',
+        '#E7D8E5',
+        '#D2BBD0',
+        'rgba(255, 255, 255, 0.98)',
+        'rgba(210, 187, 208, 0.94)',
+        'rgba(175, 141, 166, 0.82)'
     ];
 
     function spawnParticle(x, y, count = 1, isBurst = false) {
@@ -1439,7 +1276,7 @@ function initScrollTelemetryHud() {
         if (dbIndicator) {
             const dbVal = (-54 + progress * 56).toFixed(1);
             dbIndicator.textContent = `${dbVal > 0 ? '+' : ''}${dbVal} dB`;
-            dbIndicator.style.color = progress > 0.75 ? '#EF4444' : (progress > 0.4 ? '#2DD4BF' : '#94A3B8');
+            dbIndicator.style.color = progress > 0.75 ? '#C45A78' : (progress > 0.4 ? '#AF8DA6' : '#A99CA7');
         }
     }
 
@@ -1502,6 +1339,8 @@ function init3DCardTilt() {
 function initHeroHoloCore() {
     const canvas = document.getElementById('heroHoloCoreCanvas');
     if (!canvas) return;
+    const stage = canvas.closest('.hero-right-stage-wrapper');
+    if (stage && getComputedStyle(stage).display === 'none') return;
     const ctx = canvas.getContext('2d');
     const size = 480;
     canvas.width = size;
@@ -1526,7 +1365,7 @@ function initHeroHoloCore() {
         pulseScale = 1.35;
         // Trigger Threat Audition
         if (typeof triggerHeroAudition === 'function') {
-            triggerHeroAudition('gunshot', 'Gunshot Shockwave', '98.4%', 'Quantum Acoustic Core Resonating');
+            triggerHeroAudition('gunshot', 'Gunshot Shockwave');
         }
     });
 
@@ -1565,9 +1404,9 @@ function initHeroHoloCore() {
 
         // Central Luminous Quantum Glow
         const glowGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 180 * pulseScale);
-        glowGrad.addColorStop(0, 'rgba(0, 242, 254, 0.45)');
-        glowGrad.addColorStop(0.3, 'rgba(45, 212, 191, 0.25)');
-        glowGrad.addColorStop(0.7, 'rgba(13, 148, 136, 0.08)');
+        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.48)');
+        glowGrad.addColorStop(0.3, 'rgba(175, 141, 166, 0.30)');
+        glowGrad.addColorStop(0.7, 'rgba(130, 93, 120, 0.12)');
         glowGrad.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
@@ -1622,7 +1461,7 @@ function initHeroHoloCore() {
                 const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
                 if (d < 38) {
                     const alpha = (1 - d / 38) * 0.45 * Math.min(p1.scale, p2.scale);
-                    ctx.strokeStyle = `rgba(45, 212, 191, ${alpha})`;
+                    ctx.strokeStyle = `rgba(175, 141, 166, ${alpha})`;
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
@@ -1635,7 +1474,7 @@ function initHeroHoloCore() {
         projected.forEach(p => {
             const alpha = Math.min(Math.max((p.z + 150) / 300, 0.25), 1.0);
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.shadowColor = '#00F2FE';
+            ctx.shadowColor = '#AF8DA6';
             ctx.shadowBlur = 8;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);

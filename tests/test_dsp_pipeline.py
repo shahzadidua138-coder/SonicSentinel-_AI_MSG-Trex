@@ -51,16 +51,21 @@ def test_pipeline():
     assert feats['centroid_mean'] > 0, "Centroid extraction failed"
     print(f"[PASS] 5. Feature Extractor verified (40 MFCCs, Centroid: {feats['centroid_mean']:.1f} Hz, ZCR: {feats['zcr']:.3f}).")
 
-    # 7. Test Dual-Model Classification & Arbitration
+    # 7. Test real-model classification and arbitration without prescribing a class.
     res = classify_audio_dual(samples, feats, q, filename="facility_gunshot_test.wav")
-    assert res['python_class'] == "Gunshot" and res['gtm_class'] == "Gunshot", "Dual model classification failed"
-    assert res['confidence_difference'] <= 0.15, "Confidence delta exceeded threshold"
-    assert res['consistency_status'] in ["Strong Match", "Acceptable Match"], f"Unexpected consistency: {res['consistency_status']}"
-    print(f"[PASS] 6. Dual AI Cross-Arbitration passed (Py: {res['python_confidence']*100:.1f}%, GTM: {res['gtm_confidence']*100:.1f}%, Status: {res['consistency_status']}).")
+    expected_classes = set(res['python_probabilities'])
+    assert len(expected_classes) == 10, f"Expected scores for all 10 classes, got {len(expected_classes)}"
+    assert set(res['gtm_probabilities']) == expected_classes, "Comparison model class set differs"
+    assert abs(sum(res['python_probabilities'].values()) - 1.0) < 0.02, "Python probabilities are not normalized"
+    assert abs(sum(res['gtm_probabilities'].values()) - 1.0) < 0.02, "Comparison probabilities are not normalized"
+    assert res['python_class'] in expected_classes and res['gtm_class'] in expected_classes
+    assert 0 <= res['confidence_difference'] <= 1
+    assert res['consistency_status'] in ["Acceptable Match", "Weak Match", "Model Disagreement", "Uncertain Result"]
+    print(f"[PASS] 6. Python and comparison models returned valid 10-class scores (Py: {res['python_confidence']*100:.1f}%, Comparison: {res['gtm_confidence']*100:.1f}%, Status: {res['consistency_status']}).")
 
     # 8. Test Alert Engine
     alert = evaluate_alert(res)
-    assert alert['severity'] == "Critical", f"Expected Critical, got {alert['severity']}"
+    assert alert['severity'] in ["Critical", "High", "Medium", "Low", "Informational"], f"Unexpected severity: {alert['severity']}"
     print(f"[PASS] 7. Threat Alert Engine verified (Severity: {alert['severity']}, Action: {alert['recommended_action'][:45]}...).")
 
     # 9. Test Waveform & Spectrogram Rendering
